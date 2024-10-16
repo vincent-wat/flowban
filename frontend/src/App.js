@@ -1,9 +1,10 @@
-import LoginPage from './Components/Login/LoginPage.jsx';
+//import LoginPage from './Components/Login/LoginPage.jsx';
+import SignUpPage from './Components/SignUpPage/SignUpPage.jsx';
 
 function App() {
   return (
     <div>
-      <LoginPage/>
+      <SignUpPage/>
     </div>
   );
 }
