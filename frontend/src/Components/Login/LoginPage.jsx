@@ -17,10 +17,14 @@ const LoginPage = () => {
                     <input type="password" placeholder='Password' required/>
                     <RiLockPasswordFill className = 'icon'/>
                 </div>
-                <div>
+                <div className="remember-forgot">
                     <label><input type='checkbox'/>Remember Me</label>
+                    <a href="#">Forgot Password?</a>
                 </div>
                 <button type='submit'>Login</button>
+                <div className="register">
+                    <p>Don't have an acocunt? <a href="#">Register</a></p>
+                </div>
             </form>
         </div>
     );
