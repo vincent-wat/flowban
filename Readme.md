@@ -8,3 +8,8 @@
 - cd frontend
 - npm install
 - npm start
+
+### New installs / packages
+- npm install react-router-dom
+
+
