@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Profile from './Components/Profile/EditUser'; 
+import Profile from './Components/User/Profile/EditUser.js'; 
 import LoginPage from './Components/User/Login/LoginPage'; 
 import KanbanBoard from './Components/Kanban/KanbanBoard';
 

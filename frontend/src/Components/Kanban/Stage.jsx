@@ -1,4 +1,5 @@
 import React from 'react';
+import './Stage.css';
 
 const Stage = ({ title, cases }) => {
   return (
