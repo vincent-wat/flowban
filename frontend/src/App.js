@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Profile from './Components/Profile/EditUser'; 
-import LoginPage from './Components/Login/LoginPage'; 
+import LoginPage from './Components/User/Login/LoginPage'; 
 
 function App() {
   return (
