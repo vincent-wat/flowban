@@ -1,15 +1,27 @@
-const express = require('express');
-const cors = require('cors');
-const app = express();
-const port = 3000;
+require('dotenv').config();  
+const express = require('express'); 
+const sequelize = require('./models/database'); 
+const User = require('./models/User');  
 
-app.use(cors());
+const app = express();  
+const PORT = process.env.PORT || 3000;  
+
 app.use(express.json());
 
 app.get('/', (req, res) => {
-  res.send('Backend is running');
+  res.send('Welcome to the Flowban API!');
 });
 
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
+// Sync the database
+sequelize.sync()
+  .then(() => {
+    console.log('Database & tables created!');
+  })
+  .catch((err) => {
+    console.error('Error creating database & tables:', err);
+  });
+
+// Start the server
+app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
 });
