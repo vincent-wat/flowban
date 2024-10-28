@@ -6,6 +6,7 @@ export default function Navbar() {
         <nav className="nav">
             <Link to="/" className="site-name"> FlowBan </Link>
             <ul>
+                <CustomLinks to='/sign_up'> Sign Up </CustomLinks>
                 <CustomLinks to="/login"> Login </CustomLinks>
                 <CustomLinks to='/profile'> Profile </CustomLinks>
             </ul>
