@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Profile from './Components/User/Profile/EditUser';
-import Home from './Components/General/Home';
+import Home from './Components/General/home';
 import LoginPage from './Components/User/Login/LoginPage';
 import KanbanBoard from './Components/Kanban/KanbanBoard';
 import Layout from './Components/General/Layout';
