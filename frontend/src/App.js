@@ -5,7 +5,7 @@ import Home from './Components/General/home';
 import LoginPage from './Components/User/Login/LoginPage';
 import KanbanBoard from './Components/Kanban/KanbanBoard';
 import Layout from './Components/General/Layout';
-import Navbar from './Components/General/Navbar';
+import Navbar from './Components/General/NavbarAlt';
 import SignUpPage from './Components/User/Sign_Up/SignUpPage';
 
 function App() {
