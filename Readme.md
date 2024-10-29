@@ -48,6 +48,7 @@ CREATE TABLE users (
     last_name VARCHAR(50) NOT NULL,
     user_role VARCHAR(50)[]
 );
+
 -- Create boards table
 CREATE TABLE boards (
     id SERIAL PRIMARY KEY,
