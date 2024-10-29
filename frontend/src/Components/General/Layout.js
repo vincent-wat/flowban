@@ -8,7 +8,7 @@ function Layout({ children }) {
         <h1>FlowBan</h1>
       </header>
 
-      <main style={{ flex: '1', padding: '20px' }}>
+      <main style={{ flex: '1', padding: '0px' }}>
         {children}  
       </main>
 

@@ -18,8 +18,7 @@ function App() {
           <Route path="/profile" element={<Profile />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/kanban" element={<KanbanBoard />} />
-          <Route path="/navbar" element={<Navbar />} />
-          <Route path="/sign_up" element={<SignUpPage />} />
+          <Route path="/signup" element={<SignUpPage />} />
           
         </Routes>
       </Layout>
