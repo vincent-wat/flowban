@@ -29,7 +29,11 @@ PORT=5432
 - cd frontend
 - npm install
 - npm start
-
+### color scheme
+- C51D34
+- 2E2E30
+- 808080
+- F5F5F5
 ### New installs / packages
 - npm install react-router-dom
 
