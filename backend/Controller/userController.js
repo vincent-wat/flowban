@@ -1,6 +1,6 @@
-const users = require('./user');
-const pool = require('./db');
-const queries = require('./queries');
+const users = require('../models/user');
+const pool = require('../models/db');
+const queries = require('../models/queries');
 
 
 // this is to get all users from the local database

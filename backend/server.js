@@ -2,7 +2,7 @@ require('dotenv').config();
 const express = require('express'); 
 //const sequelize = require('./models/database'); 
 const User = require('./models/user');
-const routes = require('./models/routes');
+const routes = require('./routes/userRoutes');
 const pool = require('./models/db');
 
 const app = express();  
