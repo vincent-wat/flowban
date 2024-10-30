@@ -1,6 +1,8 @@
 require('dotenv').config();
 const sequelize = require('./models/database');  // Import the sequelize instance
 
+console.log("database.js called");
+
 async function testConnection() {
   try {
     await sequelize.authenticate();
