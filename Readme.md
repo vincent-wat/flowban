@@ -66,3 +66,18 @@ CREATE TABLE tasks (
     title VARCHAR(100),
     description TEXT NOT NULL
 );
+
+## Commands to add some basic users
+INSERT INTO users (email, password, phone_number, first_name, last_name, user_role)
+VALUES 
+('alice.smith@example.com', 'password123', '123-456-7890', 'Alice', 'Smith', ARRAY['admin']),
+('bob.jones@example.com', 'password456', '234-567-8901', 'Bob', 'Jones', ARRAY['user']),
+('carol.white@example.com', 'password789', '345-678-9012', 'Carol', 'White', ARRAY['editor']),
+('dave.miller@example.com', 'password321', '456-789-0123', 'Dave', 'Miller', ARRAY['admin']),
+('eve.johnson@example.com', 'password654', '567-890-1234', 'Eve', 'Johnson', ARRAY['user']),
+('frank.brown@example.com', 'password987', '678-901-2345', 'Frank', 'Brown', ARRAY['editor']),
+('grace.wilson@example.com', 'password135', '789-012-3456', 'Grace', 'Wilson', ARRAY['user']),
+('henry.moore@example.com', 'password246', '890-123-4567', 'Henry', 'Moore', ARRAY['admin']),
+('irene.taylor@example.com', 'password369', '901-234-5678', 'Irene', 'Taylor', ARRAY['user']),
+('jackie.anderson@example.com', 'password111', '012-345-6789', 'Jackie', 'Anderson', ARRAY['editor']);
+
