@@ -7,5 +7,6 @@ const router = Router();
 
 // the fucntions will be handled by the controller file 
 router.get("/", controller.getUsers);
+router.post("/", controller.postUsers);
 
 module.exports = router;

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import './SignUpPage.css';
 import { FaUser } from "react-icons/fa";
 import { RiLockPasswordFill } from "react-icons/ri";
+import axios from "axios";
 
 const SignUpPage = () => {
   const [formData, setFormData] = useState({
@@ -10,6 +11,8 @@ const SignUpPage = () => {
     password: '',
     confirmPassword: ''
   });
+
+ 
 
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
@@ -25,6 +28,8 @@ const SignUpPage = () => {
       [name]: value
     });
 
+
+
     // Perform validation checks
     if (name === 'password' || name === 'confirmPassword') {
       if (name === 'password' && !passwordRegex.test(value)) {
@@ -39,7 +44,7 @@ const SignUpPage = () => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!passwordRegex.test(formData.password)) {
       setError('Password must be at least 8 characters long and include at least one number and one special character.');
@@ -48,6 +53,14 @@ const SignUpPage = () => {
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
       return;
+    }
+
+    try {
+      const response = await axios.get("http://localhost:5000/api/users");
+      console.log("user get!!");
+      console.log(response.rows);
+    } catch (error) {
+      console.error(error.message);
     }
     setError('');
     setSubmitted(true);

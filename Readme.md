@@ -36,6 +36,7 @@ PORT=5432
 - F5F5F5
 ### New installs / packages
 - npm install react-router-dom
+- npm i axios
 
 ### Database Commands
 

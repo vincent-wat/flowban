@@ -18,6 +18,21 @@ const getUsers = async (req, res) => {
     
 };
 
+const postUsers = async (req,res) => {
+    console.log("inserting a new user");
+    try {
+        const { email, password, phone_number, first_name, last_name, user_role } = req.body;
+        const result = pool.query("INSERT INTO users (email, password, phone_number, first_name, last_name, user_role) VALUES ($1, $2, $3, $4, $5,$6) RETURNING *",
+      [email, password, phone_number || null, first_name, last_name, user_role || null])
+      res.status(201);
+      console.log("User Inserted");
+    } catch (e) {
+        console.error(e.message);
+    }
+};
+
+
 module.exports = {
     getUsers,
+    postUsers,
 };
