@@ -2,7 +2,7 @@
 // ex /api/users
 
 const { Router } = require('express');
-const controller = require('../Controllers/userController');
+const controller = require('../Controllers/UserController');
 const router = Router();
 
 // the fucntions will be handled by the controller file 
