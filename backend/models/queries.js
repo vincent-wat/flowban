@@ -6,6 +6,7 @@ const getBoards = "SELECT * FROM boards";
 const getColumns = "SELECT * FROM columns";
 const getTasks = "SELECT * FROM tasks";
 const getTodos = "SELECT * FROM todo";
+const deleteUser = "DELETE FROM users WHERE id = $1"
 
 
 
@@ -15,4 +16,6 @@ module.exports = {
     getUsers,
     getTasks,
     getTodos,
+    postUsers,
+    deleteUser
 };

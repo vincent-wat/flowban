@@ -11,8 +11,8 @@ const getUsers = async (req, res) => {
     try {
         const allUsers = await pool.query(queries.getUsers);
         res.json(allUsers.rows);
-    } catch (error) {
-        console.error(error.message);
+    } catch (err) {
+        console.error(err.message);
     }
 
     
@@ -26,11 +26,11 @@ const postUsers = async (req,res) => {
       [email, password, phone_number || null, first_name, last_name, user_role || null])
       res.status(201);
       console.log("User Inserted");
-    } catch (e) {
-        console.error(e.message);
+    } catch (err) {
+        console.error(err.message);
     }
 };
-const updateUser = async (req, res) => {
+/* const updateUser = async (req, res) => {
     const userId = req.params.id;
     const { email, phone_number, first_name, last_name, user_roles } = req.body;
   
@@ -55,9 +55,22 @@ const updateUser = async (req, res) => {
       return res.status(500).json({ message: 'Internal server error' });
     }
   };
+  */
+
+  //Delete a user
+  const deleteUser = async(req,res) => {
+    try {
+      const { id } = req.params;
+      const deleteUser = await pool.query(queries.deleteUser, [id]);
+      res.json("A user was deleted");
+    } catch (err) {
+      console.error(err.message);
+    }
+  }
 
 
 module.exports = {
     getUsers,
     postUsers,
+    deleteUser
 };

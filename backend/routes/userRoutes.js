@@ -5,7 +5,9 @@ const { Router } = require('express');
 const controller = require('../Controllers/UserController');
 const router = Router();
 
-// the fucntions will be handled by the controller file 
+// the functions will be handled by the controller file 
 router.get("/", controller.getUsers);
+
+router.delete("/:id", controller.deleteUser);
 
 module.exports = router;
