@@ -3,7 +3,6 @@ import './LoginPage.css';
 import { FaUser } from "react-icons/fa";
 import { RiLockPasswordFill } from "react-icons/ri";
 
-
 const LoginPage = () => {
     return (
         <div className='wrapper'>
@@ -23,7 +22,7 @@ const LoginPage = () => {
                 </div>
                 <button type='submit'>Login</button>
                 <div className="register">
-                    <p>Don't have an acocunt? <a href="#">Register</a></p>
+                    <p>Don't have an account? <a href="#">Register</a></p>
                 </div>
             </form>
         </div>

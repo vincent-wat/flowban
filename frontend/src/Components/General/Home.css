@@ -1,12 +1,12 @@
 .home-container {
     padding: 20px;
     text-align: center;
-    background-color: #001f3f; 
+    background-color: #e5e8e7; 
     min-height: 100vh; 
   }
   
   .home-header {
-    background-color: #007bff;
+    background-color: #C51D34;
     color: white;
     padding: 40px 0;
   }
@@ -38,7 +38,7 @@
   
   .home-section h2 {
     font-size: 24px;
-    color: #007bff;
+    color: #C51D34;
   }
   
   .home-section p {

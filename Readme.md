@@ -30,10 +30,10 @@ PORT=5432
 - npm install
 - npm start
 ### color scheme
-- C51D34
-- 2E2E30
-- 808080
-- F5F5F5
+- C51D34 Red
+- 2E2E30 Dark Gray
+- 808080 Light Gray
+- F5F5F5 White
 ### New installs / packages
 - npm install react-router-dom
 - npm i axios

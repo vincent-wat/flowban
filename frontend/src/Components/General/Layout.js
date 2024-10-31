@@ -1,19 +1,13 @@
-
 import React from 'react';
 
 function Layout({ children }) {
   return (
     <div style={{ width: '100vw', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <header style={{ backgroundColor: '#007bff', padding: '30px', color: 'white', textAlign: 'center' }}>
-        <h1>FlowBan</h1>
-      </header>
-
-      <main style={{ flex: '1', padding: '0px' }}>
-        {children}  
+      <main style={{ flex: '1', padding: '80px 0 0 0' }}> {/* Adjust padding-top as needed */}
+        {children}
       </main>
-
-      <footer style={{ backgroundColor: '#007bff', padding: '10px', color: 'white', textAlign: 'center' }}>
-        <p>Footer Content © 2024</p>
+      <footer style={{ backgroundColor: '#C51D34', padding: '10px', color: 'white', textAlign: 'center' }}>
+        <p>&copy; 2024 Flowban. All rights reserved.</p>
       </footer>
     </div>
   );
