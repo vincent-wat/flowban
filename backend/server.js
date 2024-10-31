@@ -4,11 +4,13 @@ const express = require('express');
 const User = require('./models/user');
 const routes = require('./routes/userRoutes');
 const pool = require('./models/db');
+const cors = require('cors')
 
 const app = express();  
 //const PORT = process.env.PORT || 3000;  
 const PORT = 3000;  
 
+app.use(cors());
 app.use(express.json());
 
 
