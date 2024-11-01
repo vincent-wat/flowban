@@ -18,19 +18,45 @@
     list-style: none;
     display: flex;
     gap: 20px;
+    position: relative;
 }
 
 .nav-links li {
     display: inline;
+    position: relative;
 }
 
 .nav-links a {
     color: #F5F5F5;
     text-decoration: none;
     padding: 8px 16px;
-    transition: background-color 0.3s ease;
+    position: relative;
 }
 
-.nav-links a:hover {
-    background-color: #808080; /* Button hover color */
+.nav-links a::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    width: 0;
+    height: 2px;
+    background-color: white;
+    transition: width 0.3s ease, left 0.3s ease, transform 0.3s ease;
+    transform: translateX(-50%) scaleX(0);
+}
+
+.nav-links a:hover::after {
+    content: '';
+    display: block;
+    width: 90%;
+    height: 2px; 
+    background-color: white;
+    position: absolute;
+    left: 50%; 
+    transform: translateX(-50%) scaleX(1); 
+    transition: width 0.3s ease, left 0.3s ease, transform 0.3s ease;
+}
+
+.nav-links a:not(:hover)::after {
+    transition: width 0.5s ease 0.1s, left 0.5s ease;
 }
