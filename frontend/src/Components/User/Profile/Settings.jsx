@@ -38,6 +38,10 @@ function Settings() {
             Enable Dark Mode
           </label>
         </div>
+
+        <div className="settings-option">
+          <button type="button" class="delete-button">Delete Account</button>
+        </div>
       </div>
     </div>
   );
