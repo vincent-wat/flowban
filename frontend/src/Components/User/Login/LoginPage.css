@@ -1,9 +1,12 @@
+
+
 .wrapper {
     width: 450px;
     background-color: #C51D34;
     color: white;
     border-radius: 20px;
     padding: 30px 40px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .wrapper h1 {
