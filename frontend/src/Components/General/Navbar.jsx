@@ -1,3 +1,5 @@
+// THIS FILE IS NOT CURRENTLY IN USE, IMPLEMENTED STRAIGHT INTO Layout.js
+
 import React from 'react';
 import { Link, useMatch, useResolvedPath} from 'react-router-dom';
 import '../General/Navbar.css';

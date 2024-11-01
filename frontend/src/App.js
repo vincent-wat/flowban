@@ -7,12 +7,11 @@ import KanbanBoard from './Components/Kanban/KanbanBoard';
 import Layout from './Components/General/Layout';
 import SignUpPage from './Components/User/Sign_Up/SignUpPage';
 import Settings from './Components/User/Profile/Settings';
-import Navbar from './Components/General/NavbarAlt';
+/* import Navbar from './Components/General/NavbarAlt'; */
 
 function App() {
   return (
       <Layout>
-        <Navbar />
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/profile" element={<Profile />} />
