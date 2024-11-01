@@ -1,35 +1,44 @@
-const users = require('../models/user');
-const pool = require('../models/db');
-const queries = require('../models/queries');
-
+const users = require("../models/user");
+const pool = require("../models/db");
+const queries = require("../models/queries");
 
 // this is to get all users from the local database
 // this can then be used to create more functions for database queries
-// use the queries file to shorthand the queries 
+// use the queries file to shorthand the queries
 const getUsers = async (req, res) => {
-    console.log("getting users");
-    try {
-        const allUsers = await pool.query(queries.getUsers);
-        res.json(allUsers.rows);
-    } catch (err) {
-        console.error(err.message);
-    }
-
-    
+  console.log("getting users");
+  try {
+    const allUsers = await pool.query(queries.getUsers);
+    res.json(allUsers.rows);
+  } catch (err) {
+    console.error(err.message);
+  }
 };
 
-const postUsers = async (req,res) => {
-    console.log("inserting a new user");
-    try {
-        const { email, password, phone_number, first_name, last_name, user_role } = req.body;
-        const result = pool.query("INSERT INTO users (email, password, phone_number, first_name, last_name, user_role) VALUES ($1, $2, $3, $4, $5,$6) RETURNING *",
-      [email, password, phone_number || null, first_name, last_name, user_role || null])
-      res.status(201);
-      console.log("User Inserted");
-    } catch (err) {
-        console.error(err.message);
-    }
+const postUsers = async (req, res) => {
+  console.log("inserting a new user");
+  try {
+    const { email, password, phone_number, first_name, last_name, user_role } =
+      req.body;
+
+    const result = await pool.query(
+      "INSERT INTO users (email, password, phone_number, first_name, last_name, user_role) VALUES ($1, $2, $3, $4, $5,$6) RETURNING *",
+      [
+        email,
+        password,
+        phone_number || null,
+        first_name,
+        last_name,
+        user_role || null,
+      ]
+    );
+    console.log("User Inserted");
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    console.error(err.message);
+  }
 };
+
 /* const updateUser = async (req, res) => {
     const userId = req.params.id;
     const { email, phone_number, first_name, last_name, user_roles } = req.body;
@@ -57,20 +66,19 @@ const postUsers = async (req,res) => {
   };
   */
 
-  //Delete a user
-  const deleteUser = async(req,res) => {
-    try {
-      const { id } = req.params;
-      const deleteUser = await pool.query(queries.deleteUser, [id]);
-      res.json("A user was deleted");
-    } catch (err) {
-      console.error(err.message);
-    }
+//Delete a user
+const deleteUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deleteUser = await pool.query(queries.deleteUser, [id]);
+    res.json("A user was deleted");
+  } catch (err) {
+    console.error(err.message);
   }
-
+};
 
 module.exports = {
-    getUsers,
-    postUsers,
-    deleteUser
+  getUsers,
+  postUsers,
+  deleteUser,
 };

@@ -8,6 +8,8 @@ const router = Router();
 // the functions will be handled by the controller file 
 router.get("/", controller.getUsers);
 
+router.post("/", controller.postUsers);
+
 router.delete("/:id", controller.deleteUser);
 
 module.exports = router;
