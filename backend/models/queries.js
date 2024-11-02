@@ -7,7 +7,15 @@ const getColumns = "SELECT * FROM columns";
 const getTasks = "SELECT * FROM tasks";
 const getTodos = "SELECT * FROM todo";
 const deleteUser = "DELETE FROM users WHERE id = $1"
-
+const updateUser = `
+  UPDATE users
+  SET email = $1, phone_number = $2, first_name = $3, last_name = $4, user_role = $5
+  WHERE id = $6
+  RETURNING *;
+`;
+const findUser = `
+  SELECT * FROM users WHERE id = $1
+`;
 
 
 module.exports = {
@@ -17,5 +25,7 @@ module.exports = {
     getTasks,
     getTodos,
     postUsers,
-    deleteUser
+    deleteUser,
+    updateUser,
+    findUser,
 };

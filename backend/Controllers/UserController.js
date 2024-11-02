@@ -30,32 +30,39 @@ const postUsers = async (req,res) => {
         console.error(err.message);
     }
 };
-/* const updateUser = async (req, res) => {
-    const userId = req.params.id;
-    const { email, phone_number, first_name, last_name, user_roles } = req.body;
-  
-    try {
-      const user = await User.findByPk(userId);
-  
-      if (!user) {
-        return res.status(404).json({ message: 'User not found' });
-      }
-  
-      await user.update({
-        email,
-        phone_number,
-        first_name,
-        last_name,
-        user_roles,
-      });
-  
-      return res.status(200).json({ message: 'User updated successfully', user });
-    } catch (error) {
-      console.error('Error updating user:', error);
-      return res.status(500).json({ message: 'Internal server error' });
+
+
+const { findUser, updateUser } = require('../models/queries'); 
+
+const updateUserProfile = async (req, res) => {
+  const userId = req.params.id;
+  const { email, phone_number, first_name, last_name, user_role } = req.body;
+
+  try {
+    const userResult = await pool.query(findUser, [userId]);
+
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ message: 'User not found' });
     }
-  };
-  */
+
+    const currentUser = userResult.rows[0];
+    const updatedEmail = email || currentUser.email;
+    const updatedPhoneNumber = phone_number || currentUser.phone_number;
+    const updatedFirstName = first_name || currentUser.first_name;
+    const updatedLastName = last_name || currentUser.last_name;
+    const updatedUserRole = user_role || currentUser.user_role;
+
+    const values = [updatedEmail, updatedPhoneNumber, updatedFirstName, updatedLastName, updatedUserRole, userId];
+    const updateResult = await pool.query(updateUser, values);
+
+    return res.status(200).json({ message: 'User updated successfully', user: updateResult.rows[0] });
+  } catch (error) {
+    console.error('Error updating user:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+
 
   //Delete a user
   const deleteUser = async(req,res) => {
@@ -72,5 +79,6 @@ const postUsers = async (req,res) => {
 module.exports = {
     getUsers,
     postUsers,
-    deleteUser
+    deleteUser,
+    updateUserProfile,
 };

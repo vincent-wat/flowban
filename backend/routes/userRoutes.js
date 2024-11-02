@@ -10,4 +10,30 @@ router.get("/", controller.getUsers);
 
 router.delete("/:id", controller.deleteUser);
 
+
+
+
+// update User Profile validation of user informtion
+const { body, validationResult } = require('express-validator');
+const { updateUserProfile } = require('../Controllers/UserController');
+
+const validateUpdateUser = [
+    body('email').optional().isEmail().withMessage('Must be a valid email'),
+    body('phone_number').optional().matches(/^[0-9\-+()]*$/).withMessage('Must be a valid phone number'),
+    body('first_name').optional().isString().withMessage('First name must be a string'),
+    body('last_name').optional().isString().withMessage('Last name must be a string'),
+    body('user_role').optional().isIn(['Admin', 'User', 'Moderator']).withMessage('Invalid role'),    
+  (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+    next();
+  },
+];
+
+router.put('/:id', validateUpdateUser, updateUserProfile);
+
+
+
 module.exports = router;
