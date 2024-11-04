@@ -1,0 +1,38 @@
+.input-wrapper {
+    display: flex;
+    align-items: center;
+    background-color: #f5f5f5;
+    border-radius: 25px;
+    padding: 10px 15px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    width: 300px;
+
+    position: absolute;
+    top: 70px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+}
+
+#search-icon {
+    color: #C51D34;
+    font-size: 18px;
+    margin-right: 10px;
+}
+
+input {
+    border: none;
+    outline: none;
+    font-size: 16px;
+    background: transparent;
+    width: 100%;
+    color: #333;
+}
+
+input::placeholder {
+    color: #888;
+}
+
+.input-wrapper:hover {
+    box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.15);
+}

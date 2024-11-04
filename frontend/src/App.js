@@ -7,6 +7,7 @@ import KanbanBoard from "./Components/Kanban/KanbanBoard";
 import Layout from "./Components/General/Layout";
 import SignUpPage from "./Components/User/Sign_Up/SignUpPage";
 import Settings from "./Components/User/Profile/Settings";
+import Dashboard from "./Components/Kanban/Dashboard";
 /* import Navbar from './Components/General/NavbarAlt'; */
 
 function App() {
@@ -18,6 +19,7 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/kanban" element={<KanbanBoard />} />
         <Route path="/signup" element={<SignUpPage />} />
+        <Route path="/dashboard" element = {<Dashboard />} />
         <Route path="/profile/settings" element={<Settings />} />
       </Routes>
     </Layout>
