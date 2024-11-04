@@ -1,27 +1,31 @@
-require('dotenv').config();  
-const express = require('express'); 
-//const sequelize = require('./models/database'); 
-const User = require('./models/user');
-const routes = require('./routes/userRoutes');
-const pool = require('./models/db');
-const cors = require('cors')
+require("dotenv").config();
+const express = require("express");
+//const sequelize = require('./models/database');
+const User = require("./models/user");
+const routes = require("./routes/userRoutes");
+const pool = require("./models/db");
+const cors = require("cors");
 
-const app = express();  
-//const PORT = process.env.PORT || 3000;  
-const PORT = 3000;  
+const app = express();
+//const PORT = process.env.PORT || 3000;
+const PORT = 3000;
 
 app.use(cors());
 app.use(express.json());
 
-// to connect our backend to the frontend
-app.use(cors({
-  origin: 'http://localhost:3001',
-}));
-
-app.get('/', (req, res) => {
-  res.send('Welcome to the Flowban API!');
+app.get("/", (req, res) => {
+  res.send("Welcome to the Flowban API!");
 });
 
+// routes will handle all the get,post,put in the routes file
+app.use("/api/users", routes);
+
+// to connect our backend to the frontend
+app.use(
+  cors({
+    origin: "http://localhost:3001",
+  })
+);
 
 app.post("/signuptest", (req, res) => {
   try {
@@ -31,10 +35,7 @@ app.post("/signuptest", (req, res) => {
     console.log("Error is post at signuptest");
     console.error(error.message);
   }
-
 });
-
-app.use('/api/users', routes);
 
 // Start the server
 app.listen(PORT, () => {

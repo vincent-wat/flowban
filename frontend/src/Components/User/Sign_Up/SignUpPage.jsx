@@ -1,23 +1,25 @@
-import React, { useState } from 'react';
-import './SignUpPage.css';
-import { FaUser } from "react-icons/fa";
+import React, { useState } from "react";
+import "./SignUpPage.css";
+//import { FaUser } from "react-icons/fa";
 import { RiLockPasswordFill } from "react-icons/ri";
-import axios from "axios";
+import axios from "../../../axios";
 
 const SignUpPage = () => {
   const [formData, setFormData] = useState({
-    username: '',
-    email: '',
-    password: '',
-    confirmPassword: ''
+    firstName: "",
+    lastName: "",
+    phoneNumber: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
   });
 
- 
-
   const [submitted, setSubmitted] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const passwordRegex = /^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,}$/;
+  // base url for new users to be added
+  const USER_URL = "/api/users";
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -25,21 +27,25 @@ const SignUpPage = () => {
     // Update the form data state
     setFormData({
       ...formData,
-      [name]: value
+      [name]: value,
     });
 
-
-
     // Perform validation checks
-    if (name === 'password' || name === 'confirmPassword') {
-      if (name === 'password' && !passwordRegex.test(value)) {
-        setError('Password must be at least 8 characters long and include at least one number and one special character.');
-      } else if (name === 'confirmPassword' && value !== formData.password) {
-        setError('Passwords do not match');
-      } else if (name === 'password' && formData.confirmPassword && value !== formData.confirmPassword) {
-        setError('Passwords do not match');
+    if (name === "password" || name === "confirmPassword") {
+      if (name === "password" && !passwordRegex.test(value)) {
+        setError(
+          "Password must be at least 8 characters long and include at least one number and one special character."
+        );
+      } else if (name === "confirmPassword" && value !== formData.password) {
+        setError("Passwords do not match");
+      } else if (
+        name === "password" &&
+        formData.confirmPassword &&
+        value !== formData.confirmPassword
+      ) {
+        setError("Passwords do not match");
       } else {
-        setError('');
+        setError("");
       }
     }
   };
@@ -47,43 +53,77 @@ const SignUpPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!passwordRegex.test(formData.password)) {
-      setError('Password must be at least 8 characters long and include at least one number and one special character.');
+      setError(
+        "Password must be at least 8 characters long and include at least one number and one special character."
+      );
       return;
     }
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
+      setError("Passwords do not match");
       return;
     }
-
+    // Where we use axios to add a new user to the database
     try {
-      const response = await axios.get("http://localhost:5000/api/users");
-      console.log("user get!!");
-      console.log(response.rows);
-    } catch (error) {
-      console.error(error.message);
+      console.log(formData);
+      const response = await axios.post(USER_URL, {
+        // right side must be the attribute name is database
+        email: formData.email,
+        password: formData.password,
+        phone_number: formData.phoneNumber,
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+      });
+      console.log(response.data);
+      console.log(JSON.stringify(response));
+    } catch (e) {
+      console.error(e.message);
     }
-    setError('');
+
+    setError("");
     setSubmitted(true);
+    // need to clear the input fields afterwards still
     // Normally, here you would send form data to your backend
-    console.log(formData);
+    //console.log(formData);
   };
 
   return (
-    <div className='wrapper'>
-      <form onSubmit={handleSubmit} className="signup-form">
+    <div className="wrapper">
+      <form onSubmit={handleSubmit}>
         <h1>Sign Up</h1>
+
         <div className="input-box">
-          <input 
-            type="text" 
-            name="username"
-            placeholder='Username' 
-            value={formData.username}
+          <input
+            type="text"
+            name="firstName"
+            //autoComplete="off"
+            placeholder="First Name"
+            value={formData.firstName}
             onChange={handleChange}
             required
           />
-          <FaUser className='icon'/>
         </div>
-        
+        <div className="input-box">
+          <input
+            type="text"
+            name="lastName"
+            //autoComplete="off"
+            placeholder="Last Name"
+            value={formData.lastName}
+            onChange={handleChange}
+            required
+          />
+        </div>
+        <div className="input-box">
+          <input
+            type="tel"
+            name="phoneNumber"
+            autoComplete="off"
+            placeholder="Phone Number"
+            value={formData.phoneNumber}
+            onChange={handleChange}
+            required
+          />
+        </div>
         <div className="input-box">
           <input
             type="email"
@@ -94,34 +134,45 @@ const SignUpPage = () => {
             required
           />
         </div>
-        
         <div className="input-box">
-          <input 
-            type="password" 
+          <input
+            type="password"
             name="password"
-            placeholder='Password' 
+            placeholder="Password"
             required
             value={formData.password}
             onChange={handleChange}
           />
-          <RiLockPasswordFill className='icon'/>
+          <RiLockPasswordFill className="icon" />
         </div>
-        
         <div className="input-box">
-          <input 
-            type="password" 
+          <input
+            type="password"
             name="confirmPassword"
-            placeholder='Re-Enter Password' 
+            placeholder="Re-Enter Password"
             required
             value={formData.confirmPassword}
             onChange={handleChange}
           />
-          <RiLockPasswordFill className='icon'/>
+          <RiLockPasswordFill className="icon" />
         </div>
-        {error && <p style={{ color: 'red' }}>{error}</p>}
-        <button type='submit'>Sign Up</button>
-        {submitted && <p style={{ color: 'green' }}>Form submitted successfully!</p>}
+        {error && <p style={{ color: "red" }}>{error}</p>}
+        {/* Should create some kind of way so sumbit button does not work without 
+          all fields written into or is valid*/}
+        <button type="submit">Sign Up</button>
+        {submitted && (
+          <p style={{ color: "green" }}>Form submitted successfully!</p>
+        )}
       </form>
+      <p>
+        Alread registered? <br />
+        <span className="line">
+          {/* Need to add link to login page*/}
+          <a href="/login" style={{ color: "white" }}>
+            Sign In
+          </a>
+        </span>
+      </p>
     </div>
   );
 };
