@@ -22,7 +22,7 @@ const LoginPage = () => {
                 </div>
                 <button type='submit'>Login</button>
                 <div className="register">
-                    <p>Don't have an account? <a href="#">Register</a></p>
+                    <p>Don't have an account? <a href="/signup">Register</a></p>
                 </div>
             </form>
         </div>
