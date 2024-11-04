@@ -8,29 +8,24 @@ const cors = require("cors");
 
 const app = express();
 //const PORT = process.env.PORT || 3000;
-const PORT = 3001;
+const PORT = 3000;
 
 app.use(cors());
 app.use(express.json());
 
-<<<<<<< HEAD
 app.get("/", (req, res) => {
   res.send("Welcome to the Flowban API!");
 });
 
 // routes will handle all the get,post,put in the routes file
 app.use("/api/users", routes);
-=======
+
 // to connect our backend to the frontend
-app.use(cors({
-  origin: 'http://localhost:3001',
-}));
-
-app.get('/', (req, res) => {
-  res.send('Welcome to the Flowban API!');
-});
-
->>>>>>> origin/main
+app.use(
+  cors({
+    origin: "http://localhost:3001",
+  })
+);
 
 app.post("/signuptest", (req, res) => {
   try {
@@ -41,19 +36,6 @@ app.post("/signuptest", (req, res) => {
     console.error(error.message);
   }
 });
-
-<<<<<<< HEAD
-// Sync the database
-// sequelize.sync()
-//   .then(() => {
-//     console.log('Database & tables created!');
-//   })
-//   .catch((err) => {
-//     console.error('Error creating database & tables:', err);
-//   });
-=======
-app.use('/api/users', routes);
->>>>>>> origin/main
 
 // Start the server
 app.listen(PORT, () => {
