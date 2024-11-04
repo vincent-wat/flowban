@@ -7,15 +7,14 @@ const pool = require('./models/db');
 const cors = require('cors')
 
 const app = express();  
-//const PORT = process.env.PORT || 3000;  
-const PORT = 3000;  
+const PORT = process.env.SERVER_PORT || 3001;
 
 app.use(cors());
 app.use(express.json());
 
 // to connect our backend to the frontend
 app.use(cors({
-  origin: 'http://localhost:3001',
+  origin: 'http://localhost:3000',
 }));
 
 app.get('/', (req, res) => {

@@ -18,17 +18,24 @@ const getUsers = async (req, res) => {
     
 };
 
-const postUsers = async (req,res) => {
-    console.log("inserting a new user");
-    try {
-        const { email, password, phone_number, first_name, last_name, user_role } = req.body;
-        const result = pool.query("INSERT INTO users (email, password, phone_number, first_name, last_name, user_role) VALUES ($1, $2, $3, $4, $5,$6) RETURNING *",
-      [email, password, phone_number || null, first_name, last_name, user_role || null])
-      res.status(201);
-      console.log("User Inserted");
-    } catch (err) {
-        console.error(err.message);
+const postUsers = async (req, res) => {
+  console.log("Inserting a new user");
+  try {
+    const { email, password, phone_number, first_name, last_name, user_role } = req.body;
+    const result = await pool.query(
+      "INSERT INTO users (email, password, phone_number, first_name, last_name, user_role) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
+      [email, password, phone_number || null, first_name, last_name, user_role || null]
+    );
+    res.status(201).json(result.rows[0]);
+    console.log("User Inserted");
+  } catch (err) {
+    if (err.code === '23505') {  // Unique constraint violation
+      res.status(409).json({ error: 'Email already exists' });
+    } else {
+      console.error(err.message);
+      res.status(500).json({ error: 'Failed to create user' });
     }
+  }
 };
 
 
