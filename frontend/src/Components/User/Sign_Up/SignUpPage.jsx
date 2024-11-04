@@ -58,23 +58,21 @@ const SignUpPage = () => {
     setSubmitted(true);
   
     try {
-      const response = await fetch('http://localhost:3001/api/users/signup', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
+      const response = await axios.post('http://localhost:3001/api/users/signup', formData, {
+          headers: {
+              'Content-Type': 'application/json',
+          },
       });
-  
-      if (response.ok) {
-        console.log('User signed up successfully');
+
+      if (response.status === 201) {
+          console.log('User signed up successfully');
       } else {
-        console.error('Failed to sign up user');
+          console.error('Failed to sign up user');
       }
-    } catch (error) {
+  } catch (error) {
       console.error('Error:', error);
-    }
-  };
+  }
+};
 
   return (
     <div className='wrapper'>
