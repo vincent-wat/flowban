@@ -4,8 +4,6 @@ const getUsers = "SELECT * FROM users";
 const postUsers = "INSERT INTO users"; 
 const getBoards = "SELECT * FROM boards";
 const getColumns = "SELECT * FROM columns";
-const getTasks = "SELECT * FROM tasks";
-const getTodos = "SELECT * FROM todo";
 const deleteUser = "DELETE FROM users WHERE id = $1"
 const updateUser = `
   UPDATE users
@@ -22,8 +20,6 @@ module.exports = {
     getBoards,
     getColumns,
     getUsers,
-    getTasks,
-    getTodos,
     postUsers,
     deleteUser,
     updateUser,
