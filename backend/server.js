@@ -13,12 +13,24 @@ const PORT = 3001;
 app.use(cors());
 app.use(express.json());
 
+<<<<<<< HEAD
 app.get("/", (req, res) => {
   res.send("Welcome to the Flowban API!");
 });
 
 // routes will handle all the get,post,put in the routes file
 app.use("/api/users", routes);
+=======
+// to connect our backend to the frontend
+app.use(cors({
+  origin: 'http://localhost:3001',
+}));
+
+app.get('/', (req, res) => {
+  res.send('Welcome to the Flowban API!');
+});
+
+>>>>>>> origin/main
 
 app.post("/signuptest", (req, res) => {
   try {
@@ -30,6 +42,7 @@ app.post("/signuptest", (req, res) => {
   }
 });
 
+<<<<<<< HEAD
 // Sync the database
 // sequelize.sync()
 //   .then(() => {
@@ -38,6 +51,9 @@ app.post("/signuptest", (req, res) => {
 //   .catch((err) => {
 //     console.error('Error creating database & tables:', err);
 //   });
+=======
+app.use('/api/users', routes);
+>>>>>>> origin/main
 
 // Start the server
 app.listen(PORT, () => {
