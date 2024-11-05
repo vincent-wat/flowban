@@ -8,13 +8,13 @@ export const Dashboard = () => {
   useEffect(() => {
     const fetchBoards = async () => {
       try {
-        const response = await fetch('http://localhost:3000/api/boards/1');
+        const response = await fetch('http://localhost:3000/api/boards');
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data = await response.json();
 
-        setBoards(data.rows); 
+        setBoards(data);
       } catch (error) {
         console.error('Error fetching boards:', error);
       }
@@ -31,7 +31,7 @@ export const Dashboard = () => {
       </div>
       <div className="board-row">
         {boards.length === 0 ? (
-          <p>No board found with the specified ID.</p>
+          <p>No boards available.</p>
         ) : (
           boards.map((board) => (
             <button key={board.id} className="doc-button">{board.name}</button>
