@@ -2,7 +2,8 @@ require("dotenv").config();
 const express = require("express");
 //const sequelize = require('./models/database');
 const User = require("./models/user");
-const routes = require("./routes/userRoutes");
+const userRoutes = require("./routes/userRoutes");
+const boardRoutes = require("./routes/boardRoutes");
 const pool = require("./models/db");
 const cors = require("cors");
 
@@ -18,7 +19,10 @@ app.get("/", (req, res) => {
 });
 
 // routes will handle all the get,post,put in the routes file
-app.use("/api/users", routes);
+app.use("/api/users", userRoutes);
+
+// Set up board routes
+app.use("/api/boards", boardRoutes); 
 
 // to connect our backend to the frontend
 app.use(
