@@ -30,7 +30,7 @@ export const Dashboard = () => {
         </div>
         <div className="board-row">
            {board ? (
-                <button key={board.id} className="doc-button">{board.name}</button> // Display the specific board
+                <button key={board.id} className="doc-button">{board.name}</button>
             ) : (
                 <p>No board found with the specified ID.</p>
             )}
