@@ -59,6 +59,7 @@ input::placeholder {
 
 .doc-button {
     display: flex;
+    justify-content: space-between;
     align-items: center;
     background-color: white;
     border: 1px solid #e0e0e0;
@@ -90,4 +91,15 @@ input::placeholder {
     flex-direction: column;
     gap: 5px;
     align-items: center;
+}
+
+.ellipsis-icon {
+    margin-left: 10px; 
+    color: #C51D34;
+    font-size: 18px; 
+}
+
+.board-name {
+    text-align: left; 
+    flex-grow: 1; 
 }

@@ -1,4 +1,4 @@
-import { FaSearch, FaRegFileAlt } from "react-icons/fa";
+import { FaSearch, FaRegFileAlt, FaEllipsisV } from "react-icons/fa";
 import "./Dashboard.css";
 import React, { useEffect, useState } from 'react';
 
@@ -45,7 +45,8 @@ export const Dashboard = () => {
           filteredBoards.map((board) => (
             <button key={board.id} className="doc-button">
               <FaRegFileAlt style={{ marginRight: "10px", color: "#C51D34" }} />
-              {board.name}
+              <span className="board-name">{board.name}</span>
+              <FaEllipsisV className="ellipsis-icon" />
             </button>
           ))
         )}
