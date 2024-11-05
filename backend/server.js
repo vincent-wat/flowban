@@ -19,6 +19,7 @@ app.get("/", (req, res) => {
 
 // routes will handle all the get,post,put in the routes file
 app.use("/api/users", routes);
+app.use("/api/users/:id", routes);
 
 // to connect our backend to the frontend
 app.use(

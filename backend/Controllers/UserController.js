@@ -92,9 +92,27 @@ const deleteUser = async (req, res) => {
   }
 };
 
+// Get a single user by ID
+const getUserById = async (req, res) => {
+  console.log("getting user by id");
+  try {
+    const id = req.params.id;
+    console.log(`Querying database for user with ID: ${id}`);
+    const result = await pool.query(queries.findUser, [id]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
 module.exports = {
   getUsers,
   postUsers,
   deleteUser,
   updateUserProfile,
+  getUserById,
 };

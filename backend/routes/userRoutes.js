@@ -5,14 +5,15 @@ const { Router } = require('express');
 const controller = require('../Controllers/UserController');
 const router = Router();
 
-// the functions will be handled by the controller file 
+// The functions will be handled by the controller file 
 router.get("/", controller.getUsers);
-
 router.post("/", controller.postUsers);
 
-router.delete("/:id", controller.deleteUser);
+router.get("/:id", controller.getUserById);  // Route for getting a user by ID
+router.put("/:id", validateUpdateUser, controller.updateUserProfile);
+router.delete("/:id", controller.deleteUser)
 
-
+router.get("/email/:email", controller.getUserByEmail);
 
 
 // update User Profile validation of user informtion
@@ -33,8 +34,6 @@ const validateUpdateUser = [
     next();
   },
 ];
-
-router.put('/:id', validateUpdateUser, updateUserProfile);
 
 
 
