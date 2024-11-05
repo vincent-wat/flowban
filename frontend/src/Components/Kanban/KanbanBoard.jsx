@@ -1,6 +1,6 @@
 import React from 'react';
 import Stage from './Stage';
-import './KanbanBoard.css'     
+import './KanbanBoard.css';     
 
 const KanbanBoard = () => {
   const stages = [
