@@ -1,9 +1,10 @@
+import { FaSearch, FaRegFileAlt } from "react-icons/fa";
 import "./Dashboard.css";
-import { FaSearch } from "react-icons/fa";
 import React, { useEffect, useState } from 'react';
 
 export const Dashboard = () => {
   const [boards, setBoards] = useState([]);
+  const [searchTerm, setSearchTerm] = useState(""); 
 
   useEffect(() => {
     const fetchBoards = async () => {
@@ -13,7 +14,6 @@ export const Dashboard = () => {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data = await response.json();
-
         setBoards(data);
       } catch (error) {
         console.error('Error fetching boards:', error);
@@ -23,18 +23,30 @@ export const Dashboard = () => {
     fetchBoards();
   }, []);
 
+  // Filter boards based on the search term
+  const filteredBoards = boards.filter(board =>
+    board.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className="container">
       <div className="input-wrapper">
-        <FaSearch id="search-icon"/>
-        <input placeholder="Search"/>
+        <FaSearch id="search-icon" />
+        <input
+          placeholder="Search"
+          value={searchTerm} // Bind input to search term state
+          onChange={(e) => setSearchTerm(e.target.value)} // Update search term on input change
+        />
       </div>
       <div className="board-row">
-        {boards.length === 0 ? (
-          <p>No boards available.</p>
+        {filteredBoards.length === 0 ? (
+          <p>No boards match your search.</p>
         ) : (
-          boards.map((board) => (
-            <button key={board.id} className="doc-button">{board.name}</button>
+          filteredBoards.map((board) => (
+            <button key={board.id} className="doc-button">
+              <FaRegFileAlt style={{ marginRight: "10px", color: "#C51D34" }} />
+              {board.name}
+            </button>
           ))
         )}
       </div>
