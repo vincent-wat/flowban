@@ -17,6 +17,21 @@ const getUserBoards = async (req, res) => {
     }
   };
 
+const getAllBoards = async (req, res) => {
+    try {
+      const allBoards = await pool.query(queries.getAllBoards);
+  
+      if (allBoards.rows.length === 0) {
+        return res.status(404).json({ error: 'No boards found.' });
+      }
+  
+      res.json(allBoards.rows);
+    } catch (err) {
+      res.status(500).json({ error: 'Internal Server Error', message: err.message });
+    }
+  };
+
   module.exports = {
-    getUserBoards
+    getUserBoards,
+    getAllBoards
   };
