@@ -7,6 +7,8 @@ const router = Router();
 
 // the functions will be handled by the controller file 
 router.get("/", controller.getUsers);
+console.log("Hello from userRoutes.js");
+router.get("/:id", controller.getUserByID);
 
 router.post("/", controller.postUsers);
 

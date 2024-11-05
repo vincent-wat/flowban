@@ -9,6 +9,8 @@ const cors = require("cors");
 const app = express();
 //const PORT = process.env.PORT || 3000;
 const PORT = 3000;
+console.log("Hello from server.js");
+
 
 app.use(cors());
 app.use(express.json());

@@ -15,6 +15,17 @@ const getUsers = async (req, res) => {
   }
 };
 
+
+const getUserByID = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await pool.query(queries.findUser, [id]);
+    res.json(user.rows[0]);
+  } catch (err) {
+    console.error(err.message);
+  }
+};
+
 const postUsers = async (req, res) => {
   console.log("inserting a new user");
   try {
@@ -97,4 +108,5 @@ module.exports = {
   postUsers,
   deleteUser,
   updateUserProfile,
+  getUserByID,
 };
