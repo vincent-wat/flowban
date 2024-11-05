@@ -14,7 +14,7 @@ const updateUser = `
 const findUser = `
   SELECT * FROM users WHERE id = $1
 `;
-const getUserBoards = "SELECT * FROM boards WHERE id = $1";
+const getUserBoards = `SELECT * FROM boards WHERE id = $1`;
 
 
 module.exports = {
@@ -25,4 +25,5 @@ module.exports = {
     deleteUser,
     updateUser,
     findUser,
+    getUserBoards
 };

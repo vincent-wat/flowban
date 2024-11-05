@@ -4,7 +4,7 @@ const router = Router();
 
 
 // the functions will be handled by the controller file 
-router.get("/", controller.getUserBoards);
+router.get("/:id", controller.getUserBoards);
 
 //router.post("/", controller.postUsers);
 

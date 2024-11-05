@@ -3,14 +3,17 @@ import { FaSearch } from "react-icons/fa";
 import React, { useEffect, useState } from 'react';
 
 export const Dashboard = () => {
-  const [boards, setBoards] = useState([]);
-
+  const [board, setBoard] = useState([]);
+  const id = 1; 
     useEffect(() => {
         const fetchBoards = async () => {
             try {
-                const response = await fetch('/api/boards');
+                const response = await fetch(`/api/boards/${id}`);
+                if (!response.ok) { // Check for response status
+                  throw new Error(`HTTP error! status: ${response.status}`);
+              }
                 const data = await response.json();
-                setBoards(data);
+                setBoard(data);
             } catch (error) {
                 console.error('Error fetching boards:', error);
             }
@@ -18,7 +21,7 @@ export const Dashboard = () => {
 
         fetchBoards();
     }, []);
-    
+
   return (
     <div className="container">
         <div className="input-wrapper">
@@ -26,10 +29,11 @@ export const Dashboard = () => {
             <input placeholder="Search"/>
         </div>
         <div className="board-row">
-            <button class="doc-button">Document 1</button>
-            <button class="doc-button">Document 2</button>
-            <button class="doc-button">Document 3</button>
-            <button class="doc-button">Document 4</button>
+           {board ? (
+                <button key={board.id} className="doc-button">{board.name}</button> // Display the specific board
+            ) : (
+                <p>No board found with the specified ID.</p>
+            )}
         </div>
     </div>
   )
