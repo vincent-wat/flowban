@@ -3,7 +3,8 @@
 ### how to run 
 ##### backend
 - cd backend
-- node server.js
+- **Option 1:** node server.js
+- **Option 2:** npm start (11-6-2024 - Backend now runs on nodemon automatically when you use this)
 #### for database connection
 - create your database in local machine for now
 - check for new install under at the bottom of this file
