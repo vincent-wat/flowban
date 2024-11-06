@@ -5,7 +5,7 @@ const queries = require("../models/queries");
 // this is to get all users from the local database
 // this can then be used to create more functions for database queries
 // use the queries file to shorthand the queries
-const getUsers = async (req, res) => {
+async function getUsers(req, res) {
   console.log("getting users");
   try {
     const allUsers = await pool.query(queries.getUsers);
@@ -13,9 +13,32 @@ const getUsers = async (req, res) => {
   } catch (err) {
     console.error(err.message);
   }
-};
+}
 
-const postUsers = async (req, res) => {
+//Find user by ID number
+async function getUserByID(req, res) {
+  try {
+    const { id } = req.params;
+    const user = await pool.query(queries.findUser, [id]);
+    res.json(user.rows[0]);
+  } catch (err) {
+    console.error(err.message);
+  }
+}
+
+//Find user by email
+async function getUserByEmail(req, res) {
+  try {
+    const { email } = req.params;
+    const user = await pool.query(queries.findUserByEmail, [email]);
+    res.json(user.rows[0]);
+  } catch (err) {
+    console.error(err.message);
+  }
+}
+
+//Create a new user
+async function postUsers(req, res) {
   console.log("inserting a new user");
   try {
     const { email, password, phone_number, first_name, last_name, user_role } =
@@ -37,11 +60,12 @@ const postUsers = async (req, res) => {
   } catch (err) {
     console.error(err.message);
   }
-};
+}
 
+//Update a user profile
 const { findUser, updateUser } = require("../models/queries");
 
-const updateUserProfile = async (req, res) => {
+async function updateUserProfile(req, res) {
   const userId = req.params.id;
   const { email, phone_number, first_name, last_name, user_role } = req.body;
 
@@ -79,10 +103,10 @@ const updateUserProfile = async (req, res) => {
     console.error("Error updating user:", error);
     return res.status(500).json({ message: "Internal server error" });
   }
-};
+}
 
 //Delete a user
-const deleteUser = async (req, res) => {
+async function deleteUser(req, res) {
   try {
     const { id } = req.params;
     const deleteUser = await pool.query(queries.deleteUser, [id]);
@@ -90,11 +114,13 @@ const deleteUser = async (req, res) => {
   } catch (err) {
     console.error(err.message);
   }
-};
+}
 
 module.exports = {
   getUsers,
   postUsers,
   deleteUser,
   updateUserProfile,
+  getUserByID,
+  getUserByEmail,
 };

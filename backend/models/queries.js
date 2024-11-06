@@ -11,8 +11,15 @@ const updateUser = `
   WHERE id = $6
   RETURNING *;
 `;
+
+// Finds a user using their ID
 const findUser = `
   SELECT * FROM users WHERE id = $1
+`;
+
+//Finds a user using their email
+const findUserByEmail = `
+  SELECT * FROM users WHERE email = $1
 `;
 
 // Board Queries
@@ -27,6 +34,7 @@ module.exports = {
     getBoards,
     getColumns,
     getUsers,
+    findUserByEmail,
     postUsers,
     deleteUser,
     updateUser,

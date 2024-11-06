@@ -1,9 +1,10 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon"
   },
   "keywords": [],
   "author": "",
@@ -19,5 +20,11 @@
     "pg": "^8.13.0",
     "pg-hstore": "^2.3.4",
     "sequelize": "^6.37.4"
+  },
+
+  "nodemonConfig": {
+  "watch": ["models", "Controllers", "routes", "server.js", "testconnections.js"],
+  "ext": "js,ts",
+  "ignore": ["node_modules/*"]
   }
 }

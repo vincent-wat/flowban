@@ -1,19 +1,20 @@
 // allow for routes to database 
-// ex /api/users
+// If searching with ID use /id/:id and if searching with email use /email/:email
 
 const { Router } = require('express');
 const controller = require('../Controllers/UserController');
 const router = Router();
 
-// the functions will be handled by the controller file 
-router.get("/", controller.getUsers);
+//Default route
+router.get("/", controller.getUsers); // get all users
+router.post("/", controller.postUsers); // create a new user
 
-router.post("/", controller.postUsers);
+//Routes with /id/:id
+router.get("/id/:id", controller.getUserByID); // get user by ID
+router.delete("/id/:id", controller.deleteUser); // delete user by ID
 
-router.delete("/:id", controller.deleteUser);
-
-
-
+//Routes with /email/:email
+router.get("/email/:email", controller.getUserByEmail); // get user by email
 
 // update User Profile validation of user informtion
 const { body, validationResult } = require('express-validator');
@@ -34,8 +35,6 @@ const validateUpdateUser = [
   },
 ];
 
-router.put('/:id', validateUpdateUser, updateUserProfile);
-
-
+router.put('/id/:id', validateUpdateUser, updateUserProfile);
 
 module.exports = router;
