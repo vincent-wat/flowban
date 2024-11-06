@@ -1,3 +1,4 @@
+const bcrypt = require("bcrypt");
 const users = require("../models/user");
 const pool = require("../models/db");
 const queries = require("../models/queries");
@@ -41,14 +42,16 @@ async function getUserByEmail(req, res) {
 async function postUsers(req, res) {
   console.log("inserting a new user");
   try {
-    const { email, password, phone_number, first_name, last_name, user_role } =
-      req.body;
+    const { email, password, phone_number, first_name, last_name, user_role } = req.body;
+
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     const result = await pool.query(
       "INSERT INTO users (email, password, phone_number, first_name, last_name, user_role) VALUES ($1, $2, $3, $4, $5,$6) RETURNING *",
       [
         email,
-        password,
+        hashedPassword,
         phone_number || null,
         first_name,
         last_name,
