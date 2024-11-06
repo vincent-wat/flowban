@@ -14,6 +14,7 @@ function Layout({ children }) {
          <CustomLink to="/signup">Signup</CustomLink>
          <CustomLink to="/profile">Profile</CustomLink>
          <CustomLink to="/kanban">Kanban</CustomLink>
+         <CustomLink to="/dashboard">Dashboard</CustomLink>
         </ul>
     </nav>{/* Replace with your actual navbar component or links */}
       </header>
