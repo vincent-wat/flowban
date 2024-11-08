@@ -27,6 +27,7 @@
       "models",
       "Controllers",
       "routes",
+      "utils",
       "server.js",
       "testconnections.js"
     ],

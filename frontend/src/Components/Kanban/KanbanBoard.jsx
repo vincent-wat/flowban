@@ -17,5 +17,4 @@ const KanbanBoard = () => {
     </div>
   );
 }
-
 export default KanbanBoard;

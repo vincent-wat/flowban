@@ -38,6 +38,7 @@ PORT=5432
 ### New installs / packages
 - npm install react-router-dom
 - npm i axios
+- npm install --save jwt-generator
 
 ### Database Commands
 
