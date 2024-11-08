@@ -2,7 +2,7 @@
 
 // User Queries
 const getUsers = "SELECT * FROM users";
-const postUsers = "INSERT INTO users"; 
+const postUser = "INSERT INTO users"; 
 const getColumns = "SELECT * FROM columns";
 const deleteUser = "DELETE FROM users WHERE id = $1";
 const updateUser = `
@@ -35,7 +35,7 @@ module.exports = {
     getColumns,
     getUsers,
     findUserByEmail,
-    postUsers,
+    postUser,
     deleteUser,
     updateUser,
     findUser,

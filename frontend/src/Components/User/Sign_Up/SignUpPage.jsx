@@ -1,10 +1,14 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "./SignUpPage.css";
 //import { FaUser } from "react-icons/fa";
 import { RiLockPasswordFill } from "react-icons/ri";
 import axios from "../../../axios";
+import useAuth from "../../../hooks/useAuth";
 
 const SignUpPage = () => {
+  useAuth();
+
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -16,10 +20,11 @@ const SignUpPage = () => {
 
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   const passwordRegex = /^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,}$/;
   // base url for new users to be added
-  const USER_URL = "/api/users";
+  const USER_URL = "/api/users/register";
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -65,6 +70,7 @@ const SignUpPage = () => {
     // Where we use axios to add a new user to the database
     try {
       console.log(formData);
+      console.log("user url: " + USER_URL);
       const response = await axios.post(USER_URL, {
         // right side must be the attribute name is database
         email: formData.email,
@@ -74,7 +80,10 @@ const SignUpPage = () => {
         last_name: formData.lastName,
       });
       console.log(response.data);
+      localStorage.setItem("token", response.data.jwtToken);
       console.log(JSON.stringify(response));
+      setSubmitted(true);
+      navigate("/");
     } catch (e) {
       console.error(e.message);
     }

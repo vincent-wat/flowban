@@ -4,6 +4,7 @@ import React from 'react';
 import { Link, useMatch, useResolvedPath} from 'react-router-dom';
 import '../General/Navbar.css';
 export default function Navbar() {
+    console.log("using this navbar");
     return (
         <nav className="nav">
             <Link to="/" className="site-name"> FlowBan </Link>

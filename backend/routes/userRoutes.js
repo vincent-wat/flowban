@@ -1,13 +1,14 @@
 // allow for routes to database 
 // If searching with ID use /id/:id and if searching with email use /email/:email
 
-const { Router } = require('express');
 const controller = require('../Controllers/UserController');
-const router = Router();
+const router = require("express").Router();
+const validInfo = require("../middleware/validInfo");
 
 //Default route
 router.get("/", controller.getUsers); // get all users
-router.post("/", controller.postUsers); // create a new user
+router.post("/register", controller.postUser); // create a new user
+router.post("/login", validInfo, controller.loginUser); // login user
 
 //Routes with /id/:id
 router.get("/id/:id", controller.getUserByID); // get user by ID

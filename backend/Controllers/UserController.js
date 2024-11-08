@@ -2,6 +2,7 @@ const bcrypt = require("bcrypt");
 const users = require("../models/user");
 const pool = require("../models/db");
 const queries = require("../models/queries");
+const jwtGenerator = require("../utils/jwtGenerator");
 
 // this is to get all users from the local database
 // this can then be used to create more functions for database queries
@@ -39,13 +40,15 @@ async function getUserByEmail(req, res) {
 }
 
 //Create a new user
-async function postUsers(req, res) {
+async function postUser(req, res) {
   console.log("inserting a new user");
   try {
     const { email, password, phone_number, first_name, last_name, user_role } = req.body;
 
     // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const saltRound = 10;
+    const salt = await bcrypt.genSalt(saltRound);
+    const hashedPassword = await bcrypt.hash(password, salt);
 
     const result = await pool.query(
       "INSERT INTO users (email, password, phone_number, first_name, last_name, user_role) VALUES ($1, $2, $3, $4, $5,$6) RETURNING *",
@@ -58,12 +61,41 @@ async function postUsers(req, res) {
         user_role || null,
       ]
     );
+    const jwtToken = jwtGenerator(result.rows[0].user_id);
+
     console.log("User Inserted");
-    res.status(201).json(result.rows[0]);
+    res.status(201).json({ user: result.rows[0], jwtToken });
   } catch (err) {
     console.error(err.message);
   }
 }
+
+//Login a user
+async function loginUser(req, res) {
+  const { email, password } = req.body;
+
+  try {
+    const user = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
+
+    if (user.rows.length === 0) {
+      return res.status(401).json("Invalid Credential");
+    }
+
+    const validPassword = await bcrypt.compare(password, user.rows[0].password);
+
+    if (!validPassword) {
+      return res.status(401).json("Invalid Credential");
+    }
+
+    const jwtToken = jwtGenerator(user.rows[0].id);
+    console.log("User logged in");
+    return res.json({ jwtToken });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: 'Server error' });
+  }
+}
+
 
 //Update a user profile
 const { findUser, updateUser } = require("../models/queries");
@@ -119,11 +151,13 @@ async function deleteUser(req, res) {
   }
 }
 
+
 module.exports = {
   getUsers,
-  postUsers,
+  postUser,
   deleteUser,
   updateUserProfile,
   getUserByID,
   getUserByEmail,
+  loginUser,
 };
