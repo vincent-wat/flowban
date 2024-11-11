@@ -2,7 +2,8 @@
 
 // User Queries
 const getUsers = "SELECT * FROM users";
-const postUser = "INSERT INTO users";
+const postUser =
+  "INSERT INTO users (email, password, phone_number, first_name, last_name, user_role) VALUES ($1, $2, $3, $4, $5,$6) RETURNING *";
 const getColumns = "SELECT * FROM columns";
 const deleteUser = "DELETE FROM users WHERE id = $1";
 const updateUser = `
@@ -34,7 +35,13 @@ const updateBoardNameQuery =
 const getAllColumns = "SELECT * FROM columns";
 const getColumn = "SELECT * FROM columns WHERE id = $1";
 const getAllColumnsForBoard = "SELECT * FROM columns WHERE board_id = $1";
+const addColumn =
+  "INSERT INTO columns (name, board_id) VALUES ($1, $2) RETURNING *";
 const deleteColumn = "DELETE FROM columns WHERE id = $1 RETURNING *";
+const deleteAllColumnsForBoard =
+  "DELETE FROM columns WHERE board_id = $1 RETURNING *";
+const updateColumnName =
+  "UPDATE columns SET name = $1 WHERE id = $2 RETURNING *";
 
 // Task Queries
 const getAllTasks = "SELECT * FROM tasks";
@@ -61,7 +68,10 @@ module.exports = {
   getAllColumns,
   getColumn,
   getAllColumnsForBoard,
+  addColumn,
   deleteColumn,
+  deleteAllColumnsForBoard,
+  updateColumnName,
   // tasks exports
   getAllTasks,
   getTask,

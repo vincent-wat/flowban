@@ -43,24 +43,22 @@ async function getUserByEmail(req, res) {
 async function postUser(req, res) {
   console.log("inserting a new user");
   try {
-    const { email, password, phone_number, first_name, last_name, user_role } = req.body;
+    const { email, password, phone_number, first_name, last_name, user_role } =
+      req.body;
 
     // Hash the password
     const saltRound = 10;
     const salt = await bcrypt.genSalt(saltRound);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    const result = await pool.query(
-      "INSERT INTO users (email, password, phone_number, first_name, last_name, user_role) VALUES ($1, $2, $3, $4, $5,$6) RETURNING *",
-      [
-        email,
-        hashedPassword,
-        phone_number || null,
-        first_name,
-        last_name,
-        user_role || null,
-      ]
-    );
+    const result = await pool.query(queries.postUser, [
+      email,
+      hashedPassword,
+      phone_number || null,
+      first_name,
+      last_name,
+      user_role || null,
+    ]);
     const jwtToken = jwtGenerator(result.rows[0].user_id);
 
     console.log("User Inserted");
@@ -75,7 +73,9 @@ async function loginUser(req, res) {
   const { email, password } = req.body;
 
   try {
-    const user = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
+    const user = await pool.query("SELECT * FROM users WHERE email = $1", [
+      email,
+    ]);
 
     if (user.rows.length === 0) {
       return res.status(401).json("Invalid Credential");
@@ -92,10 +92,9 @@ async function loginUser(req, res) {
     return res.json({ jwtToken });
   } catch (err) {
     console.error(err.message);
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ error: "Server error" });
   }
 }
-
 
 //Update a user profile
 const { findUser, updateUser } = require("../models/queries");
@@ -128,12 +127,10 @@ async function updateUserProfile(req, res) {
     ];
     const updateResult = await pool.query(updateUser, values);
 
-    return res
-      .status(200)
-      .json({
-        message: "User updated successfully",
-        user: updateResult.rows[0],
-      });
+    return res.status(200).json({
+      message: "User updated successfully",
+      user: updateResult.rows[0],
+    });
   } catch (error) {
     console.error("Error updating user:", error);
     return res.status(500).json({ message: "Internal server error" });
@@ -150,7 +147,6 @@ async function deleteUser(req, res) {
     console.error(err.message);
   }
 }
-
 
 module.exports = {
   getUsers,
