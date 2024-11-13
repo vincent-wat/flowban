@@ -48,6 +48,13 @@ const getAllTasks = "SELECT * FROM tasks";
 const getTask = "SELECT * FROM tasks WHERE id = $1";
 const getAllTasksForColumn = "SELECT * FROM tasks WHERE column_id = $1";
 const deleteTask = "DELETE FROM tasks WHERE id = $1 RETURNING *";
+const deleteAllTasksForColumn =
+  "DELETE FROM tasks WHERE column_id = $1 RETURNING *";
+const addTask =
+  "INSERT INTO tasks (column_id, title, description) VALUES ($1,$2,$3) RETURNING *";
+const updateTaskDescription =
+  "UPDATE tasks SET description = $1 WHERE id = $2 RETURING *";
+const updateTaskTitle = "UPDATE tasks SET title = $1 WHERE id = $2 RETURING *";
 
 module.exports = {
   // users exports
@@ -77,4 +84,8 @@ module.exports = {
   getTask,
   getAllTasksForColumn,
   deleteTask,
+  deleteAllTasksForColumn,
+  addTask,
+  updateTaskDescription,
+  updateTaskTitle,
 };
