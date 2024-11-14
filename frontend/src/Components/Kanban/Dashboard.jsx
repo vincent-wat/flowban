@@ -26,7 +26,7 @@ export const Dashboard = () => {
   // Filter boards based on the search term
   const filteredBoards = boards.filter(board =>
     board.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  ).sort((a, b) => b.id - a.id); //Sorts by highest to lowest id, should change to date later
 
   return (
     <div className="container">
