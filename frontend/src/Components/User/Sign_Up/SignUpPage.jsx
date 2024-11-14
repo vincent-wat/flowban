@@ -174,7 +174,7 @@ const SignUpPage = () => {
         )}
       </form>
       <p>
-        Alread registered? <br />
+        Already registered? <br />
         <span className="line">
           {/* Need to add link to login page*/}
           <a href="/login" style={{ color: "white" }}>

@@ -34,8 +34,8 @@ export const Dashboard = () => {
         <FaSearch id="search-icon" />
         <input
           placeholder="Search"
-          value={searchTerm} // Bind input to search term state
-          onChange={(e) => setSearchTerm(e.target.value)} // Update search term on input change
+          value={searchTerm} 
+          onChange={(e) => setSearchTerm(e.target.value)} 
         />
       </div>
       <div className="board-row">
