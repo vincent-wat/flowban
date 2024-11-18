@@ -59,7 +59,7 @@ async function postUser(req, res) {
       last_name,
       user_role || null,
     ]);
-    const jwtToken = jwtGenerator(result.rows[0].user_id);
+    const jwtToken = jwtGenerator(result.rows[0].id);
 
     console.log("User Inserted");
     res.status(201).json({
