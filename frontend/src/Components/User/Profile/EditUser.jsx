@@ -10,7 +10,6 @@ function Profile() {
     phoneNumber: '',
     firstName: '',
     lastName: '',
-    bio: '',
   });
   const [isEditing, setIsEditing] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -18,9 +17,18 @@ function Profile() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const response = await fetch('http://localhost:3000/api/users/1');
-        const data = await response.json();
-        setProfile(data);
+        const token = localStorage.getItem('token');
+        if (!token) {
+          throw new Error('No token found. Please log in.');
+        }
+
+        const response = await axios.get('http://localhost:3000/api/users/me', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        setProfile(response.data);
       } catch (error) {
         console.error('Error fetching profile data:', error);
       }
@@ -39,17 +47,24 @@ function Profile() {
 
   const handleSave = async () => {
     try {
-      // Make a PUT request to update the user profile
-      const response = await axios.put(`http://localhost:3000/users/1`, {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('No token found. Please log in.');
+      }
+
+      const response = await axios.put(`http://localhost:3000/api/users/id/me`, {
         email: profile.email,
         password: profile.password,
         phone_number: profile.phoneNumber,
         first_name: profile.firstName,
         last_name: profile.lastName,
-        bio: profile.bio,
+      }, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
       });
       console.log('Profile updated:', response.data);
-      setIsEditing(false);  // Exit edit mode after successful update
+      setIsEditing(false);
     } catch (error) {
       console.error('Error updating profile:', error);
     }
@@ -101,7 +116,7 @@ function Profile() {
                 <input
                   type="tel"
                   name="phoneNumber"
-                  value={profile.phoneNumber}
+                  value={profile.phone_number}
                   onChange={handleChange}
                   className="profile-input"
                 />
@@ -111,7 +126,7 @@ function Profile() {
                 <input
                   type="text"
                   name="firstName"
-                  value={profile.firstName}
+                  value={profile.first_name}
                   onChange={handleChange}
                   className="profile-input"
                 />
@@ -121,16 +136,7 @@ function Profile() {
                 <input
                   type="text"
                   name="lastName"
-                  value={profile.lastName}
-                  onChange={handleChange}
-                  className="profile-input"
-                />
-              </label>
-              <label className="profile-label">
-                Bio:
-                <textarea
-                  name="bio"
-                  value={profile.bio}
+                  value={profile.last_name}
                   onChange={handleChange}
                   className="profile-input"
                 />
@@ -142,10 +148,9 @@ function Profile() {
           ) : (
             <div>
               <p className="profile-value"><strong>Email:</strong> {profile.email}</p>
-              <p className="profile-value"><strong>Phone Number:</strong> {profile.phoneNumber}</p>
-              <p className="profile-value"><strong>First Name:</strong> {profile.firstName}</p>
-              <p className="profile-value"><strong>Last Name:</strong> {profile.lastName}</p>
-              <p className="profile-value"><strong>Bio:</strong> {profile.bio}</p>
+              <p className="profile-value"><strong>Phone Number:</strong> {profile.phone_number}</p>
+              <p className="profile-value"><strong>First Name:</strong> {profile.first_name}</p>
+              <p className="profile-value"><strong>Last Name:</strong> {profile.last_name}</p>
               <button onClick={toggleEdit} className="profile-button">
                 Edit Profile
               </button>

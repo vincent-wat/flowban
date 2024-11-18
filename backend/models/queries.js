@@ -12,6 +12,7 @@ const updateUser = `
   WHERE id = $6
   RETURNING *;
 `;
+const getcurrUser = 'SELECT id, email, phone_number, first_name, last_name FROM users WHERE id = $1';
 
 // Finds a user using their ID
 const findUser = `
@@ -66,6 +67,7 @@ module.exports = {
   deleteUser,
   updateUser,
   findUser,
+  getcurrUser,
   // boards exports
   getUserBoards,
   getAllBoards,

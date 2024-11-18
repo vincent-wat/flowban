@@ -4,6 +4,7 @@
 const controller = require('../Controllers/UserController');
 const router = require("express").Router();
 const validInfo = require("../middleware/validInfo");
+const authenticateToken = require('../middleware/authMiddleware');
 
 //Default route
 router.get("/", controller.getUsers); // get all users
@@ -19,7 +20,6 @@ router.get("/email/:email", controller.getUserByEmail); // get user by email
 
 // update User Profile validation of user informtion
 const { body, validationResult } = require('express-validator');
-const { updateUserProfile } = require('../Controllers/UserController');
 
 const validateUpdateUser = [
     body('email').optional().isEmail().withMessage('Must be a valid email'),
@@ -35,7 +35,10 @@ const validateUpdateUser = [
     next();
   },
 ];
+router.put('/id/:id', validateUpdateUser, controller.updateUserProfile);
 
-router.put('/id/:id', validateUpdateUser, updateUserProfile);
+//get user information
+router.get('/me', authenticateToken, controller.getCurrentUserProfile);
+
 
 module.exports = router;

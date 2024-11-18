@@ -136,6 +136,25 @@ async function updateUserProfile(req, res) {
     return res.status(500).json({ message: "Internal server error" });
   }
 }
+//grabing current user
+const getCurrentUserProfile = async (req, res) => {
+  const userId = req.user.id;
+  console.log("User ID from req.user:", userId);
+  try {
+    const result = await pool.query(queries.getcurrUser, [userId]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    return res.status(200).json(result.rows[0]);
+  } catch (error) {
+    console.error('Error fetching user profile:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+
 
 //Delete a user
 async function deleteUser(req, res) {
@@ -156,4 +175,5 @@ module.exports = {
   getUserByID,
   getUserByEmail,
   loginUser,
+  getCurrentUserProfile,
 };
