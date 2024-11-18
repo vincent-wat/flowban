@@ -83,7 +83,7 @@ const SignUpPage = () => {
       localStorage.setItem("token", response.data.jwtToken);
       console.log(JSON.stringify(response));
       setSubmitted(true);
-      navigate("/");
+      navigate("/dashboard");
     } catch (e) {
       console.error(e.message);
     }
