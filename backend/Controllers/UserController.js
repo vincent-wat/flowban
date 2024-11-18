@@ -62,7 +62,12 @@ async function postUser(req, res) {
     const jwtToken = jwtGenerator(result.rows[0].user_id);
 
     console.log("User Inserted");
-    res.status(201).json({ user: result.rows[0], jwtToken });
+    res.status(201).json({
+      message: 'User registered successfully',
+      user: result.rows[0],
+      jwtToken,
+    });
+    
   } catch (err) {
     console.error(err.message);
   }
@@ -78,18 +83,21 @@ async function loginUser(req, res) {
     ]);
 
     if (user.rows.length === 0) {
-      return res.status(401).json("Invalid Credential");
+      return res.status(401).json({ message: "Invalid credentials" });
     }
 
     const validPassword = await bcrypt.compare(password, user.rows[0].password);
 
     if (!validPassword) {
-      return res.status(401).json("Invalid Credential");
+      return res.status(401).json({ message: "Invalid credentials" });
     }
 
     const jwtToken = jwtGenerator(user.rows[0].id);
     console.log("User logged in");
-    return res.json({ jwtToken });
+    return res.status(200).json({
+      message: "Login successful",
+      jwtToken,
+    });
   } catch (err) {
     console.error(err.message);
     res.status(500).json({ error: "Server error" });
@@ -160,12 +168,19 @@ const getCurrentUserProfile = async (req, res) => {
 async function deleteUser(req, res) {
   try {
     const { id } = req.params;
-    const deleteUser = await pool.query(queries.deleteUser, [id]);
-    res.json("A user was deleted");
+    const result = await pool.query(queries.deleteUser, [id]);
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.status(200).json({ message: 'User deleted successfully' });
   } catch (err) {
     console.error(err.message);
+    res.status(500).json({ message: 'Server error' });
   }
 }
+
 
 module.exports = {
   getUsers,
