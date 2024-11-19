@@ -35,7 +35,7 @@ const validateUpdateUser = [
     next();
   },
 ];
-router.put('/id/:id', validateUpdateUser, controller.updateUserProfile);
+router.put('/id/me', validateUpdateUser, controller.updateUserProfile);
 
 //get user information
 router.get('/me', authenticateToken, controller.getCurrentUserProfile);

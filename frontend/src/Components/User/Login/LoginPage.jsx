@@ -38,7 +38,7 @@ const LoginPage = () => {
             console.log(response.data);
             localStorage.setItem("token", response.data.jwtToken);
             setSubmitted(true);
-            navigate("/");
+            navigate("/dashboard");
         } catch (e) {
             console.error(e.message);
             setError("Invalid credentials");
