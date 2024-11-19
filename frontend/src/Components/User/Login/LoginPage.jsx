@@ -30,21 +30,24 @@ const LoginPage = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setError(""); // Clear any previous error message
+        setSubmitted(false); // Reset submission state
+
         try {
             const response = await axios.post("/api/users/login", {
                 email: formData.email,
                 password: formData.password,
             });
+            // Successful login
             console.log(response.data);
             localStorage.setItem("token", response.data.jwtToken);
-            setSubmitted(true);
+            setSubmitted(true); // Set submitted state to true only on successful login
             navigate("/dashboard");
         } catch (e) {
+            // Handle login failure
             console.error(e.message);
-            setError("Invalid credentials");
+            setError("Invalid credentials. Please try again.");
         }
-        setError("");
-        setSubmitted(true);
     };
 
     return (
@@ -79,7 +82,12 @@ const LoginPage = () => {
                 </div>
                 <button type='submit'>Login</button>
                 {submitted && (
-                    <p style={{ color: "green" }}>Form submitted successfully!</p>
+                    <p style={{ color: "white" }}>Login successful! Redirecting...</p>
+                )}
+                {error && (
+                    <p style={{ color: "white", marginTop: "10px", marginBottom: "10px" }}>
+                        {error}
+                    </p>
                 )}
                 <div className="register">
                     <p>Don't have an account? <a href="/signup">Register</a></p>
