@@ -1,10 +1,21 @@
-import React from 'react';
-import { Link, useMatch, useResolvedPath } from 'react-router-dom';
-import './NavbarAlt.css';
+import React, { useState } from 'react';
+import { Link, useMatch, useResolvedPath, useNavigate } from 'react-router-dom';
+import './NavbarLayout.css';
 import { isAuthenticated } from '../../utils/auth';
 
 function Layout({ children }) {
   const authenticated = isAuthenticated();
+  const navigate = useNavigate();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  function handleLogout() {
+    localStorage.removeItem('token');
+    navigate("/");
+  }
+
+  function toggleDropdown() {
+    setIsDropdownOpen((prev) => !prev);
+  }
 
   return (
     <div style={{ width: '100vw', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -12,19 +23,30 @@ function Layout({ children }) {
       <header>
         <nav className="navbar">
           <Link to="/" className="logo">Flowban</Link>
-        <ul className="nav-links">
-         {!authenticated && <CustomLink to="/login">Login</CustomLink>}
-         {!authenticated && <CustomLink to="/signup">Signup</CustomLink>}
-         <CustomLink to="/profile">Profile</CustomLink>
-         <CustomLink to="/kanban">Kanban</CustomLink>
-         <CustomLink to="/dashboard">Dashboard</CustomLink>
-         {authenticated && (
-              <li>
-                <button onClick={handleLogout}>Logout</button>
+          <ul className="nav-links">
+            {!authenticated && <CustomLink to="/login">Login</CustomLink>}
+            {!authenticated && <CustomLink to="/signup">Signup</CustomLink>}
+            <CustomLink to="/dashboard">Dashboard</CustomLink>
+
+            {authenticated && (
+              <li className="profile-menu">
+                <button onClick={toggleDropdown} className="profile-button">
+                  Profile
+                </button>
+                {isDropdownOpen && (
+                  <ul className="dropdown-menu">
+                    <li>
+                      <Link to="/profile/settings">Settings</Link>
+                    </li>
+                    <li>
+                      <button onClick={handleLogout}>Logout</button>
+                    </li>
+                  </ul>
+                )}
               </li>
             )}
-        </ul>
-    </nav>{/* Replace with your actual navbar component or links */}
+          </ul>
+        </nav>
       </header>
 
       <main style={{ flex: '1', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
@@ -35,11 +57,12 @@ function Layout({ children }) {
         <p>&copy; 2024 Flowban. All rights reserved.</p>
       </footer>
     </div>
-)};
+  );
+}
 
 function CustomLink({ to, children, ...props }) {
-  const resolvedPath = useResolvedPath(to)
-  const isActive = useMatch({ path: resolvedPath.pathname, end: true })
+  const resolvedPath = useResolvedPath(to);
+  const isActive = useMatch({ path: resolvedPath.pathname, end: true });
 
   return (
     <li className={isActive ? "active" : ""}>
@@ -47,12 +70,7 @@ function CustomLink({ to, children, ...props }) {
         {children}
       </Link>
     </li>
-  )
-}
-
-function handleLogout() {
-  localStorage.removeItem('token');
-  window.location.reload();
+  );
 }
 
 export default Layout;
