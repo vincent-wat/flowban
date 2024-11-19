@@ -36,10 +36,14 @@ function Layout({ children }) {
                 {isDropdownOpen && (
                   <ul className="dropdown-menu">
                     <li>
-                      <Link to="/profile/settings">Settings</Link>
+                      <button className="dropdown-item" onClick={() => navigate('/profile/settings')}>
+                        Settings
+                      </button>
                     </li>
                     <li>
-                      <button onClick={handleLogout}>Logout</button>
+                      <button className="dropdown-item" onClick={handleLogout}>
+                        Logout
+                      </button>
                     </li>
                   </ul>
                 )}
