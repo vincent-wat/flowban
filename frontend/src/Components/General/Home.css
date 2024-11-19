@@ -1,47 +1,68 @@
+/* General Layout */
 .home-container {
-    padding: 20px;
-    text-align: center;
-    background-color: #e5e8e7; 
-    min-height: 50vh; 
-  }
-  
-  .home-header {
-    background-color: #C51D34;
-    color: white;
-    padding: 40px 0;
-  }
-  
-  .home-header h1 {
-    margin: 0;
-    font-size: 36px;
-  }
-  
-  .home-header p {
-    margin-top: 10px;
-    font-size: 18px;
-  }
-  
-  .home-content {
-    margin-top: 40px;
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-  }
-  
-  .home-section {
-    width: 30%;
-    padding: 20px;
-    background-color: #f8f9fa;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  }
-  
-  .home-section h2 {
-    font-size: 24px;
-    color: #C51D34;
-  }
-  
-  .home-section p {
-    font-size: 16px;
-  }
-  
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 60px 20px;
+  background-color: #f1f1f1; /* Light background for modern look */
+  min-height: 100vh;
+}
+
+/* Left Content (Text and Button) */
+.left-content {
+  flex: 1;
+  padding: 20px;
+  max-width: 600px;
+}
+
+.title {
+  font-size: 36px;
+  color: #333;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.description {
+  font-size: 18px;
+  color: #555;
+  margin-bottom: 30px;
+  line-height: 1.6;
+}
+
+.get-started-btn {
+  display: inline-flex;
+  align-items: center;
+  background-color: #C51D34; /* Main brand color */
+  color: white;
+  border: none;
+  padding: 15px 25px;
+  font-size: 18px;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: background-color 0.3s ease-in-out;
+  font-weight: bold;
+}
+
+.get-started-btn:hover {
+  background-color: #a3152e; /* Slightly darker red for hover */
+}
+
+.get-started-btn svg {
+  margin-left: 10px;
+  font-size: 20px;
+}
+
+/* Right Content (Graphic or Illustration) */
+.right-content {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.graphic-image {
+  max-width: 500px; /* Adjust size of graphic */
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}
