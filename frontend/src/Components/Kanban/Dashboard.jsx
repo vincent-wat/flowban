@@ -1,4 +1,4 @@
-import { FaSearch, FaRegFileAlt, FaEllipsisV } from "react-icons/fa";
+import { FaSearch, FaRegFileAlt, FaEllipsisV, FaPlus } from "react-icons/fa";
 import "./Dashboard.css";
 import React, { useEffect, useState } from 'react';
 
@@ -26,10 +26,22 @@ export const Dashboard = () => {
   // Filter boards based on the search term
   const filteredBoards = boards.filter(board =>
     board.name.toLowerCase().includes(searchTerm.toLowerCase())
-  ).sort((a, b) => b.id - a.id); //Sorts by highest to lowest id, should change to date later
+  ).sort((a, b) => b.id - a.id); // Sorts by highest to lowest id
+
 
   return (
     <div className="container">
+      {/* Create New Board Button */}
+      <div className="plus-wrapper">
+        <button
+          className="plus-button"
+        >
+         <FaPlus className="plus-icon" />
+          <span>New Board</span>
+        </button>
+      </div>
+
+      {/* Search bar */}
       <div className="input-wrapper">
         <FaSearch id="search-icon" />
         <input
@@ -38,6 +50,8 @@ export const Dashboard = () => {
           onChange={(e) => setSearchTerm(e.target.value)} 
         />
       </div>
+
+      {/* Boards */}
       <div className="board-row">
         {filteredBoards.length === 0 ? (
           <p>No boards match your search.</p>
