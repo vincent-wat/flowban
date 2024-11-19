@@ -65,3 +65,45 @@
 .nav-links a:not(:hover)::after {
     transition: width 0.5s ease 0.1s, left 0.5s ease;
 }
+.profile-menu {
+    position: relative;
+  }
+  
+  .profile-button {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-size: 1rem;
+  }
+  
+  .dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background-color: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    list-style: none;
+    padding: 10px;
+    margin: 0;
+    z-index: 1000;
+  }
+  
+  .dropdown-menu li {
+    margin: 5px 0;
+  }
+  
+  .dropdown-menu a,
+  .dropdown-menu button {
+    text-decoration: none;
+    color: #333;
+    cursor: pointer;
+    border: none;
+    background: none;
+  }
+  
+  .dropdown-menu button:hover,
+  .dropdown-menu a:hover {
+    color: #C51D34;
+  }
+  
