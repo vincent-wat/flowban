@@ -69,8 +69,8 @@ const SignUpPage = () => {
     }
     // Where we use axios to add a new user to the database
     try {
-      console.log(formData);
-      console.log("user url: " + USER_URL);
+      //console.log(formData);
+      //console.log("user url: " + USER_URL);
       const response = await axios.post(USER_URL, {
         // right side must be the attribute name is database
         email: formData.email,
@@ -79,9 +79,10 @@ const SignUpPage = () => {
         first_name: formData.firstName,
         last_name: formData.lastName,
       });
-      console.log(response.data);
+      //console.log(response.data);
       localStorage.setItem("token", response.data.jwtToken);
-      console.log(JSON.stringify(response));
+      //console.log(JSON.stringify(response));
+      console.log("Request Submitted!");
       setSubmitted(true);
       navigate("/dashboard");
     } catch (e) {

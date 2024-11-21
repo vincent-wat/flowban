@@ -30,13 +30,13 @@ function Layout({ children }) {
 
             {authenticated && (
               <li className="profile-menu">
-                <button onClick={toggleDropdown} className="profile-button">
+                <button onClick={toggleDropdown} className="profile-button-nav">
                   Profile
                 </button>
                 {isDropdownOpen && (
                   <ul className="dropdown-menu">
                     <li>
-                      <button className="dropdown-item" onClick={() => navigate('/profile/settings')}>
+                      <button className="dropdown-item" onClick={() => navigate('/profile')}>
                         Settings
                       </button>
                     </li>

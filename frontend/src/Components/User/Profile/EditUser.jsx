@@ -53,7 +53,6 @@ function Profile() {
         throw new Error('No token found. Please log in.');
       }
 
-      // Construct payload dynamically
       const payload = {
         email: profile.email,
         phone_number: profile.phone_number,
@@ -62,17 +61,15 @@ function Profile() {
       };
 
       if (profile.password) {
-        payload.password = profile.password;  // Only include password if it has been changed
+        payload.password = profile.password; 
       }
 
-      // Send updated profile data to the backend
       const response = await axios.put('http://localhost:3000/api/users/id/me', payload, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
       });
 
-      // Update profile state with response data
       setProfile(response.data);
       setIsEditing(false);
       console.log('Profile updated:', response.data);
@@ -162,9 +159,7 @@ function Profile() {
               <p className="profile-value"><strong>Phone Number:</strong> {profile.phone_number}</p>
               <p className="profile-value"><strong>First Name:</strong> {profile.first_name}</p>
               <p className="profile-value"><strong>Last Name:</strong> {profile.last_name}</p>
-              <button onClick={toggleEdit} className="profile-button">
-                Edit Profile
-              </button>
+              <button onClick={toggleEdit}className="profile-button"style={{ backgroundColor: 'red', color: 'white' }}>Edit Profile</button>
             </div>
           )}
         </div>
