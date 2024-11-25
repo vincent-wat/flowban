@@ -10,6 +10,36 @@ body {
     padding: 20px;
 }
 
+.plus-wrapper {
+    position: absolute; /* Position the button */
+    top: 100px;         /* Adjust vertical position */
+    left: 40px;         /* Adjust horizontal position */
+  }
+
+.plus-button {
+    background-color: #C51D34;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 16px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.2s ease-in-out;
+    gap: 10px;
+  }
+  
+  .plus-button:hover {
+    background-color: #a61a2d;
+  }
+  
+  .plus-icon {
+    font-size: 18px;
+  }
+  
 .input-wrapper {
     display: flex;
     align-items: center;

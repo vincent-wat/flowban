@@ -45,7 +45,7 @@ async function postUser(req, res) {
   try {
     const { email, password, phone_number, first_name, last_name, user_role } =
       req.body;
-
+    const role = user_role && Array.isArray(user_role) ? user_role : ['user'];
     // Hash the password
     const saltRound = 10;
     const salt = await bcrypt.genSalt(saltRound);
@@ -57,7 +57,7 @@ async function postUser(req, res) {
       phone_number || null,
       first_name,
       last_name,
-      user_role || null,
+      role,
     ]);
     const jwtToken = jwtGenerator(result.rows[0].id);
 

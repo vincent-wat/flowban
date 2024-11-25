@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from './Sidebar';
 import './EditUser.css';
-import axios from 'axios';  // Import axios if using it
+import axios from 'axios'; 
 
 function Profile() {
   const [profile, setProfile] = useState({
     email: '',
     password: '',
-    phoneNumber: '',
-    firstName: '',
-    lastName: '',
+    phone_number: '',
+    first_name: '',
+    last_name: '',
   });
+
   const [isEditing, setIsEditing] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
@@ -52,19 +53,26 @@ function Profile() {
         throw new Error('No token found. Please log in.');
       }
 
-      const response = await axios.put(`http://localhost:3000/api/users/id/me`, {
+      const payload = {
         email: profile.email,
-        password: profile.password,
-        phone_number: profile.phoneNumber,
-        first_name: profile.firstName,
-        last_name: profile.lastName,
-      }, {
+        phone_number: profile.phone_number,
+        first_name: profile.first_name,
+        last_name: profile.last_name,
+      };
+
+      if (profile.password) {
+        payload.password = profile.password; 
+      }
+
+      const response = await axios.put('http://localhost:3000/api/users/id/me', payload, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
       });
-      console.log('Profile updated:', response.data);
+
+      setProfile(response.data);
       setIsEditing(false);
+      console.log('Profile updated:', response.data);
     } catch (error) {
       console.error('Error updating profile:', error);
     }
@@ -115,7 +123,7 @@ function Profile() {
                 Phone Number:
                 <input
                   type="tel"
-                  name="phoneNumber"
+                  name="phone_number"
                   value={profile.phone_number}
                   onChange={handleChange}
                   className="profile-input"
@@ -125,7 +133,7 @@ function Profile() {
                 First Name:
                 <input
                   type="text"
-                  name="firstName"
+                  name="first_name"
                   value={profile.first_name}
                   onChange={handleChange}
                   className="profile-input"
@@ -135,7 +143,7 @@ function Profile() {
                 Last Name:
                 <input
                   type="text"
-                  name="lastName"
+                  name="last_name"
                   value={profile.last_name}
                   onChange={handleChange}
                   className="profile-input"
@@ -151,9 +159,7 @@ function Profile() {
               <p className="profile-value"><strong>Phone Number:</strong> {profile.phone_number}</p>
               <p className="profile-value"><strong>First Name:</strong> {profile.first_name}</p>
               <p className="profile-value"><strong>Last Name:</strong> {profile.last_name}</p>
-              <button onClick={toggleEdit} className="profile-button">
-                Edit Profile
-              </button>
+              <button onClick={toggleEdit}className="profile-button"style={{ backgroundColor: 'red', color: 'white' }}>Edit Profile</button>
             </div>
           )}
         </div>
