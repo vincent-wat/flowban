@@ -9,36 +9,13 @@
 - create your database in local machine for now
 - check for new install under at the bottom of this file
 - Create a .env file and add the following to the .env file:
-DB_NAME=FlowBan
-DB_USER=
-DB_PASSWORD=
-DB_HOST=localhost
-DB_DIALECT=postgres
-PORT=5432
-
-- change DB_NAME to whatever you name your db and add in information for user and password
-- Once you complete modifing the .env run this command : node testConnection.js
-
-### New installs / packages 
-- npm install sequelize pg pg-hstore
-- npm install dotenv
-------
 
 
-
-##### frontend
-- cd frontend
-- npm install
-- npm start
 ### color scheme
 - C51D34 Red
 - 2E2E30 Dark Gray
 - 808080 Light Gray
 - F5F5F5 White
-### New installs / packages
-- npm install react-router-dom
-- npm i axios
-- npm install --save jwt-generator
 
 ### Database Commands
 
@@ -69,18 +46,4 @@ CREATE TABLE tasks (
     title VARCHAR(100),
     description TEXT NOT NULL
 );
-
-## Commands to add some basic users
-INSERT INTO users (email, password, phone_number, first_name, last_name, user_role)
-VALUES 
-('alice.smith@example.com', 'password123', '123-456-7890', 'Alice', 'Smith', ARRAY['admin']),
-('bob.jones@example.com', 'password456', '234-567-8901', 'Bob', 'Jones', ARRAY['user']),
-('carol.white@example.com', 'password789', '345-678-9012', 'Carol', 'White', ARRAY['editor']),
-('dave.miller@example.com', 'password321', '456-789-0123', 'Dave', 'Miller', ARRAY['admin']),
-('eve.johnson@example.com', 'password654', '567-890-1234', 'Eve', 'Johnson', ARRAY['user']),
-('frank.brown@example.com', 'password987', '678-901-2345', 'Frank', 'Brown', ARRAY['editor']),
-('grace.wilson@example.com', 'password135', '789-012-3456', 'Grace', 'Wilson', ARRAY['user']),
-('henry.moore@example.com', 'password246', '890-123-4567', 'Henry', 'Moore', ARRAY['admin']),
-('irene.taylor@example.com', 'password369', '901-234-5678', 'Irene', 'Taylor', ARRAY['user']),
-('jackie.anderson@example.com', 'password111', '012-345-6789', 'Jackie', 'Anderson', ARRAY['editor']);
 
