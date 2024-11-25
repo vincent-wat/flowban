@@ -4,7 +4,7 @@ const queries = require("../models/queries");
 // get all columns from database
 async function getAllColumns(req, res) {
   try {
-    const allBoards = await pool.query(queries.getAllBoards);
+    const allBoards = await pool.query(queries.getAllColumns);
     res.json(allBoards.rows);
   } catch (err) {
     res
