@@ -12,7 +12,7 @@ router.put('/:id', controller.updateBoardName);
 
 router.delete('/:id', controller.deleteBoard); 
 
-//router.post("/", controller.postUsers);
+router.post("/", controller.addBoard);
 
 //router.delete("/:id", controller.deleteUser);
 

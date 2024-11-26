@@ -31,6 +31,7 @@ const getAllBoards = "SELECT * FROM boards";
 const deleteBoardQuery = "DELETE FROM boards WHERE id = $1 RETURNING *";
 const updateBoardNameQuery =
   "UPDATE boards SET name = $1 WHERE id = $2 RETURNING *";
+const addBoard = "INSERT INTO boards (name) VALUES ($1) RETURNING *";
 
 // Column Queries
 const getAllColumns = "SELECT * FROM columns";
@@ -73,6 +74,7 @@ module.exports = {
   getAllBoards,
   deleteBoardQuery,
   updateBoardNameQuery,
+  addBoard,
   // columns exports
   getAllColumns,
   getColumn,

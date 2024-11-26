@@ -61,6 +61,7 @@ const KanbanBoard = () => {
     }
   };
 
+  // fetch task data
   const fetchTaskData = async () => {
     try {
       setLoading(true);
@@ -116,6 +117,10 @@ const KanbanBoard = () => {
         console.error('Error adding a new task', err);
       }
     }
+  };
+
+  const editColumn = async() => {
+    
   };
 
 

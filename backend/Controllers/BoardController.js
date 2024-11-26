@@ -68,9 +68,23 @@ const deleteBoard = async (req, res) => {
   }
 };
 
+// add a board
+const addBoard = async (req, res) => {
+  try {
+    const {name} = req.body;
+    const result = await pool.query(queries.addBoard,[name]);
+    res.json(result.rows[0]);
+  } catch (err) {
+    res
+    .status(500)
+    .json({ error: "Internal Server Error", message: err.message });
+  }
+}
+ 
   module.exports = {
     getUserBoards,
     getAllBoards,
     updateBoardName,
-    deleteBoard
+    deleteBoard,
+    addBoard,
   };
