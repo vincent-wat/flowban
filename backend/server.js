@@ -6,7 +6,7 @@ const userRoutes = require("./routes/userRoutes");
 const boardRoutes = require("./routes/boardRoutes");
 const taskRoutes = require("./routes/tasksRoutes");
 const columnRoutes = require("./routes/columnRoutes");
-
+const formTemplateRoutes = require("./routes/formTemplateRoutes"); 
 const pool = require("./models/db");
 const cors = require("cors");
 
@@ -37,6 +37,8 @@ app.use("/api/columns", columnRoutes);
 // routes for tasks
 app.use("/api/tasks", taskRoutes);
 
+app.use("/api/forms", formTemplateRoutes);
+
 app.post("/signuptest", (req, res) => {
   try {
     const { input } = req.body;
@@ -46,6 +48,12 @@ app.post("/signuptest", (req, res) => {
     console.error(error.message);
   }
 });
+
+
+
+
+
+
 
 if (process.env.NODE_ENV !== 'test') {
   app.listen(PORT, () => {

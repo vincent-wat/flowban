@@ -58,6 +58,26 @@ const updateTaskDescription =
   "UPDATE tasks SET description = $1 WHERE id = $2 RETURING *";
 const updateTaskTitle = "UPDATE tasks SET title = $1 WHERE id = $2 RETURING *";
 
+
+
+//FromsTemplate Queries
+
+const createTemplate = `
+INSERT INTO forms_templates (name, description, pdf_file_path, created_by, fields_metadata)
+VALUES ($1, $2, $3, $4, $5) RETURNING *;
+`;
+const getallTemplate ='SELECT * FROM forms_templates';
+const getTemplatebyid = 'SELECT * FROM forms_templates WHERE id = $1';
+
+const updateTemplate = `
+UPDATE forms_templates
+SET name = $1, description = $2, pdf_file_path = $3, fields_metadata = $4, updated_at = NOW()
+WHERE id = $5 RETURNING *;
+`;
+const deleteTemplate = 'DELETE FROM forms_templates WHERE id = $1 RETURNING *';
+
+
+
 module.exports = {
   // users exports
   getBoards,
@@ -92,4 +112,10 @@ module.exports = {
   addTask,
   updateTaskDescription,
   updateTaskTitle,
+  //Formtemplate
+  createTemplate,
+  getallTemplate,
+  getTemplatebyid,
+  updateTemplate,
+  deleteTemplate
 };
