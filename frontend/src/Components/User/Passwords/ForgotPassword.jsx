@@ -30,6 +30,7 @@ const ForgotPassword = () => {
         setSubmitted(false);
 
         try {
+            const response = await axios.post("/api/users/forgot-password")
 
         } catch (e) {
             console.error(e.message);

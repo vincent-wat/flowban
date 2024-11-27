@@ -3,6 +3,7 @@ const users = require("../models/user");
 const pool = require("../models/db");
 const queries = require("../models/queries");
 const jwtGenerator = require("../utils/jwtGenerator");
+const nodemailer = require("nodemailer");
 
 // this is to get all users from the local database
 // this can then be used to create more functions for database queries
@@ -104,6 +105,39 @@ async function loginUser(req, res) {
   }
 }
 
+async function forgotPassword(req, res) {
+  const { email } = req.body;
+  try {
+    const user = await pool.query(queries.findUserByEmail, [email]);
+    if (user.rows.length === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    // Send email with password reset link
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      host: "smtp.gmail.com",
+      port: 587,
+      secure: false,
+      auth: {
+        user: process.env.EMAIL,
+        pass: process.env.EMAIL_PASSWORD,
+      },
+    });
+
+    const info = await transporter.sendMail({
+      from: 'FlowBan <workflowban@gmail.com>',
+      to: email,
+      subject: "Password Reset",
+      text: "Click the link to reset your password",
+    });
+
+    res.status(200).json({ message: "Password reset email sent" });
+  } catch (error) {
+    console.error("Error resetting password:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 //Update a user profile
 const { findUser, updateUser } = require("../models/queries");
 
@@ -191,4 +225,5 @@ module.exports = {
   getUserByEmail,
   loginUser,
   getCurrentUserProfile,
+  forgotPassword,
 };
