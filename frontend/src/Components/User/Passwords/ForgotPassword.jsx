@@ -30,7 +30,11 @@ const ForgotPassword = () => {
         setSubmitted(false);
 
         try {
-            const response = await axios.post("/api/users/forgot-password")
+            const response = await axios.post("/api/users/forgot-password", {
+                email: formData.email,
+            });
+            console.log(response.data);
+            setSubmitted(true);
 
         } catch (e) {
             console.error(e.message);
@@ -52,6 +56,14 @@ const ForgotPassword = () => {
                     />
                 </div>
                 <button type="submit">Submit</button>
+                {submitted && (
+                    <p style={{ color: "white" }}>We will email you the link to reset the password.</p>
+                )}
+                {error && (
+                    <p style={{ color: "white", marginTop: "10px", marginBottom: "10px" }}>
+                        {error}
+                    </p>
+                )}
                 {error && <p className="error-message">{error}</p>}
             </form>
         </div>
