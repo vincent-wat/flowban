@@ -26,8 +26,12 @@ CREATE TABLE users (
     phone_number VARCHAR(20),
     first_name VARCHAR(50) NOT NULL,
     last_name VARCHAR(50) NOT NULL,
-    user_role VARCHAR(50)[]
+    user_role VARCHAR(50)[],
+    password_reset_token VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
 
 CREATE TABLE boards (
     id SERIAL PRIMARY KEY,

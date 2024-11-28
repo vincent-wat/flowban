@@ -5,7 +5,8 @@ import axios from '../../../axios';
 import useAuth from '../../../hooks/useAuth';
 
 const ForgotPassword = () => {
-
+    useAuth();
+    
     const [formData, setFormData] = useState({
         email: "",
     });
@@ -35,6 +36,9 @@ const ForgotPassword = () => {
             });
             console.log(response.data);
             setSubmitted(true);
+            setTimeout(() => {
+                navigate("/");
+              }, 5000);
 
         } catch (e) {
             console.error(e.message);

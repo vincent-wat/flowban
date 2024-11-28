@@ -11,6 +11,8 @@ router.get("/", controller.getUsers); // get all users
 router.post("/register", controller.postUser); // create a new user
 router.post("/login", validInfo, controller.loginUser); // login user
 router.post("/forgot-password", controller.forgotPassword); // forgot password
+router.put("/reset-password", controller.resetPassword); // reset password
+router.get("/token/:token", controller.getUserByResetToken); // get user by token
 
 //Routes with /id/:id
 router.get("/id/:id", controller.getUserByID); // get user by ID
