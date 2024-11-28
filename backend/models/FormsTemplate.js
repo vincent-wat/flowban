@@ -1,4 +1,3 @@
-//Template model of form data
 const { DataTypes } = require('sequelize');
 const sequelize = require('../db');
 

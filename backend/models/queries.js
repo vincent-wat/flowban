@@ -60,7 +60,7 @@ const updateTaskTitle = "UPDATE tasks SET title = $1 WHERE id = $2 RETURING *";
 
 
 
-//FromsTemplate Queries
+//FromsTemplate 
 
 const createTemplate = `
 INSERT INTO forms_templates (name, description, pdf_file_path, created_by, fields_metadata)
@@ -69,12 +69,65 @@ VALUES ($1, $2, $3, $4, $5) RETURNING *;
 const getallTemplate ='SELECT * FROM forms_templates';
 const getTemplatebyid = 'SELECT * FROM forms_templates WHERE id = $1';
 
-const updateTemplate = `
+const updateTemplate =  `
 UPDATE forms_templates
 SET name = $1, description = $2, pdf_file_path = $3, fields_metadata = $4, updated_at = NOW()
 WHERE id = $5 RETURNING *;
 `;
 const deleteTemplate = 'DELETE FROM forms_templates WHERE id = $1 RETURNING *';
+
+
+//FormInstances
+const createFormInstance =  `
+INSERT INTO form_instances (template_id, submitted_by, status, pdf_file_path)
+VALUES ($1, $2, $3, $4) RETURNING *
+`;
+const getFormInstanceById = `
+SELECT * FROM form_instances WHERE id = $1
+`;
+const getAllFormInstances = `
+SELECT * FROM form_instances
+`;
+const updateFormInstance = `
+UPDATE form_instances
+SET status = $1, pdf_file_path = $2, updated_at = NOW()
+WHERE id = $3 RETURNING *
+`;
+const deleteFormInstance = `
+DELETE FROM form_instances WHERE id = $1 RETURNING *
+`;
+
+//FormFieldValue
+const createFormFieldValue = `
+  INSERT INTO form_field_values (form_instance_id, field_name, field_value)
+  VALUES ($1, $2, $3) RETURNING *
+`;
+
+const getFormFieldValuesByInstanceId = `
+  SELECT * FROM form_field_values WHERE form_instance_id = $1
+`;
+
+const updateFormFieldValue = `
+  UPDATE form_field_values
+  SET field_value = $1, updated_at = NOW()
+  WHERE id = $2 RETURNING *
+`;
+
+const deleteFormFieldValue = `
+  DELETE FROM form_field_values WHERE id = $1 RETURNING *
+`;
+
+
+
+//UserLog
+const createUserActionLog = `
+INSERT INTO user_actions_audit_logs (form_instance_id, user_id, action, field_name)
+VALUES ($1, $2, $3, $4) RETURNING *
+`;
+
+const getUserActionLogsByFormInstanceId = `
+SELECT * FROM user_actions_audit_logs WHERE form_instance_id = $1
+`;
 
 
 
@@ -117,5 +170,19 @@ module.exports = {
   getallTemplate,
   getTemplatebyid,
   updateTemplate,
-  deleteTemplate
+  deleteTemplate,
+  //FormInstance
+  createFormInstance,
+  getAllFormInstances,
+  getFormInstanceById,
+  updateFormInstance,
+  deleteFormInstance,
+  //FormFieldValue
+  createFormFieldValue,
+  getFormFieldValuesByInstanceId,
+  updateFormFieldValue,
+  deleteFormFieldValue,
+  //UserActionLogs
+  createUserActionLog,
+  getUserActionLogsByFormInstanceId,
 };

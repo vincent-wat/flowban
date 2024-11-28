@@ -7,6 +7,9 @@ const boardRoutes = require("./routes/boardRoutes");
 const taskRoutes = require("./routes/tasksRoutes");
 const columnRoutes = require("./routes/columnRoutes");
 const formTemplateRoutes = require("./routes/formTemplateRoutes"); 
+const formInstanceRoutes = require("./routes/formInstancesRoutes");
+const formFieldValueRoutes = require("./routes/formFieldValueRoutes");
+const userActionsLogs = require("./routes/userActionLogsRoutes");
 const pool = require("./models/db");
 const cors = require("cors");
 
@@ -37,7 +40,14 @@ app.use("/api/columns", columnRoutes);
 // routes for tasks
 app.use("/api/tasks", taskRoutes);
 
+//workflow 
 app.use("/api/forms", formTemplateRoutes);
+
+app.use("/api/formInstance", formInstanceRoutes);
+
+app.use("/api/formFieldValue", formFieldValueRoutes);
+
+app.use("/api/userActionsLogs", userActionsLogs); 
 
 app.post("/signuptest", (req, res) => {
   try {
