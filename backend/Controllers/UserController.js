@@ -3,6 +3,7 @@ const users = require("../models/user");
 const pool = require("../models/db");
 const queries = require("../models/queries");
 const jwtGenerator = require("../utils/jwtGenerator");
+const nodemailer = require("nodemailer");
 
 // this is to get all users from the local database
 // this can then be used to create more functions for database queries
@@ -38,6 +39,18 @@ async function getUserByEmail(req, res) {
     console.error(err.message);
   }
 }
+
+//Find user by token
+async function getUserByResetToken(req, res) {
+  try {
+    const { token } = req.params; 
+    const user = await pool.query(queries.findUserByResetToken, [token]);
+    res.json(user.rows[0]);
+  } catch (err) {
+    console.error(err.message);
+  }
+}
+
 
 //Create a new user
 async function postUser(req, res) {
@@ -103,6 +116,65 @@ async function loginUser(req, res) {
     res.status(500).json({ error: "Server error" });
   }
 }
+
+async function forgotPassword(req, res) {
+  const { email } = req.body;
+  try {
+    const user = await pool.query(queries.findUserByEmail, [email]);
+    if (user.rows.length === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    // Generate a password reset token
+    const jwtToken = jwtGenerator(user.rows[0].email);
+    console.log("Reset token:", jwtToken);
+
+    // Assign the token to the user
+    await pool.query(queries.insertResetToken, [jwtToken, email]);
+
+    // Create a password reset link
+    const resetLink = `http://localhost:3001/reset-password?token=${jwtToken}`;
+    
+    // Send email with password reset link
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      host: "smtp.gmail.com",
+      port: 587,
+      secure: false,
+      auth: {
+        user: process.env.EMAIL,
+        pass: process.env.EMAIL_PASSWORD,
+      },
+    });
+
+    const info = await transporter.sendMail({
+      from: 'FlowBan <workflowban@gmail.com>',
+      to: email,
+      subject: "Password Reset",
+      text: `Click the link to reset your password\n${resetLink}`,
+    });
+
+    res.status(200).json({ message: "Password reset email sent" });
+  } catch (error) {
+    console.error("Error resetting password:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+async function resetPassword(req, res) {
+  const { password, password_reset_token } = req.body;
+  try {
+    // Hash the password
+    const saltRound = 10;
+    const salt = await bcrypt.genSalt(saltRound);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    await pool.query(queries.resetPassword, [hashedPassword, password_reset_token]);
+    res.status(200).json({ message: "Password reset successfully" });
+  } catch (e) {
+    console.error("Error resetting password:", e);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
 
 //Update a user profile
 const { findUser, updateUser } = require("../models/queries");
@@ -189,6 +261,9 @@ module.exports = {
   updateUserProfile,
   getUserByID,
   getUserByEmail,
+  getUserByResetToken,
   loginUser,
   getCurrentUserProfile,
+  forgotPassword,
+  resetPassword,
 };
