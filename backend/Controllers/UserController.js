@@ -2,7 +2,7 @@ const bcrypt = require("bcrypt");
 const users = require("../models/user");
 const pool = require("../models/db");
 const queries = require("../models/queries");
-const jwtGenerator = require("../utils/jwtGenerator");
+const { jwtGenerator, jwtGeneratorExpiry } = require("../utils/jwtGenerator");
 const nodemailer = require("nodemailer");
 
 // this is to get all users from the local database
@@ -125,7 +125,7 @@ async function forgotPassword(req, res) {
       return res.status(404).json({ message: "User not found" });
     }
     // Generate a password reset token
-    const jwtToken = jwtGenerator(user.rows[0].email);
+    const jwtToken = jwtGeneratorExpiry(user.rows[0].email);
     console.log("Reset token:", jwtToken);
 
     // Assign the token to the user
