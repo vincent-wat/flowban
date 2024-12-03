@@ -104,7 +104,9 @@ const getFormInstanceById = `
 SELECT * FROM form_instances WHERE id = $1
 `;
 const getAllFormInstances = `
-SELECT * FROM form_instances
+SELECT fi.id, fi.status, ft.name AS template_name
+FROM form_instances fi
+JOIN forms_templates ft ON fi.template_id = ft.id;
 `;
 const updateFormInstance = `
 UPDATE form_instances
