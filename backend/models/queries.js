@@ -12,6 +12,19 @@ const updateUser = `
   WHERE id = $6
   RETURNING *;
 `;
+const insertResetToken = `
+  UPDATE users
+  SET password_reset_token = $1
+  WHERE email = $2
+`;
+
+// Reset password and delete reset token
+const resetPassword = `
+  UPDATE users
+  SET password = $1, password_reset_token = NULL, updated_at = NOW()
+  WHERE password_reset_token = $2
+  `;
+
 const getcurrUser = 'SELECT id, email, phone_number, first_name, last_name FROM users WHERE id = $1';
 
 // Finds a user using their ID
@@ -22,6 +35,11 @@ const findUser = `
 //Finds a user using their email
 const findUserByEmail = `
   SELECT * FROM users WHERE email = $1
+`;
+
+//Finds a user using their reset token
+const findUserByResetToken = `
+  SELECT * FROM users WHERE password_reset_token = $1
 `;
 
 // Board Queries
@@ -142,6 +160,9 @@ module.exports = {
   updateUser,
   findUser,
   getcurrUser,
+  insertResetToken,
+  findUserByResetToken,
+  resetPassword,
   // boards exports
   getUserBoards,
   getAllBoards,

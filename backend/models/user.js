@@ -39,6 +39,10 @@ const User = sequelize.define('User', {
     allowNull: false,
     defaultValue: 'User',
   },
+  password_reset_token: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
 }, {
   timestamps: true,
   createdAt: 'created_at',

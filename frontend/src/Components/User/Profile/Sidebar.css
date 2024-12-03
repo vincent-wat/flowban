@@ -38,5 +38,22 @@
   .sidebar-link:hover {
     text-decoration: underline;
   }
+
+  .sidebar-button {
+    background-color: grey; /* Match the red theme */
+    color: white; /* White text */
+    border: none; /* Remove default border */
+    padding: 10px 20px; /* Add padding */
+    text-align: left; /* Align text to the left */
+    width: 100%; /* Full width */
+    cursor: pointer; /* Pointer cursor on hover */
+    font-size: 16px; /* Font size */
+    display: block; /* Display as block */
+    text-decoration: none; /* Remove underline */
+  }
+  
+  .sidebar-button:hover {
+    background-color: black; /* Darker red on hover */
+  } 
   
   

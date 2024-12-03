@@ -10,6 +10,9 @@ import SignUpPage from "./Components/User/Sign_Up/SignUpPage";
 import Settings from "./Components/User/Profile/Settings";
 import Dashboard from "./Components/Kanban/Dashboard";
 import DashboardLayout from "./Components/Kanban/DashboardLayout"; // Import DashboardLayout
+import ForgotPassword from "./Components/User/Passwords/ForgotPassword";
+import ResetPassword from "./Components/User/Passwords/ResetPassword";
+import ErrorPage from "./Components/General/ErrorPage";
 
 function App() {
   const location = useLocation();
@@ -32,6 +35,9 @@ function App() {
             <Route path="/kanban" element={<KanbanBoard />} />
             <Route path="/signup" element={<SignUpPage />} />
             <Route path="/profile/settings" element={<Settings />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/error" element={<ErrorPage />} />
           </Routes>
         </Layout>
       )}

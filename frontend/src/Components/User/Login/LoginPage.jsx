@@ -78,7 +78,7 @@ const LoginPage = () => {
                 </div>
                 <div className="remember-forgot">
                     <label><input type='checkbox' />Remember Me</label>
-                    <a href="#">Forgot Password?</a>
+                    <a href="/forgot-password">Forgot Password?</a>
                 </div>
                 <button type='submit'>Login</button>
                 {submitted && (

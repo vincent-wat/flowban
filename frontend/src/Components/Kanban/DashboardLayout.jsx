@@ -8,8 +8,8 @@ function DashboardLayout({ children }) {
         <nav className="navbar">
           <Link to="/" className="logo">Flowban</Link>
           <ul className="nav-links">
-            <CustomLink to="/profile">Profile</CustomLink>
             <CustomLink to="/kanban">Kanban</CustomLink>
+            <CustomLink to="/profile">Profile</CustomLink>
           </ul>
         </nav>
       </header>
