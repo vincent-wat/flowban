@@ -64,7 +64,7 @@ function Profile() {
         payload.password = profile.password; 
       }
 
-      const response = await axios.put('http://localhost:3000/api/users/id/me', payload, {
+      const response = await axios.put('http://localhost:3000/api/users/me', payload, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },

@@ -7,7 +7,6 @@ const validInfo = require("../middleware/validInfo");
 const authenticateToken = require('../middleware/authMiddleware');
 
 //Default route
-router.get("/", controller.getUsers); // get all users
 router.post("/register", controller.postUser); // create a new user
 router.post("/login", validInfo, controller.loginUser); // login user
 router.post("/forgot-password", controller.forgotPassword); // forgot password
@@ -38,7 +37,7 @@ const validateUpdateUser = [
     next();
   },
 ];
-router.put('/id/me', validateUpdateUser, controller.updateUserProfile);
+router.put('/me', validateUpdateUser, controller.updateUserProfile);
 
 //get user information
 router.get('/me', authenticateToken, controller.getCurrentUserProfile);
