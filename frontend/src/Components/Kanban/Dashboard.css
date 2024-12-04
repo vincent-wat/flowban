@@ -10,36 +10,53 @@ body {
     padding: 20px;
 }
 
-.plus-wrapper {
-    position: absolute; /* Position the button */
-    top: 100px;         /* Adjust vertical position */
-    left: 40px;         /* Adjust horizontal position */
-  }
-
-.plus-button {
-    background-color: #C51D34;
-    color: white;
-    border: none;
-    border-radius: 20px;
-    padding: 10px 20px;
+.container {
     display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    align-items: center;
+    padding: 20px;
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+}
+
+.template-section {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 30px;
+    justify-content: center;
+}
+
+.template-card {
+    width: 150px;
+    height: 200px;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    font-size: 16px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    transition: background-color 0.2s ease-in-out;
-    gap: 10px;
-  }
-  
-  .plus-button:hover {
-    background-color: #a61a2d;
-  }
-  
-  .plus-icon {
-    font-size: 18px;
-  }
-  
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.template-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
+}
+
+.template-icon {
+    font-size: 50px;
+    margin-bottom: 15px;
+    color: #C51D34;
+}
+
+.new-board {
+    border: 2px dashed #C51D34;
+}
+
 .input-wrapper {
     display: flex;
     align-items: center;
@@ -78,15 +95,13 @@ input::placeholder {
     box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.15);
 }
 
-.container {
+.board-row {
+    width: 100%;
+    margin: 20px auto;
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    width: 100%;
+    gap: 5px;
     align-items: center;
-    padding: 20px;
-    max-height: calc(100vh - 40px);
-    overflow-y: auto;
 }
 
 .doc-button {
@@ -111,20 +126,6 @@ input::placeholder {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-.doc-button:focus {
-    outline: none;
-    border-color: #4285f4;
-}
-
-.board-row {
-    width: 100%;
-    margin: 20px auto;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-    align-items: center;
-}
-
 .ellipsis-icon {
     margin-left: 10px; 
     color: #C51D34;
@@ -134,4 +135,68 @@ input::placeholder {
 .board-name {
     text-align: left; 
     flex-grow: 1; 
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    width: 300px;
+    max-width: 100%;
+}
+
+.modal h2 {
+    margin-bottom: 15px;
+    font-size: 20px;
+    color: #333;
+}
+
+.modal input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    font-size: 16px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.modal-buttons {
+    display: flex;
+    justify-content: space-between;
+}
+
+.modal-buttons button {
+    padding: 10px 15px;
+    font-size: 16px;
+    cursor: pointer;
+    border: none;
+    border-radius: 4px;
+    transition: background-color 0.2s ease-in-out;
+}
+
+.modal-buttons button:hover {
+    opacity: 0.9;
+}
+
+.modal-buttons button:first-of-type {
+    background-color: #C51D34;
+    color: white;
+}
+
+.modal-buttons button:last-of-type {
+    background-color: #ccc;
 }

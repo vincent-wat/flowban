@@ -1,4 +1,3 @@
-// App.js
 import React from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 import Profile from "./Components/User/Profile/EditUser";
@@ -10,13 +9,9 @@ import SignUpPage from "./Components/User/Sign_Up/SignUpPage";
 import Settings from "./Components/User/Profile/Settings";
 import Dashboard from "./Components/Kanban/Dashboard";
 import DashboardLayout from "./Components/Kanban/DashboardLayout"; // Import DashboardLayout
-<<<<<<< Updated upstream
 import ForgotPassword from "./Components/User/Passwords/ForgotPassword";
 import ResetPassword from "./Components/User/Passwords/ResetPassword";
 import ErrorPage from "./Components/General/ErrorPage";
-=======
-import WorkflowDashboard from './Components/Forms/WorkFlowDashboard';
->>>>>>> Stashed changes
 
 function App() {
   const location = useLocation();
@@ -39,13 +34,9 @@ function App() {
             <Route path="/kanban" element={<KanbanBoard />} />
             <Route path="/signup" element={<SignUpPage />} />
             <Route path="/profile/settings" element={<Settings />} />
-<<<<<<< Updated upstream
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/error" element={<ErrorPage />} />
-=======
-            <Route path="/workflow-dashboard" element={<WorkflowDashboard/>} />
->>>>>>> Stashed changes
           </Routes>
         </Layout>
       )}
