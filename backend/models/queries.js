@@ -82,7 +82,7 @@ const updateTaskTitle = "UPDATE tasks SET title = $1 WHERE id = $2 RETURING *";
 
 const createTemplate = `
 INSERT INTO forms_templates (name, description, pdf_file_path, created_by, fields_metadata)
-VALUES ($1, $2, $3, $4, $5) RETURNING *;
+VALUES ($1, $2, $3, $4, $5) RETURNING *
 `;
 const getallTemplate ='SELECT * FROM forms_templates';
 const getTemplatebyid = 'SELECT * FROM forms_templates WHERE id = $1';
@@ -149,6 +149,42 @@ const getUserActionLogsByFormInstanceId = `
 SELECT * FROM user_actions_audit_logs WHERE form_instance_id = $1
 `;
 
+//file upload
+const insertTemplate = `
+    INSERT INTO forms_templates 
+    (name, description, pdf_file_path, created_by, fields_metadata) 
+    VALUES ($1, $2, $3, $4, $5) 
+    RETURNING *`;
+
+
+//workflow board
+const createWorkFlowBoard = `
+    INSERT INTO workflow_boards 
+    (name, description, template_id, created_by) 
+    VALUES ($1, $2, $3, $4) 
+    RETURNING *`;
+
+const allWorkFlowBoard = `
+    SELECT * FROM workflow_boards`;
+
+const WorkFlowBoardByID = `
+    SELECT * FROM workflow_boards WHERE id = $1`;
+
+const updateWorkFlowBoard = `
+    UPDATE workflow_boards
+    SET name = $1, description = $2, template_id = $3, updated_at = CURRENT_TIMESTAMP
+    WHERE id = $4
+    RETURNING *`;
+
+const deleteWorkFlowBoard = `
+    DELETE FROM workflow_boards WHERE id = $1 RETURNING *`;
+
+//stages
+const getStages = `
+      SELECT * FROM workflow_stages
+      WHERE template_id = $1
+      ORDER BY stage_order ASC
+    `;
 
 
 module.exports = {
@@ -208,4 +244,14 @@ module.exports = {
   //UserActionLogs
   createUserActionLog,
   getUserActionLogsByFormInstanceId,
+  //file upload
+  insertTemplate,
+  //workflowboard
+  createWorkFlowBoard,
+  allWorkFlowBoard,
+  WorkFlowBoardByID,
+  updateWorkFlowBoard,
+  deleteWorkFlowBoard,
+  //stages
+  getStages
 };
