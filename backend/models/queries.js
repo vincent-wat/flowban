@@ -94,6 +94,10 @@ WHERE id = $5 RETURNING *;
 `;
 const deleteTemplate = 'DELETE FROM forms_templates WHERE id = $1 RETURNING *';
 
+const checkTemplateExists = `
+  SELECT id FROM forms_templates WHERE id = $1;
+`;
+
 
 //FormInstances
 const createFormInstance =  `
@@ -115,6 +119,9 @@ WHERE id = $3 RETURNING *
 `;
 const deleteFormInstance = `
 DELETE FROM form_instances WHERE id = $1 RETURNING *
+`;
+const checkFormInstanceExists = `
+  SELECT id FROM form_instances WHERE id = $1;
 `;
 
 //FormFieldValue
@@ -230,12 +237,14 @@ module.exports = {
   getTemplatebyid,
   updateTemplate,
   deleteTemplate,
+  checkTemplateExists,
   //FormInstance
   createFormInstance,
   getAllFormInstances,
   getFormInstanceById,
   updateFormInstance,
   deleteFormInstance,
+  checkFormInstanceExists,
   //FormFieldValue
   createFormFieldValue,
   getFormFieldValuesByInstanceId,

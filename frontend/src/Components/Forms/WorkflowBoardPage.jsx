@@ -17,11 +17,13 @@ export const WorkflowBoard = () => {
         }
         const stagesData = await stagesResponse.json();
         setStages(stagesData);
+
         const formInstancesResponse = await fetch(`http://localhost:3000/api/formInstances/${templateId}`);
-        if (formInstancesResponse.ok) {
-          const formInstancesData = await formInstancesResponse.json();
-          setFormInstances(formInstancesData);
+        if (!formInstancesResponse.ok) {
+          throw new Error(`HTTP error fetching form instances! Status: ${formInstancesResponse.status}`);
         }
+        const formInstancesData = await formInstancesResponse.json();
+        setFormInstances(formInstancesData);
 
         setLoading(false);
       } catch (error) {
@@ -33,8 +35,33 @@ export const WorkflowBoard = () => {
     fetchWorkflowData();
   }, [templateId]);
 
-  const getFormsByStage = (stageName) => {
-    return formInstances.filter((instance) => instance.current_stage === stageName);
+  const createNewForm = async () => {
+    try {
+      const response = await fetch(`http://localhost:3000/api/formInstance/Instances`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          template_id: templateId,
+          submitted_by: 11, // replace with user id later
+          pdf_file_path: `/uploads/forms/form_${Date.now()}.pdf`, // Placeholder for now 
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const newForm = await response.json();
+      alert('New form created successfully!');
+      console.log('New form instance:', newForm);
+
+     
+    } catch (error) {
+      console.error('Error creating new form:', error);
+      alert('Failed to create a new form.');
+    }
   };
 
   return (
@@ -43,22 +70,23 @@ export const WorkflowBoard = () => {
         <p>Loading workflow board...</p>
       ) : (
         <>
-          <h1>Workflow Board for Time Conflict Forms</h1>
+          <h1>Workflow Board</h1>
+          <button onClick={createNewForm} className="create-form-button">
+            Create New Form
+          </button>
           <div className="stages-container">
             {stages.map((stage) => (
               <div key={stage.id} className="stage-card">
                 <h3>{stage.stage_name}</h3>
                 <div className="form-instances-list">
-                  {getFormsByStage(stage.stage_name).length > 0 ? (
-                    getFormsByStage(stage.stage_name).map((form) => (
+                  {formInstances
+                    .filter((form) => form.status === stage.stage_name)
+                    .map((form) => (
                       <div key={form.id} className="form-instance-card">
-                        <p>Time Conflict Form {form.id}</p>
+                        <p>Form {form.id}</p>
                         <p>Status: {form.status}</p>
                       </div>
-                    ))
-                  ) : (
-                    <p>No forms in this stage</p>
-                  )}
+                    ))}
                 </div>
               </div>
             ))}
