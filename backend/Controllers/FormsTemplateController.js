@@ -1,5 +1,6 @@
 const queries = require("../models/queries");
 const pool = require("../models/db");
+const path = require('path'); 
 
 async function createAndUploadTemplate(req, res) {
   try {
@@ -107,6 +108,40 @@ async function deleteFormTemplate(req, res) {
   }
 }
 
+async function getPdfById(req, res) {
+  try {
+    console.log("Received ID:", req.params.id); // Log the received ID
+    const id = parseInt(req.params.id, 10); // Parse the ID as an integer
+    if (isNaN(id)) {
+        return res.status(400).json({ error: "Invalid template ID" });
+    }
+      const result = await pool.query(queries.getTemplateRouteById, [id]);
+    
+      if (result.rows.length > 0) {
+          const pdfPath = result.rows[0].pdf_file_path;
+
+          if (!pdfPath) {
+              return res.status(404).json({ error: "PDF path not found in template!" });
+          }
+          if (pdfPath.includes('..')) {
+              return res.status(400).json({ error: "Invalid PDF path!" });
+          }
+          const filePath = path.join(__dirname, '..', pdfPath);
+
+          res.sendFile(filePath, (err) => {
+              if (err) {
+                  console.error("Error fetching the PDF:", err);
+                  res.status(404).json({ error: "PDF not found!" });
+              }
+          });
+      } else {
+          res.status(404).json({ error: "Template not found!" });
+      }
+  } catch (error) {
+      console.error('Error retrieving template:', error);
+      res.status(500).json({ error: "Failed to retrieve template" });
+  }
+}
 
 module.exports = {
   createAndUploadTemplate,
@@ -114,4 +149,5 @@ module.exports = {
   getFormTemplateById,
   updateFormTemplate,
   deleteFormTemplate,
+  getPdfById,
 };

@@ -13,6 +13,7 @@ import ForgotPassword from "./Components/User/Passwords/ForgotPassword";
 import ResetPassword from "./Components/User/Passwords/ResetPassword";
 import ErrorPage from "./Components/General/ErrorPage";
 import WorkflowBoard from "./Components/Forms/WorkflowBoardPage";
+import ViewFormPage from "./Components/Forms/ViewFormPage";
 function App() {
   const location = useLocation();
   const isDashboard = location.pathname === '/dashboard';
@@ -38,6 +39,8 @@ function App() {
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/error" element={<ErrorPage />} />
             <Route path="/workflowBoard/:templateId" element={<WorkflowBoard />} />
+            <Route path="/form/:templateId" element={<ViewFormPage />} />
+
           </Routes>
         </Layout>
       )}

@@ -90,20 +90,20 @@ const getTemplatebyid = 'SELECT * FROM forms_templates WHERE id = $1';
 const updateTemplate =  `
 UPDATE forms_templates
 SET name = $1, description = $2, pdf_file_path = $3, fields_metadata = $4, updated_at = NOW()
-WHERE id = $5 RETURNING *;
+WHERE id = $5 RETURNING *
 `;
 const deleteTemplate = 'DELETE FROM forms_templates WHERE id = $1 RETURNING *';
 
 const checkTemplateExists = `
-  SELECT id FROM forms_templates WHERE id = $1;
+  SELECT id FROM forms_templates WHERE id = $1
 `;
+
+const getTemplateRouteById =  'SELECT pdf_file_path FROM forms_templates WHERE id = $1';
 
 
 //FormInstances
-const createFormInstance =  `
-INSERT INTO form_instances (template_id, submitted_by, status, pdf_file_path)
-VALUES ($1, $2, $3, $4) RETURNING *
-`;
+const createFormInstance =  'INSERT INTO form_instances (template_id, submitted_by, pdf_file_path) VALUES ($1, $2, $3) RETURNING *';
+
 const getFormInstanceById = `
 SELECT * FROM form_instances WHERE id = $1
 `;
@@ -238,6 +238,7 @@ module.exports = {
   updateTemplate,
   deleteTemplate,
   checkTemplateExists,
+  getTemplateRouteById,
   //FormInstance
   createFormInstance,
   getAllFormInstances,

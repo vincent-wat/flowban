@@ -1,23 +1,39 @@
 const pool = require('../models/db');
 const queries = require('../models/queries');
+const path = require('path');
+const multer = require('multer');
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, path.join(__dirname, '../uploads/userForms')); 
+  },
+  filename: (req, file, cb) => {
+    const uniqueName = `form_${Date.now()}${path.extname(file.originalname)}`;
+    cb(null, uniqueName);
+  },
+});
+
+const upload = multer({ storage });
 
 async function createFormInstance(req, res) {
   try {
-    const { template_id, submitted_by, pdf_file_path } = req.body;
-    if (!template_id || !submitted_by || !pdf_file_path) {
-      return res.status(400).json({ error: 'Missing required fields: template_id, submitted_by, or pdf_file_path' });
+    const { template_id, submitted_by } = req.body;
+    
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
     }
+    const filePath = `/uploads/userForms/${req.file.filename}`;
+    const result = await pool.query(
+      queries.createFormInstance,
+      [template_id, submitted_by, filePath]
+    );
 
-    const templateCheck = await pool.query(queries.checkTemplateExists, [template_id]);
-    if (templateCheck.rows.length === 0) {
-      return res.status(400).json({ error: 'Invalid template_id: Template does not exist' });
-    }
-
-    const values = [template_id, submitted_by, 'Initializing', pdf_file_path];
-    const result = await pool.query(queries.createFormInstance, values);
-    res.status(201).json(result.rows[0]);
+    res.status(201).json({ 
+      message: 'Form instance created successfully', 
+      formInstance: result.rows[0] 
+    });
   } catch (error) {
-    console.error('Error creating form instance:', error.message);
+    console.error('Error creating form instance:', error);
     res.status(500).json({ error: 'Failed to create form instance' });
   }
 }
@@ -105,4 +121,5 @@ module.exports = {
   getAllFormInstances,
   updateFormInstance,
   deleteFormInstance,
+  upload,
 };

@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import './WorkflowBoardPage.css';
 
 export const WorkflowBoard = () => {
-  const { templateId } = useParams(); 
+  const { templateId } = useParams();
+  const navigate = useNavigate(); // Add navigate for redirection
   const [stages, setStages] = useState([]);
   const [formInstances, setFormInstances] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -35,34 +36,13 @@ export const WorkflowBoard = () => {
     fetchWorkflowData();
   }, [templateId]);
 
-  const createNewForm = async () => {
-    try {
-      const response = await fetch(`http://localhost:3000/api/formInstance/Instances`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          template_id: templateId,
-          submitted_by: 11, // replace with user id later
-          pdf_file_path: `/uploads/forms/form_${Date.now()}.pdf`, // Placeholder for now 
-        }),
-      });
+  const createNewForm = () => {
+    navigate(`/form/${templateId}`); // Redirect to a dedicated form viewer route
+};
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const newForm = await response.json();
-      alert('New form created successfully!');
-      console.log('New form instance:', newForm);
-
-     
-    } catch (error) {
-      console.error('Error creating new form:', error);
-      alert('Failed to create a new form.');
-    }
-  };
+  
+  
+  
 
   return (
     <div className="workflow-board-container">

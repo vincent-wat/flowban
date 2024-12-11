@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const formInstanceController = require('../controllers/formInstanceController');
 
-router.post('/instances', formInstanceController.createFormInstance);
+router.post('/Instances', formInstanceController.upload.single('modifiedPdf'), formInstanceController.createFormInstance);
 router.get('/instances', formInstanceController.getAllFormInstances);
 router.get('/instances/:id', formInstanceController.getFormInstanceById);
 router.put('/instances/:id', formInstanceController.updateFormInstance);

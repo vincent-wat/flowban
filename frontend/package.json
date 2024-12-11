@@ -3,6 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@react-pdf-viewer/core": "^3.12.0",
+    "@react-pdf-viewer/default-layout": "^3.12.0",
     "@svgr/plugin-svgo": "^8.1.0",
     "@svgr/webpack": "^8.1.0",
     "@testing-library/jest-dom": "^5.17.0",
@@ -11,6 +13,8 @@
     "@userfront/core": "^1.1.1",
     "axios": "^1.7.7",
     "dotenv": "^16.4.5",
+    "pdf-lib": "^1.17.1",
+    "pdfjs-dist": "^3.11.174",
     "pg": "^8.13.0",
     "pg-hstore": "^2.3.4",
     "react": "^18.3.1",

@@ -14,6 +14,8 @@ const workflowBoardRoutes = require('./routes/workflowBoardRoutes');
 const workflowStagesRoutes = require('./routes/workflowStagesRoutes'); 
 const pool = require("./models/db");
 const cors = require("cors");
+const path = require("path"); // Import path
+const fs = require("fs");
 
 const app = express();
 //const PORT = process.env.PORT || 3000;
@@ -66,7 +68,23 @@ app.post("/signuptest", (req, res) => {
   }
 });
 
+const ensureUploadsDirectory = () => {
+  const userFormsDir = path.join(__dirname, '../uploads/userForms');
+  if (!fs.existsSync(userFormsDir)) {
+      fs.mkdirSync(userFormsDir, { recursive: true });
+      console.log('Created directory:', userFormsDir);
+  }
+};
+ensureUploadsDirectory();
 
+const ensureTemplateDirectory = () => {
+  const templateDir = path.join(__dirname, '../uploads/templates');
+  if(!fs.existsSync(templateDir)) {
+    fs.mkdirSync(templateDir,{recursive: true});
+    console.log("Created Directory:",templateDir);
+  }
+};
+ensureTemplateDirectory();
 
 
 
