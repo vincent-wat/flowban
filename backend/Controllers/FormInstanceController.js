@@ -117,6 +117,8 @@ async function deleteFormInstance(req, res) {
 
 const approveFormInstance = async (req, res) => {
   const { id } = req.params;
+  const io = req.app.get("io");
+
   console.log(`Received request to approve form with ID: ${id}`);
 
   try {
@@ -150,6 +152,8 @@ const approveFormInstance = async (req, res) => {
     await pool.query(
       queries.setStage,[newStage, id]);
 
+    io.emit("formUpdated", { id, newStatus: newStage });// Used to auto refresh page for all users when completing a change
+
     res.status(200).json({ message: `Form moved to ${newStage} stage.` });
   } catch (error) {
     console.error("Error approving form:", error);
@@ -160,12 +164,13 @@ const approveFormInstance = async (req, res) => {
 
 const denyFormInstance = async (req, res) => {
   const { id } = req.params;
-
+  const io = req.app.get("io");
   try {
     // Move form back to "Initializing"
     await pool.query(
       queries.resetStage,[id]);
 
+    io.emit("formUpdated", { id, newStatus: "Initializing" });
     res.status(200).json({ message: "Form moved back to Initializing stage." });
   } catch (error) {
     console.error("Error denying form:", error);
