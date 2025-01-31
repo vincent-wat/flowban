@@ -105,7 +105,7 @@ const getTemplateRouteById =  'SELECT pdf_file_path FROM forms_templates WHERE i
 const createFormInstance =  'INSERT INTO form_instances (template_id, submitted_by, pdf_file_path) VALUES ($1, $2, $3) RETURNING *';
 
 const getFormInstanceById = `
-SELECT * FROM form_instances WHERE id = $1
+SELECT * FROM form_instances WHERE submitted_by = $1
 `;
 const getAllFormInstances = `
 SELECT fi.id, fi.status, ft.name AS template_name
@@ -123,6 +123,15 @@ DELETE FROM form_instances WHERE id = $1 RETURNING *
 const checkFormInstanceExists = `
   SELECT id FROM form_instances WHERE id = $1;
 `;
+
+const status = `SELECT status FROM form_instances WHERE id = $1`;
+
+const nextStages = `SELECT stage_name FROM workflow_stages 
+WHERE id = (SELECT id FROM workflow_stages WHERE stage_name = $1) + 1`;
+
+const setStage = `UPDATE form_instances SET status = $1 WHERE id = $2`;
+
+const resetStage = `UPDATE form_instances SET status = 'Initializing' WHERE id = $1`;
 
 //FormFieldValue
 const createFormFieldValue = `
@@ -246,6 +255,10 @@ module.exports = {
   updateFormInstance,
   deleteFormInstance,
   checkFormInstanceExists,
+  nextStages,
+  setStage,
+  resetStage,
+  status,
   //FormFieldValue
   createFormFieldValue,
   getFormFieldValuesByInstanceId,
