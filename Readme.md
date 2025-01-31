@@ -51,3 +51,53 @@ CREATE TABLE tasks (
     description TEXT NOT NULL
 );
 
+
+
+----------
+# WorkFlow
+### DB commands 
+CREATE TABLE workflow_boards (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  description TEXT,
+  template_id INT NOT NULL,
+  created_by INT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (template_id) REFERENCES forms_templates (id) ON DELETE CASCADE
+);
+
+CREATE TABLE workflow_stages (
+  id SERIAL PRIMARY KEY,
+  template_id INT NOT NULL,
+  stage_name VARCHAR(255) NOT NULL,
+  stage_order INT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (template_id) REFERENCES forms_templates (id) ON DELETE CASCADE
+);
+
+CREATE TABLE form_instances (
+  id SERIAL PRIMARY KEY,
+  template_id INT NOT NULL,
+  submitted_by INT NOT NULL,
+  status VARCHAR(255) DEFAULT 'Initializing',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  pdf_file_path TEXT,
+  FOREIGN KEY (template_id) REFERENCES forms_templates (id) ON DELETE CASCADE
+);
+
+CREATE TABLE forms_templates (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  description TEXT,
+  pdf_file_path TEXT NOT NULL,
+  created_by INT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  fields_metadata JSONB
+);
+
+
+#### Installs
+npm i multer 

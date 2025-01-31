@@ -1,12 +1,15 @@
 import { FaSearch, FaRegFileAlt, FaEllipsisV, FaPlus } from "react-icons/fa";
 import "./Dashboard.css";
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export const Dashboard = () => {
   const [boards, setBoards] = useState([]);
-  const [searchTerm, setSearchTerm] = useState(""); 
-  const [isModalOpen, setIsModalOpen] = useState(false); 
-  const [newBoardName, setNewBoardName] = useState(""); 
+  const [templates, setTemplates] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [newBoardName, setNewBoardName] = useState("");
+  const navigate = useNavigate(); 
 
   useEffect(() => {
     const fetchBoards = async () => {
@@ -22,13 +25,26 @@ export const Dashboard = () => {
       }
     };
 
+    const fetchTemplates = async () => {
+      try {
+        const response = await fetch('http://localhost:3000/api/forms/templates');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        setTemplates(data);
+      } catch (error) {
+        console.error('Error fetching templates:', error);
+      }
+    };
+
     fetchBoards();
+    fetchTemplates();
   }, []);
 
-  // Filter boards based on the search term
   const filteredBoards = boards.filter(board =>
     board.name.toLowerCase().includes(searchTerm.toLowerCase())
-  ).sort((a, b) => b.id - a.id); // Sorts by highest to lowest id
+  ).sort((a, b) => b.id - a.id); 
 
   const handleCreateNewBoard = async () => {
     try {
@@ -48,13 +64,12 @@ export const Dashboard = () => {
 
       const newBoard = await response.json();
       setBoards(prevBoards => [newBoard, ...prevBoards]);
-      setIsModalOpen(false); 
-      setNewBoardName(""); 
+      setIsModalOpen(false);
+      setNewBoardName("");
     } catch (error) {
       console.error('Error creating new board:', error);
     }
   };
-
 
   const handleOpenModal = () => {
     setIsModalOpen(true);
@@ -62,7 +77,12 @@ export const Dashboard = () => {
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
-    setNewBoardName(""); 
+    setNewBoardName("");
+  };
+
+  const handleTemplateClick = (templateId) => {
+  
+    navigate(`/workflowBoard/${templateId}`);
   };
 
   return (
@@ -72,10 +92,12 @@ export const Dashboard = () => {
           <FaPlus className="template-icon" />
           <span>New Board</span>
         </div>
-        <div className="template-card" onClick={() => console.log('Using Pre-Defined Template')}>
-          <FaRegFileAlt className="template-icon" />
-          <span>Template 1</span>
-        </div>
+        {templates.map((template) => (
+          <div key={template.id} className="template-card" onClick={() => handleTemplateClick(template.id)}>
+            <FaRegFileAlt className="template-icon" />
+            <span>{template.name}</span>
+          </div>
+        ))}
       </div>
       {isModalOpen && (
         <div className="modal-overlay">
@@ -98,8 +120,8 @@ export const Dashboard = () => {
         <FaSearch id="search-icon" />
         <input
           placeholder="Search"
-          value={searchTerm} 
-          onChange={(e) => setSearchTerm(e.target.value)} 
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
         />
       </div>
       <div className="board-row">

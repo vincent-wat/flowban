@@ -1,15 +1,31 @@
 const queries = require("../models/queries");
 const pool = require("../models/db");
 
-async function createFormTemplate(req, res) {
+async function createAndUploadTemplate(req, res) {
   try {
-    const { name, description, pdf_file_path, created_by, fields_metadata } = req.body;
-    const values = [name, description, pdf_file_path, created_by, fields_metadata];
+    console.log('Inside createAndUploadTemplate controller function');
+    console.log('File received:', req.file);
+    console.log('Body received:', req.body);
+    const { filename } = req.file;
+    if (!req.file || !filename) {
+      return res.status(400).json({ error: 'Template file is required' });
+    }
+
+    const { name, description, created_by, fields_metadata } = req.body;
+    if (!name || !description || !created_by) {
+      return res.status(400).json({ error: 'Missing required fields (name, description, created_by)' });
+    }
+    const pdf_file_path = `/uploads/templates/${filename}`;
+    const metadata = fields_metadata ? JSON.stringify(fields_metadata) : null;
+    const values = [name, description, pdf_file_path, created_by, metadata];
     const newTemplate = await pool.query(queries.createTemplate, values);
-    res.status(201).json(newTemplate.rows[0]);
+    res.status(201).json({
+      message: 'Template created and uploaded successfully',
+      template: newTemplate.rows[0],
+    });
   } catch (error) {
-    console.error('Error creating form template:', error);
-    res.status(500).json({ error: 'Failed to create form template' });
+    console.error('Error creating and uploading template:', error);
+    res.status(500).json({ error: 'Failed to create and upload template' });
   }
 }
 
@@ -91,10 +107,11 @@ async function deleteFormTemplate(req, res) {
   }
 }
 
+
 module.exports = {
-  createFormTemplate,
+  createAndUploadTemplate,
   getAllFormTemplates,
   getFormTemplateById,
   updateFormTemplate,
-  deleteFormTemplate
+  deleteFormTemplate,
 };

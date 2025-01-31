@@ -12,7 +12,7 @@ import DashboardLayout from "./Components/Kanban/DashboardLayout"; // Import Das
 import ForgotPassword from "./Components/User/Passwords/ForgotPassword";
 import ResetPassword from "./Components/User/Passwords/ResetPassword";
 import ErrorPage from "./Components/General/ErrorPage";
-
+import WorkflowBoard from "./Components/Forms/WorkflowBoardPage";
 function App() {
   const location = useLocation();
   const isDashboard = location.pathname === '/dashboard';
@@ -37,6 +37,7 @@ function App() {
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/error" element={<ErrorPage />} />
+            <Route path="/workflowBoard/:templateId" element={<WorkflowBoard />} />
           </Routes>
         </Layout>
       )}
