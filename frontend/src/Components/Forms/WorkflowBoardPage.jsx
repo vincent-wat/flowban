@@ -4,31 +4,34 @@ import './WorkflowBoardPage.css';
 
 export const WorkflowBoard = () => {
   const { templateId } = useParams();
-  const navigate = useNavigate(); // Add navigate for redirection
+  const navigate = useNavigate();
   const [stages, setStages] = useState([]);
-  const [formInstances, setFormInstances] = useState([]);
+  const [formInstances, setFormInstances] = useState([]); 
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchWorkflowData = async () => {
       try {
+        
         const stagesResponse = await fetch(`http://localhost:3000/api/workflowStages/${templateId}`);
         if (!stagesResponse.ok) {
-          throw new Error(`HTTP error fetching stages! Status: ${stagesResponse.status}`);
+          throw new Error(`Error fetching stages! Status: ${stagesResponse.status}`);
         }
         const stagesData = await stagesResponse.json();
+        console.log("Fetched stages:", stagesData);
         setStages(stagesData);
 
-        const formInstancesResponse = await fetch(`http://localhost:3000/api/formInstances/${templateId}`);
-        if (!formInstancesResponse.ok) {
-          throw new Error(`HTTP error fetching form instances! Status: ${formInstancesResponse.status}`);
-        }
+        
+        const formInstancesResponse = await fetch(`http://localhost:3000/api/formInstance/instances/${templateId}`);
         const formInstancesData = await formInstancesResponse.json();
-        setFormInstances(formInstancesData);
 
-        setLoading(false);
+        // Ensure formInstances is an array
+        const instancesArray = Array.isArray(formInstancesData) ? formInstancesData : [formInstancesData];
+        console.log("Fetched form instances (as array):", instancesArray);
+        setFormInstances(instancesArray);
       } catch (error) {
         console.error('Error fetching workflow data:', error);
+      } finally {
         setLoading(false);
       }
     };
@@ -37,12 +40,8 @@ export const WorkflowBoard = () => {
   }, [templateId]);
 
   const createNewForm = () => {
-    navigate(`/form/${templateId}`); // Redirect to a dedicated form viewer route
-};
-
-  
-  
-  
+    navigate(`/form/${templateId}`);
+  };
 
   return (
     <div className="workflow-board-container">
@@ -60,13 +59,22 @@ export const WorkflowBoard = () => {
                 <h3>{stage.stage_name}</h3>
                 <div className="form-instances-list">
                   {formInstances
-                    .filter((form) => form.status === stage.stage_name)
+                    ?.filter((form) => form.status === stage.stage_name)
                     .map((form) => (
                       <div key={form.id} className="form-instance-card">
                         <p>Form {form.id}</p>
                         <p>Status: {form.status}</p>
+                        <button
+                          onClick={() => navigate(`/formInstance/${form.id}`)}
+                          className="view-form-button"
+                        >
+                          View/Edit
+                        </button>
                       </div>
                     ))}
+                  {formInstances?.filter((form) => form.status === stage.stage_name).length === 0 && (
+                    <p>No forms in this stage.</p>
+                  )}
                 </div>
               </div>
             ))}
