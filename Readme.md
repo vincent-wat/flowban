@@ -52,6 +52,45 @@ CREATE TABLE tasks (
 );
 
 
+CREATE TABLE roles (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) UNIQUE NOT NULL,
+    description TEXT,
+    created_by INTEGER NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+ALTER TABLE roles 
+ADD CONSTRAINT roles_created_by_fkey 
+FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL;
+
+CREATE OR REPLACE FUNCTION update_roles_timestamp()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_update_roles_timestamp
+BEFORE UPDATE ON roles
+FOR EACH ROW
+EXECUTE FUNCTION update_roles_timestamp();
+
+INSERT INTO roles (name, description, created_by) VALUES
+('admin', 'Has full access to the workflow system', 1),
+('user', 'General user role used in another feature', 1),
+('collaborator', 'Used in a different feature for collaboration', 1);
+
+ALTER TABLE users DROP COLUMN IF EXISTS role;
+
+ALTER TABLE users 
+ADD COLUMN role_id INTEGER NOT NULL DEFAULT 1, 
+ADD CONSTRAINT users_role_id_fkey 
+FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE SET NULL;
+
+
 
 ----------
 # WorkFlow

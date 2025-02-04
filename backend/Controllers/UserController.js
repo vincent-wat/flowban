@@ -54,35 +54,44 @@ async function getUserByResetToken(req, res) {
 
 //Create a new user
 async function postUser(req, res) {
-  console.log("inserting a new user");
+  console.log("Inserting a new user");
   try {
-    const { email, password, phone_number, first_name, last_name, user_role } =
-      req.body;
-    const role = user_role && Array.isArray(user_role) ? user_role : ['user'];
+    const { email, password, phone_number, first_name, last_name, role_id } = req.body;
+
+    // Validate role_id
+    const roleCheck = await pool.query("SELECT * FROM roles WHERE id = $1", [role_id]);
+    if (roleCheck.rows.length === 0) {
+      return res.status(400).json({ message: "Invalid role ID" });
+    }
+
     // Hash the password
     const saltRound = 10;
     const salt = await bcrypt.genSalt(saltRound);
     const hashedPassword = await bcrypt.hash(password, salt);
 
+    // Insert user into the database
     const result = await pool.query(queries.postUser, [
       email,
       hashedPassword,
       phone_number || null,
       first_name,
       last_name,
-      role,
+      role_id,  // Assign role_id instead of user_role ENUM
     ]);
+
+    // Generate JWT token
     const jwtToken = jwtGenerator(result.rows[0].id);
 
     console.log("User Inserted");
     res.status(201).json({
-      message: 'User registered successfully',
+      message: "User registered successfully",
       user: result.rows[0],
       jwtToken,
     });
-    
+
   } catch (err) {
-    console.error(err.message);
+    console.error("Error inserting user:", err.message);
+    res.status(500).json({ message: "Server error" });
   }
 }
 

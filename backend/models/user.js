@@ -1,7 +1,8 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('./database');  // Import the sequelize instance from database.js
+const { DataTypes } = require("sequelize");
+const sequelize = require("./database");  // Import the sequelize instance
+//const Role = require("./Role");  // Import the Role model
 
-const User = sequelize.define('User', {
+const User = sequelize.define("User", {
   id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
@@ -23,7 +24,7 @@ const User = sequelize.define('User', {
     type: DataTypes.STRING,
     allowNull: true,
     validate: {
-      is: /^[0-9\-+()]*$/,
+      is: /^[0-9\-+()]*$/,  // Validates phone number format
     },
   },
   first_name: {
@@ -34,10 +35,14 @@ const User = sequelize.define('User', {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  user_roles: {
-    type: DataTypes.ENUM('Admin', 'User', 'Moderator'),
+  role_id: {
+    type: DataTypes.INTEGER,
     allowNull: false,
-    defaultValue: 'User',
+    defaultValue: 1,  // Default role (e.g., 'User')
+    references: {
+      model: "roles",
+      key: "id",
+    },
   },
   password_reset_token: {
     type: DataTypes.STRING,
@@ -45,8 +50,11 @@ const User = sequelize.define('User', {
   },
 }, {
   timestamps: true,
-  createdAt: 'created_at',
-  updatedAt: 'updated_at',
+  createdAt: "created_at",
+  updatedAt: "updated_at",
 });
+
+// Define association between User and Role
+//User.belongsTo(Role, { foreignKey: "role_id", as: "role" });
 
 module.exports = User;
