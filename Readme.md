@@ -90,6 +90,32 @@ ADD COLUMN role_id INTEGER NOT NULL DEFAULT 1,
 ADD CONSTRAINT users_role_id_fkey 
 FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE SET NULL;
 
+### Roles
+
+CREATE TABLE roles (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL UNIQUE,
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE user_roles (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    role_id INTEGER REFERENCES roles(id) ON DELETE CASCADE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT unique_user_role UNIQUE (user_id, role_id)
+);
+
+INSERT INTO roles (name, description, created_at, updated_at)
+VALUES
+    ('user', 'Default role for regular users', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+    ('admin', 'Administrator with full permissions', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+    ('collaborator', 'Can assist in certain workflow tasks', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+
 
 
 ----------
