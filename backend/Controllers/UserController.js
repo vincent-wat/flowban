@@ -1,5 +1,6 @@
 const bcrypt = require("bcrypt");
-const users = require("../models/user");
+const user = require("../models/user"); 
+const Role = require("../models/Role");
 const pool = require("../models/db");
 const queries = require("../models/queries");
 const { jwtGenerator, jwtGeneratorExpiry } = require("../utils/jwtGenerator");
@@ -55,45 +56,45 @@ async function getUserByResetToken(req, res) {
 //Create a new user
 async function postUser(req, res) {
   console.log("Inserting a new user");
+
   try {
-    const { email, password, phone_number, first_name, last_name, role_id } = req.body;
+    const { email, password, phone_number, first_name, last_name, additional_roles = [] } = req.body;
 
-    // Validate role_id
-    const roleCheck = await pool.query("SELECT * FROM roles WHERE id = $1", [role_id]);
-    if (roleCheck.rows.length === 0) {
-      return res.status(400).json({ message: "Invalid role ID" });
-    }
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Hash the password
-    const saltRound = 10;
-    const salt = await bcrypt.genSalt(saltRound);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
-    // Insert user into the database
-    const result = await pool.query(queries.postUser, [
+    const newUser = await user.create({
       email,
-      hashedPassword,
-      phone_number || null,
+      password: hashedPassword,
+      phone_number,
       first_name,
       last_name,
-      role_id,  // Assign role_id instead of user_role ENUM
-    ]);
+    }, { logging: console.log }); 
 
-    // Generate JWT token
-    const jwtToken = jwtGenerator(result.rows[0].id);
+    const userRole = await Role.findOne({ where: { name: "user" } });
+
+    const roleIds = [userRole.id, ...additional_roles];
+
+    for (const roleId of roleIds) {
+      await newUser.addRole(roleId, {
+        through: { user_id: newUser.id, role_id: roleId },
+      });
+    }
+
+    const jwtToken = jwtGenerator(newUser.id);
 
     console.log("User Inserted");
     res.status(201).json({
       message: "User registered successfully",
-      user: result.rows[0],
+      user: newUser,
       jwtToken,
     });
-
   } catch (err) {
-    console.error("Error inserting user:", err.message);
-    res.status(500).json({ message: "Server error" });
+    console.error("Error inserting user:", err);
+    res.status(500).json({ message: "Server error", error: err.errors || err.message });
   }
 }
+
+
 
 //Login a user
 async function loginUser(req, res) {
@@ -261,6 +262,18 @@ async function deleteUser(req, res) {
     res.status(500).json({ message: 'Server error' });
   }
 }
+async function assignRoleToUser(userId, roleId) {
+  try {
+      await pool.query(
+          "INSERT INTO user_roles (user_id, role_id) VALUES ($1, $2) ON CONFLICT DO NOTHING",
+          [userId, roleId]
+      );
+      console.log(`Role ${roleId} assigned to User ${userId}`);
+  } catch (err) {
+      console.error("Error assigning role:", err.message);
+  }
+}
+
 
 
 module.exports = {
@@ -275,4 +288,5 @@ module.exports = {
   getCurrentUserProfile,
   forgotPassword,
   resetPassword,
+  assignRoleToUser,
 };
