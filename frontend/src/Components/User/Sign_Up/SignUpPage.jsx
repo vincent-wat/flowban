@@ -57,44 +57,39 @@ const SignUpPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
     if (!passwordRegex.test(formData.password)) {
-      setError(
-        "Password must be at least 8 characters long and include at least one number and one special character."
-      );
+      setError("Password must be at least 8 characters long and include at least one number and one special character.");
       return;
     }
+  
     if (formData.password !== formData.confirmPassword) {
       setError("Passwords do not match");
       return;
     }
-    // Where we use axios to add a new user to the database
+  
     try {
-      //console.log(formData);
-      //console.log("user url: " + USER_URL);
       const response = await axios.post(USER_URL, {
-        // right side must be the attribute name is database
         email: formData.email,
         password: formData.password,
         phone_number: formData.phoneNumber,
         first_name: formData.firstName,
         last_name: formData.lastName,
+        role_id: 1, 
       });
-      //console.log(response.data);
+  
       localStorage.setItem("token", response.data.jwtToken);
-      //console.log(JSON.stringify(response));
       console.log("Request Submitted!");
+      
       setSubmitted(true);
       navigate("/dashboard");
+  
     } catch (e) {
-      console.error(e.message);
+      console.error("Error:", e.response?.data?.message || e.message);
+      setError(e.response?.data?.message || "Server error");  
     }
-
-    setError("");
-    setSubmitted(true);
-    // need to clear the input fields afterwards still
-    // Normally, here you would send form data to your backend
-    //console.log(formData);
   };
+  
 
   return (
     <div className="wrapper">

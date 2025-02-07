@@ -3,7 +3,7 @@
 // User Queries
 const getUsers = "SELECT * FROM users";
 const postUser =
-  "INSERT INTO users (email, password, phone_number, first_name, last_name, user_role) VALUES ($1, $2, $3, $4, $5,$6) RETURNING *";
+  "INSERT INTO users (email, password, phone_number, first_name, last_name, role_id) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, email, first_name, last_name, role_id ";
 const getColumns = "SELECT * FROM columns";
 const deleteUser = "DELETE FROM users WHERE id = $1";
 const updateUser = `
