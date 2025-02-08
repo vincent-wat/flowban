@@ -12,21 +12,27 @@ const nodemailer = require("nodemailer");
 async function getUsers(req, res) {
   console.log("getting users");
   try {
-    const allUsers = await pool.query(queries.getUsers);
-    res.json(allUsers.rows);
+    const allUsers = await user.findAll(); // Use Sequelize to get all users
+    res.json(allUsers);
   } catch (err) {
     console.error(err.message);
+    res.status(500).json({ error: "Server error" });
   }
 }
 
 //Find user by ID number
 async function getUserByID(req, res) {
   try {
+    console.log("getting user by ID");
     const { id } = req.params;
-    const user = await pool.query(queries.findUser, [id]);
-    res.json(user.rows[0]);
+    const foundUser = await user.findByPk(id); // Use Sequelize to find the user by primary key
+    if (!foundUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json(foundUser);
   } catch (err) {
     console.error(err.message);
+    res.status(500).json({ error: "Server error" });
   }
 }
 
