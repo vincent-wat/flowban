@@ -40,10 +40,14 @@ async function getUserByID(req, res) {
 async function getUserByEmail(req, res) {
   try {
     const { email } = req.params;
-    const user = await pool.query(queries.findUserByEmail, [email]);
-    res.json(user.rows[0]);
+    const User = await user.findOne({ where: { email } });
+    if (!User) {
+      return res.status(404).json({ message: "User not found" });
+    } 
+    res.json(User);
   } catch (err) {
     console.error(err.message);
+    res.status(500).json({ error: "Server error" });
   }
 }
 
@@ -51,10 +55,14 @@ async function getUserByEmail(req, res) {
 async function getUserByResetToken(req, res) {
   try {
     const { token } = req.params; 
-    const user = await pool.query(queries.findUserByResetToken, [token]);
-    res.json(user.rows[0]);
+    const User = await user.findOne({ where: { password_reset_token: token } });
+    if (!User) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json(User);
   } catch (err) {
     console.error(err.message);
+    res.status(500).json({ error: "Server error" });
   }
 }
 
