@@ -267,13 +267,19 @@ async function deleteUser(req, res) {
 }
 async function assignRoleToUser(userId, roleId) {
   try {
-      await pool.query(
-          "INSERT INTO user_roles (user_id, role_id) VALUES ($1, $2) ON CONFLICT DO NOTHING",
-          [userId, roleId]
-      );
-      console.log(`Role ${roleId} assigned to User ${userId}`);
+    const user = await User.findByPk(userId);
+    const role = await Role.findByPk(roleId);
+
+    if (!user || !role) {
+      console.error("User or Role not found.");
+      return;
+    }
+
+    await user.addRole(role, { through: {} });
+
+    console.log(`Role ${roleId} assigned to User ${userId}`);
   } catch (err) {
-      console.error("Error assigning role:", err.message);
+    console.error("Error assigning role:", err.message);
   }
 }
 
