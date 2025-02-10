@@ -37,10 +37,11 @@ const validateUpdateUser = [
     next();
   },
 ];
-router.put('/me', validateUpdateUser, controller.updateUserProfile);
+router.put("/me", authenticateToken, validateUpdateUser, controller.updateUserProfile);
 
 //get user information
 router.get('/me', authenticateToken, controller.getCurrentUserProfile);
 
+router.get('/roles/:id', authenticateToken, controller.getCurrentUserProfile);
 
 module.exports = router;
