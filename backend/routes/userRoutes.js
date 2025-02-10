@@ -42,5 +42,6 @@ router.put("/me", authenticateToken, validateUpdateUser, controller.updateUserPr
 //get user information
 router.get('/me', authenticateToken, controller.getCurrentUserProfile);
 
+router.get('/roles/:id', authenticateToken, controller.getCurrentUserProfile);
 
 module.exports = router;
