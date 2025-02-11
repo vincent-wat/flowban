@@ -5,7 +5,7 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
 
-export const Task = ({id, title}) => {
+export const Task = ({id, title, description}) => {
     const { attributes, listeners, 
         setNodeRef, transform, transition } = useSortable({id});
     
@@ -13,11 +13,12 @@ export const Task = ({id, title}) => {
         transition,
         transform: CSS.Transform.toString(transform),
     };
-    
+
     return (
     <div style={style} ref = {setNodeRef} {...attributes} {...listeners} className="task">
         <input type="checkbox" className="checkbox"/>
-        {title}
+        <p>{title}</p>
+        <p>{description}</p>
     </div>
     );
 };
