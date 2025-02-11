@@ -184,6 +184,27 @@ async function forgotPassword(req, res) {
   }
 };
 
+
+async function forgotPassword(req, res) {
+  const { email } = req.body;
+  try {
+    const User = await user.findOne({where : {email}});
+    if (!User) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    //Generate a password reset token
+    const jwtToken = jwtGneneratorExpiry(email);
+    console.log("Reset token: ", jwtToken);
+    
+    //Assign the token to the user
+    await user.password_reset_token = jwtToken;
+    await user.save
+  } catch (error) {
+    console.error("Error resetting password:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 async function resetPassword(req, res) {
   const { password, password_reset_token } = req.body;
   try {
