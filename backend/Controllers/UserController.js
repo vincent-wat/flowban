@@ -12,21 +12,27 @@ const nodemailer = require("nodemailer");
 async function getUsers(req, res) {
   console.log("getting users");
   try {
-    const allUsers = await pool.query(queries.getUsers);
-    res.json(allUsers.rows);
+    const allUsers = await user.findAll(); // Use Sequelize to get all users
+    res.json(allUsers);
   } catch (err) {
     console.error(err.message);
+    res.status(500).json({ error: "Server error" });
   }
 }
 
 //Find user by ID number
 async function getUserByID(req, res) {
   try {
+    console.log("getting user by ID");
     const { id } = req.params;
-    const user = await pool.query(queries.findUser, [id]);
-    res.json(user.rows[0]);
+    const foundUser = await user.findByPk(id); // Use Sequelize to find the user by primary key
+    if (!foundUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json(foundUser);
   } catch (err) {
     console.error(err.message);
+    res.status(500).json({ error: "Server error" });
   }
 }
 
@@ -34,10 +40,14 @@ async function getUserByID(req, res) {
 async function getUserByEmail(req, res) {
   try {
     const { email } = req.params;
-    const user = await pool.query(queries.findUserByEmail, [email]);
-    res.json(user.rows[0]);
+    const User = await user.findOne({ where: { email } });
+    if (!User) {
+      return res.status(404).json({ message: "User not found" });
+    } 
+    res.json(User);
   } catch (err) {
     console.error(err.message);
+    res.status(500).json({ error: "Server error" });
   }
 }
 
@@ -45,10 +55,14 @@ async function getUserByEmail(req, res) {
 async function getUserByResetToken(req, res) {
   try {
     const { token } = req.params; 
-    const user = await pool.query(queries.findUserByResetToken, [token]);
-    res.json(user.rows[0]);
+    const User = await user.findOne({ where: { password_reset_token: token } });
+    if (!User) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json(User);
   } catch (err) {
     console.error(err.message);
+    res.status(500).json({ error: "Server error" });
   }
 }
 
@@ -164,6 +178,27 @@ async function forgotPassword(req, res) {
     });
 
     res.status(200).json({ message: "Password reset email sent" });
+  } catch (error) {
+    console.error("Error resetting password:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+
+async function forgotPassword(req, res) {
+  const { email } = req.body;
+  try {
+    const User = await user.findOne({where : {email}});
+    if (!User) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    //Generate a password reset token
+    const jwtToken = jwtGneneratorExpiry(email);
+    console.log("Reset token: ", jwtToken);
+    
+    //Assign the token to the user
+    await user.password_reset_token = jwtToken;
+    await user.save
   } catch (error) {
     console.error("Error resetting password:", error);
     res.status(500).json({ message: "Internal server error" });
