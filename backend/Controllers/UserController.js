@@ -57,8 +57,10 @@ async function getUserByEmail(req, res) {
 async function getUserByResetToken(req, res) {
   try {
     const { token } = req.params; 
+    console.log("token in get is " + token);
     const foundUser = await User.findOne({ where: { password_reset_token: token } });
     if (!foundUser) {
+      console.log("User not found with token: " + token);
       return res.status(404).json({ message: "User not found" });
     }
     res.json(foundUser);
@@ -191,7 +193,6 @@ async function forgotPassword(req, res) {
 
 async function resetPassword(req, res) {
   const { password, password_reset_token } = req.body;
-
   try {
     // Find user by reset token
     const user = await User.findOne({where: { password_reset_token }});

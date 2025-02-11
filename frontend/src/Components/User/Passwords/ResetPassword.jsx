@@ -28,11 +28,14 @@ const ResetPassword = () => {
                 if (!resetToken) {
                     throw new Error('No token found. Please try again.');
                 }
+                
                 const response = await axios.get(`/api/users/token/${resetToken}`);
                 if (!response.data) {
                     navigate("/error");
+                    
                 };
                 console.log("response ", response.data);
+                
             } catch (error) {
                 console.error('Error fetching profile data:', error);
             }
@@ -82,9 +85,10 @@ const ResetPassword = () => {
                 password_reset_token: resetToken,
                 password: formData.password,
             });
-            console.log(response.data);
-            setSubmitted(true);
-            navigate("/login"); 
+            if (response.status === 200) {
+                setSubmitted(true);
+                navigate("/login");
+            }
             } catch (e) {
                 console.error(e.message);
                 setError("Invalid password. Please try again.");
