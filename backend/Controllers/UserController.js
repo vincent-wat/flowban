@@ -25,7 +25,8 @@ async function getUserByID(req, res) {
   try {
     console.log("getting user by ID");
     const { id } = req.params;
-    const foundUser = await user.findByPk(id); // Use Sequelize to find the user by primary key
+    console.log("req.params " + req.params);
+    const foundUser = await User.findByPk(id); // Use Sequelize to find the user by primary key
     if (!foundUser) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -40,11 +41,11 @@ async function getUserByID(req, res) {
 async function getUserByEmail(req, res) {
   try {
     const { email } = req.params;
-    const User = await user.findOne({ where: { email } });
-    if (!User) {
+    const foundUser = await User.findOne({ where: { email } });
+    if (!foundUser) {
       return res.status(404).json({ message: "User not found" });
     } 
-    res.json(User);
+    res.json(foundUser);
   } catch (err) {
     console.error(err.message);
     res.status(500).json({ error: "Server error" });
@@ -55,11 +56,11 @@ async function getUserByEmail(req, res) {
 async function getUserByResetToken(req, res) {
   try {
     const { token } = req.params; 
-    const User = await user.findOne({ where: { password_reset_token: token } });
-    if (!User) {
+    const foundUser = await User.findOne({ where: { password_reset_token: token } });
+    if (!foundUser) {
       return res.status(404).json({ message: "User not found" });
     }
-    res.json(User);
+    res.json(foundUser);
   } catch (err) {
     console.error(err.message);
     res.status(500).json({ error: "Server error" });
@@ -188,14 +189,26 @@ async function forgotPassword(req, res) {
 };
 
 async function resetPassword(req, res) {
-  const { password, password_reset_token } = req.body;
+  console.log("Full query params:", req.query); // Debugging`
+  const { password } = req.body;
+  const { token } = req.params;
+  console.log("this is token " + token);
   try {
     // Hash the password
     const saltRound = 10;
     const salt = await bcrypt.genSalt(saltRound);
     const hashedPassword = await bcrypt.hash(password, salt);
+    
 
-    await pool.query(queries.resetPassword, [hashedPassword, password_reset_token]);
+    /*
+  const resetPassword = `
+  UPDATE users
+  SET password = $1, password_reset_token = NULL, updated_at = NOW()
+  WHERE password_reset_token = $2
+  `;
+*/
+
+    await pool.query(queries.resetPassword, [hashedPassword, token]);
     res.status(200).json({ message: "Password reset successfully" });
   } catch (e) {
     console.error("Error resetting password:", e);
