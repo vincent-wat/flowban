@@ -1,5 +1,5 @@
 const bcrypt = require("bcrypt");
-const User = require("../models/User"); 
+const User = require("../models/user"); 
 const Role = require("../models/Role");
 const pool = require("../models/db");
 const queries = require("../models/queries");
@@ -141,24 +141,26 @@ async function loginUser(req, res) {
   }
 }
 
+
 async function forgotPassword(req, res) {
   const { email } = req.body;
   try {
-    const user = await pool.query(queries.findUserByEmail, [email]);
-    if (user.rows.length === 0) {
+    const oneUser = await User.findOne({where : {email}});
+    if (!oneUser) {
       return res.status(404).json({ message: "User not found" });
     }
-    // Generate a password reset token
-    const jwtToken = jwtGeneratorExpiry(user.rows[0].email);
-    console.log("Reset token:", jwtToken);
-
-    // Assign the token to the user
-    await pool.query(queries.insertResetToken, [jwtToken, email]);
-
-    // Create a password reset link
-    const resetLink = `http://localhost:3001/reset-password?token=${jwtToken}`;
+    //Generate a password reset token
+    const jwtToken = jwtGeneratorExpiry(email);
+    console.log("Reset token: ", jwtToken);
     
-    // Send email with password reset link
+    //Assign the token to the user
+    oneUser.password_reset_token = jwtToken;
+    await oneUser.save();
+
+    //Create a password reset link
+    const resetLink = `http://localhost:3001/reset-password?token=${jwtToken}`;
+
+    //send email with password reset link
     const transporter = nodemailer.createTransport({
       service: "gmail",
       host: "smtp.gmail.com",
@@ -175,30 +177,10 @@ async function forgotPassword(req, res) {
       to: email,
       subject: "Password Reset",
       text: `Click the link to reset your password\n${resetLink}`,
-    });
-
-    res.status(200).json({ message: "Password reset email sent" });
-  } catch (error) {
-    console.error("Error resetting password:", error);
-    res.status(500).json({ message: "Internal server error" });
-  }
-};
-
-
-async function forgotPassword(req, res) {
-  const { email } = req.body;
-  try {
-    const User = await user.findOne({where : {email}});
-    if (!User) {
-      return res.status(404).json({ message: "User not found" });
-    }
-    //Generate a password reset token
-    const jwtToken = jwtGneneratorExpiry(email);
-    console.log("Reset token: ", jwtToken);
+    }); 
     
-    //Assign the token to the user
-    await user.password_reset_token = jwtToken;
-    await user.save
+    res.status(200).json({ message: "Password reset email sent" });
+
   } catch (error) {
     console.error("Error resetting password:", error);
     res.status(500).json({ message: "Internal server error" });
