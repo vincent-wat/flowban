@@ -1,5 +1,5 @@
 const bcrypt = require("bcrypt");
-const user = require("../models/user"); 
+const User = require("../models/User"); 
 const Role = require("../models/Role");
 const pool = require("../models/db");
 const queries = require("../models/queries");
@@ -76,7 +76,7 @@ async function postUser(req, res) {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const newUser = await user.create({
+    const newUser = await User.create({
       email,
       password: hashedPassword,
       phone_number,
@@ -115,21 +115,21 @@ async function loginUser(req, res) {
   const { email, password } = req.body;
 
   try {
-    const user = await pool.query("SELECT * FROM users WHERE email = $1", [
-      email,
-    ]);
+    // Find user by email using Sequelize
+    const user = await User.findOne({ where: { email } });
 
-    if (user.rows.length === 0) {
+    if (!user) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    const validPassword = await bcrypt.compare(password, user.rows[0].password);
+    const validPassword = await bcrypt.compare(password, user.password);
 
     if (!validPassword) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    const jwtToken = jwtGenerator(user.rows[0].id);
+    const jwtToken = jwtGenerator(user.id);
+
     console.log("User logged in");
     return res.status(200).json({
       message: "Login successful",
@@ -222,63 +222,66 @@ async function resetPassword(req, res) {
 };
 
 //Update a user profile
-const { findUser, updateUser } = require("../models/queries");
-
 async function updateUserProfile(req, res) {
-  const userId = req.params.id;
-  const { email, phone_number, first_name, last_name, user_role } = req.body;
-
   try {
-    const userResult = await pool.query(findUser, [userId]);
+    const userId = req.user.id;
 
-    if (userResult.rows.length === 0) {
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const { email, phone_number, first_name, last_name } = req.body;
+
+    // Find user by ID
+    const user = await User.findByPk(userId);
+
+    if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    const currentUser = userResult.rows[0];
-    const updatedEmail = email || currentUser.email;
-    const updatedPhoneNumber = phone_number || currentUser.phone_number;
-    const updatedFirstName = first_name || currentUser.first_name;
-    const updatedLastName = last_name || currentUser.last_name;
-    const updatedUserRole = user_role || currentUser.user_role;
-
-    const values = [
-      updatedEmail,
-      updatedPhoneNumber,
-      updatedFirstName,
-      updatedLastName,
-      updatedUserRole,
-      userId,
-    ];
-    const updateResult = await pool.query(updateUser, values);
+    // Update user fields if provided in the request body
+    await user.update({
+      email: email || user.email,
+      phone_number: phone_number || user.phone_number,
+      first_name: first_name || user.first_name,
+      last_name: last_name || user.last_name,
+    });
 
     return res.status(200).json({
       message: "User updated successfully",
-      user: updateResult.rows[0],
+      user,
     });
   } catch (error) {
     console.error("Error updating user:", error);
     return res.status(500).json({ message: "Internal server error" });
   }
 }
+
 //grabing current user
 const getCurrentUserProfile = async (req, res) => {
-  const userId = req.user.id;
-  console.log("User ID from req.user:", userId);
   try {
-    const result = await pool.query(queries.getcurrUser, [userId]);
+    const userId = req.user.id;
+    console.log("User ID from req.user:", userId);
 
-    if (result.rows.length === 0) {
-      return res.status(404).json({ message: 'User not found' });
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized" });
     }
 
-    return res.status(200).json(result.rows[0]);
+    // Find user by primary key using Sequelize
+    const user = await User.findByPk(userId, {
+      attributes: ["id", "email", "phone_number", "first_name", "last_name", "created_at"],
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    return res.status(200).json(user);
   } catch (error) {
-    console.error('Error fetching user profile:', error);
-    return res.status(500).json({ message: 'Internal server error' });
+    console.error("Error fetching user profile:", error);
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
-
 
 
 //Delete a user
@@ -299,13 +302,19 @@ async function deleteUser(req, res) {
 }
 async function assignRoleToUser(userId, roleId) {
   try {
-      await pool.query(
-          "INSERT INTO user_roles (user_id, role_id) VALUES ($1, $2) ON CONFLICT DO NOTHING",
-          [userId, roleId]
-      );
-      console.log(`Role ${roleId} assigned to User ${userId}`);
+    const user = await User.findByPk(userId);
+    const role = await Role.findByPk(roleId);
+
+    if (!user || !role) {
+      console.error("User or Role not found.");
+      return;
+    }
+
+    await user.addRole(role, { through: {} });
+
+    console.log(`Role ${roleId} assigned to User ${userId}`);
   } catch (err) {
-      console.error("Error assigning role:", err.message);
+    console.error("Error assigning role:", err.message);
   }
 }
 
