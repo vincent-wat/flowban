@@ -14,7 +14,7 @@ import {
       <div className="column">
         <SortableContext items={tasks} strategy={verticalListSortingStrategy}>
           {tasks.map((task) => (
-            <Task key={task.id} id={task.id} title={task.title} />
+            <Task key={task.id} id={task.id} title={task.title} description={task.description} />
           ))}
         </SortableContext>
       </div>

@@ -2,16 +2,31 @@ import React, { useEffect, useState } from "react";
 import "../CSS/Board.css";
 import { DndContext, closestCorners} from "@dnd-kit/core";
 import {Column} from "./Column";
-
+import axios from "../../../axios";
 
 export default function Board() {
+   // fetch task data
+   const [loading, setLoading] = useState(null);
+   const [tasks, setTasks] = useState([]);
+   const TASK_URL = "/api/tasks";
+   const fetchTaskData = async () => {
+     try {
+       setLoading(true);
+       const response = await axios.get(TASK_URL);
+       // set the data to response
+       setTasks(response.data); 
+       console.log(response.data);
+     } catch (err) {
+       console.error('Error when fetching data:', err);
+     } finally {
+       setLoading(false);
+     }
+   };   
+     useEffect(() => {
+       fetchTaskData();
+     }, []);
 
-
-    const [tasks, setTasks] = useState([
-        {id: "1", title: "Clean Room"},
-        {id: "2", title: "DO HW"},
-        {id: "3", title: "Study For Test"},
-    ]);
+    
 
     const getTaskPos = id => tasks.findIndex(task => task.id === id);
 
@@ -38,6 +53,7 @@ export default function Board() {
             <h2 style = {{textAlign: "center"}}>Kanban Board</h2>
             <div style={{display: "flex", justifyContent: "space-between", alignItems: "center", flexDirection: "row"}}>
                 <Column id="todo" tasks={tasks}/> 
+               
                 
             </div>
         </DndContext>
