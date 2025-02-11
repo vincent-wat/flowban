@@ -1,3 +1,4 @@
+
 const bcrypt = require("bcrypt");
 const User = require("../models/user"); 
 const Role = require("../models/Role");
@@ -189,26 +190,24 @@ async function forgotPassword(req, res) {
 };
 
 async function resetPassword(req, res) {
-  console.log("Full query params:", req.query); // Debugging`
-  const { password } = req.body;
-  const { token } = req.params;
-  console.log("this is token " + token);
+  const { password, password_reset_token } = req.body;
+
   try {
+    // Find user by reset token
+    const user = await User.findOne({where: { password_reset_token }});
+    if (!user) {
+      return res.status(404).json({ message: "Invalid token" });
+    }
     // Hash the password
     const saltRound = 10;
     const salt = await bcrypt.genSalt(saltRound);
     const hashedPassword = await bcrypt.hash(password, salt);
-    
 
-    /*
-  const resetPassword = `
-  UPDATE users
-  SET password = $1, password_reset_token = NULL, updated_at = NOW()
-  WHERE password_reset_token = $2
-  `;
-*/
+    //Store password and delete reset token
+    user.password = hashedPassword;
+    user.password_reset_token = null;
+    await user.save();
 
-    await pool.query(queries.resetPassword, [hashedPassword, token]);
     res.status(200).json({ message: "Password reset successfully" });
   } catch (e) {
     console.error("Error resetting password:", e);
