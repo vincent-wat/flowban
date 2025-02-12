@@ -1,10 +1,15 @@
 .column {
-    background-color: #f2f2f3;
-    border-radius: 5px;
-    padding: 15px;
-    width: 80%;
-    max-width: 500px;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
+  flex: 1;
+  margin: 0 10px;
+  background-color: #554c4c;
+  border-radius: 4px;
+  padding: 10px;
+  min-height: 300px; /* Set a minimum height for the columns */
+  display: flex;
+  flex-direction: column;
+}
+
+  .task-list {
+    margin-top: 10px;
+    flex-grow: 1; /* Ensure the task list takes up available space */
   }

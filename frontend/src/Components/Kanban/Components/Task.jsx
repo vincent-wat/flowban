@@ -1,24 +1,23 @@
 import React from "react";
 import "../CSS/Task.css";
 
-import { useSortable } from "@dnd-kit/sortable";
+import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 
 
-export const Task = ({id, title, description}) => {
+export const Task = ({task}) => {
     const { attributes, listeners, 
-        setNodeRef, transform, transition } = useSortable({id});
+        setNodeRef, transform,} = useDraggable({id: task.id});
     
     const style = {
-        transition,
         transform: CSS.Transform.toString(transform),
     };
 
     return (
     <div style={style} ref = {setNodeRef} {...attributes} {...listeners} className="task">
         <input type="checkbox" className="checkbox"/>
-        <p>{title}</p>
-        <p>{description}</p>
+        <p>{task.title}</p>
+        <p>{task.description}</p>
     </div>
     );
 };

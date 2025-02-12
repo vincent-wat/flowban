@@ -1,27 +1,20 @@
+import React from "react";
 import "../CSS/Column.css";
 
-import {
-    SortableContext,
-    verticalListSortingStrategy,
-  } from "@dnd-kit/sortable";
-  
-  import { Task } from "./Task";
-  
+import { useDroppable } from "@dnd-kit/core";
+import {Task} from "./Task";
 
-  
-  export const Column = ({ tasks }) => {
-    return (
-      <div className="column">
-        <SortableContext items={tasks} strategy={verticalListSortingStrategy}>
+export const Column = ({tasks, column}) => {
+  const { setNodeRef } = useDroppable({ id: column.id });
+
+  return (
+    <div className="column">
+      <h3>{column.title}</h3>
+      <div ref={setNodeRef} className="task-list">
           {tasks.map((task) => (
-            <Task key={task.id} id={task.id} title={task.title} description={task.description} />
+            <Task task={task} />
           ))}
-        </SortableContext>
       </div>
-    );
-  };
-/*NOTES: 
-    snapshot object is used to determine if the user is dragging over the droppable area
-    helps with the color change when the item is dragged over the droppable area
-
-*/
+    </div>
+  );
+};
