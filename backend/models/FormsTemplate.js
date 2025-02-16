@@ -40,4 +40,5 @@ const FormsTemplate = sequelize.define(
   }
 );
 
+
 module.exports = FormsTemplate;

@@ -1,28 +1,24 @@
-const queries = require("../models/queries");
-const pool = require("../models/db");
 const path = require('path'); 
 const FormTemplate = require("../models/FormsTemplate");
 
 async function createAndUploadTemplate(req, res) {
   try {
-    console.log("Inside createAndUploadTemplate controller function");
     console.log("File received:", req.file);
-    console.log("Body received:", req.body);
+    console.log("Request body:", req.body);
 
-    if (!req.file || !req.file.filename) {
+    const { name, description, created_by, fields_metadata } = req.body;
+
+    if (!req.file) {
       return res.status(400).json({ error: "Template file is required" });
     }
 
-    const { filename } = req.file;
-    const { name, description, created_by, fields_metadata } = req.body;
-
     if (!name || !description || !created_by) {
-      return res
-        .status(400)
-        .json({ error: "Missing required fields (name, description, created_by)" });
+      return res.status(400).json({
+        error: "Missing required fields (name, description, created_by)",
+      });
     }
 
-    const pdf_file_path = `/uploads/templates/${filename}`;
+    const pdf_file_path = `/uploads/templates/${req.file.filename}`;
     const metadata = fields_metadata ? JSON.stringify(fields_metadata) : null;
 
     const newTemplate = await FormTemplate.create({
