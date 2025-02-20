@@ -80,6 +80,10 @@ export const Dashboard = () => {
     setNewBoardName("");
   };
 
+  
+  const handleBoardClick = (boardId) => {
+    navigate(`/kanban/${boardId}`);
+  };
   const handleTemplateClick = (templateId) => {
   
     navigate(`/workflowBoard/${templateId}`);
@@ -129,7 +133,7 @@ export const Dashboard = () => {
           <p>No boards match your search.</p>
         ) : (
           filteredBoards.map((board) => (
-            <button key={board.id} className="doc-button">
+            <button key={board.id} className="doc-button" onClick={()=> handleBoardClick(board.id)}>
               <FaRegFileAlt style={{ marginRight: "10px", color: "#C51D34" }} />
               <span className="board-name">{board.name}</span>
               <FaEllipsisV className="ellipsis-icon" />
