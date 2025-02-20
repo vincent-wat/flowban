@@ -9,7 +9,7 @@ export const Column = ({tasks, column}) => {
 
   return (
     <div className="column">
-      <h3>{column.title}</h3>
+      <h3>{column.name}</h3>
       <div ref={setNodeRef} className="task-list">
           {tasks.map((task) => (
             <Task task={task} />

@@ -3,8 +3,7 @@ import { Routes, Route, useLocation } from "react-router-dom";
 import Profile from "./Components/User/Profile/EditUser";
 import Home from "./Components/General/Home";
 import LoginPage from "./Components/User/Login/LoginPage";
-//import KanbanBoard from "./Components/Kanban/KanbanBoard";
-import KanbanBoard from "./Components/Kanban/Components/Board";
+import KanbanBoard from "./Components/Kanban/KanbanBoard";
 import Layout from "./Components/General/Layout";
 import SignUpPage from "./Components/User/Sign_Up/SignUpPage";
 import Settings from "./Components/User/Profile/Settings";
@@ -33,7 +32,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/login" element={<LoginPage />} />
-            <Route path="/kanban" element={<KanbanBoard />} />
+            <Route path="/kanban/:board_id" element={<KanbanBoard />} />
             <Route path="/signup" element={<SignUpPage />} />
             <Route path="/profile/settings" element={<Settings />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
