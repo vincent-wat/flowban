@@ -16,18 +16,26 @@ const cors = require("cors");
 const path = require("path"); 
 const fs = require("fs");
 
-const http = require("http");
+const https = require("https");
 const { Server } = require("socket.io");
 
+const options = {
+  key: fs.readFileSync("./certs/localhost.key"),
+  cert: fs.readFileSync("./certs/localhost.crt"),
+};
+
 const app = express();
-const server = http.createServer(app); 
+const server = https.createServer(options, app); 
 
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:3001",
+    origin: "https://localhost:3001",
     methods: ["GET", "POST"]
   }
 });
+
+//Load SSL certificate and key from the certs folder
+
 
 // Attach io to app so it can be used in controllers
 app.set("io", io);
@@ -43,7 +51,7 @@ io.on("connection", (socket) => {
 const PORT = 3000;
 
 app.use(express.json());
-app.use(cors({ origin: "http://localhost:3001" }));
+app.use(cors({ origin: "https://localhost:3001" }));
 
 app.get("/", (req, res) => {
   res.send("Welcome to the Flowban API!");
@@ -96,7 +104,7 @@ ensureTemplateDirectory();
 // Start Server
 if (process.env.NODE_ENV !== 'test') {
   server.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+    console.log(`Server is running on https://localhost:${PORT}`);
   });
 }
 
