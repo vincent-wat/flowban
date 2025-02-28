@@ -12,26 +12,20 @@ const ViewFormPage = () => {
         try {
             const existingPdfBytes = await fetch(pdfUrl).then((res) => res.arrayBuffer());
             const pdfDoc = await PDFDocument.load(existingPdfBytes);
-    
             const form = pdfDoc.getForm();
     
-            // Log all available PDF fields
+            // Log available PDF fields
             console.log("Available Fields in PDF:");
-            const fields = form.getFields();
-            fields.forEach((field) => {
+            form.getFields().forEach((field) => {
                 console.log(`Field Name: ${field.getName()}, Field Type: ${field.constructor.name}`);
             });
     
-            // Log DOM inputs and their attributes
-            console.log("DOM Inputs:");
+            // Log DOM inputs and attempt to map them to PDF fields
             const inputs = document.querySelectorAll(".pdfViewer input");
-            inputs.forEach((input) => {
-                console.log(`DOM Input Name: ${input.name}, Value: ${input.value}, Data ID: ${input.dataset.elementId}`);
-            });
+            console.log("DOM Inputs:", inputs);
     
-            // Attempt to map DOM inputs to PDF fields
             inputs.forEach((input) => {
-                const fieldName = input.name; // Use the 'name' attribute to match PDF fields
+                const fieldName = input.name;
                 const fieldValue = input.value;
     
                 try {
@@ -39,15 +33,9 @@ const ViewFormPage = () => {
                     if (field) {
                         if (field.constructor.name === "PDFTextField") {
                             console.log(`Setting text for ${fieldName}: ${fieldValue}`);
-                            field.setText(fieldValue); // Set text for text fields
+                            field.setText(fieldValue);
                         } else if (field.constructor.name === "PDFCheckBox") {
-                            if (input.checked) {
-                                console.log(`Checking ${fieldName}`);
-                                field.check(); // Check the checkbox
-                            } else {
-                                console.log(`Unchecking ${fieldName}`);
-                                field.uncheck(); // Uncheck the checkbox
-                            }
+                            input.checked ? field.check() : field.uncheck();
                         }
                     } else {
                         console.log(`No matching PDF field found for DOM field: ${fieldName}`);
@@ -60,13 +48,14 @@ const ViewFormPage = () => {
             // Save the updated PDF
             const pdfBytes = await pdfDoc.save();
     
-            // Upload the new file
+            // Prepare the form data
             const formData = new FormData();
-            formData.append("modifiedPdf", new Blob([pdfBytes]), `form_${Date.now()}.pdf`);
+            formData.append("file", new Blob([pdfBytes]), `form_${Date.now()}.pdf`); // ✅ Match the Multer field name
             formData.append("template_id", templateId);
-            formData.append("submitted_by", "11");
+            formData.append("submitted_by", "11"); // Replace with dynamic user ID
     
-            const response = await fetch("http://localhost:3000/api/formInstance/Instances", {
+            // Send the form data to the backend
+            const response = await fetch("http://localhost:3000/api/formInstance/instances", {
                 method: "POST",
                 body: formData,
             });
@@ -79,7 +68,7 @@ const ViewFormPage = () => {
         } catch (error) {
             console.error("Error generating PDF:", error);
         }
-    };
+    };    
     
 
     return (

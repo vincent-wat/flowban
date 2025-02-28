@@ -1,10 +1,6 @@
-const { DataTypes } = require("sequelize");
-const sequelize = require("./database");
-const FormTemplate = require("./FormsTemplate");
-const User = require("./User");
-
-const FormInstance = sequelize.define(
-  "FormInstance",
+module.exports = (sequelize, DataTypes) => {
+  const FormInstance = sequelize.define(
+    "FormInstance",
   {
     id: {
       type: DataTypes.INTEGER,
@@ -36,6 +32,15 @@ const FormInstance = sequelize.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    denial_reason: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+      validate: {
+        notEmpty: {
+          msg: "Denial reason cannot be empty if the form is denied."
+        }
+      }
+    },
   },
   {
     tableName: "form_instances",
@@ -44,8 +49,9 @@ const FormInstance = sequelize.define(
   }
 );
 
-// Define Associations
-FormInstance.belongsTo(FormTemplate, { foreignKey: "template_id", as: "template" });
-FormInstance.belongsTo(User, { foreignKey: "submitted_by", as: "submitter" });
-
-module.exports = FormInstance;
+FormInstance.associate = (models) => {
+  FormInstance.belongsTo(models.FormTemplate, { foreignKey: "template_id", as: "template" });
+  FormInstance.belongsTo(models.User, { foreignKey: "submitted_by", as: "submitter" });
+}
+  return FormInstance;
+}

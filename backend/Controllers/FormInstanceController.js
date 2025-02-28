@@ -6,15 +6,21 @@ const User = require("../models/User");
 const WorkflowStage = require("../models/WorkflowStage");
 
 
+const path = require("path"); 
+
 async function createFormInstance(req, res) {
   try {
+    console.log("🛠 Processing form submission...");
+    console.log("Request Body:", req.body);
+    console.log("Uploaded File:", req.file);
+
     const { template_id, submitted_by } = req.body;
 
     if (!req.file) {
       return res.status(400).json({ error: "No file uploaded" });
     }
 
-    const filePath = `../uploads/userForms/${req.file.filename}`;
+    const filePath = path.join("uploads/userForms", req.file.filename);
 
     const templateExists = await FormTemplate.findByPk(template_id);
     if (!templateExists) {
@@ -32,6 +38,8 @@ async function createFormInstance(req, res) {
       pdf_file_path: filePath,
     });
 
+    console.log("Form Instance Created:", newFormInstance);
+
     return res.status(201).json({
       message: "Form instance created successfully",
       formInstance: newFormInstance,
@@ -41,6 +49,9 @@ async function createFormInstance(req, res) {
     return res.status(500).json({ error: "Failed to create form instance" });
   }
 }
+
+module.exports = { createFormInstance };
+
 
 
 async function getFormInstanceById(req, res) {
@@ -147,7 +158,7 @@ const approveFormInstance = async (req, res) => {
     console.log(`Found form instance:`, formInstance.dataValues);
 
     const currentStageName = formInstance.status;
-    console.log(`🔍 Current stage for form ${id}: ${currentStageName}`);
+    console.log(`Current stage for form ${id}: ${currentStageName}`);
 
     const currentStage = await WorkflowStage.findOne({
       where: {
@@ -171,12 +182,12 @@ const approveFormInstance = async (req, res) => {
     });
 
     if (!nextStage) {
-      console.log(`🚀 Form ${id} has reached the final stage: ${currentStageName}`);
+      console.log(`Form ${id} has reached the final stage: ${currentStageName}`);
       return res.status(200).json({ message: "Form has reached the final stage." });
     }
 
     const newStage = nextStage.stage_name;
-    console.log(`🔄 Updating form ${id} to new stage: ${newStage}`);
+    console.log(`Updating form ${id} to new stage: ${newStage}`);
 
     await formInstance.update({ status: newStage });
 
@@ -190,28 +201,37 @@ const approveFormInstance = async (req, res) => {
 };
 
 const denyFormInstance = async (req, res) => {
-  const { id } = req.params;
-  const io = req.app.get("io");
-
   try {
-    // Find the form instance
-    const formInstance = await FormInstance.findByPk(id);
+    const { id } = req.params; // Get form instance ID
+    const { denial_reason } = req.body; // Get denial reason from request
 
+    // Find the form instance by ID
+    const formInstance = await FormInstance.findByPk(id);
     if (!formInstance) {
-      return res.status(404).json({ error: "Form instance not found" });
+      return res.status(404).json({ message: 'Form not found.' });
     }
 
-    // Move form back to "Initializing"
-    await formInstance.update({ status: "Initializing" });
+    // Check if form is already denied (optional safeguard)
+    if (formInstance.status === 'denied') {
+      return res.status(400).json({ message: 'This form has already been denied.' });
+    }
 
-    io.emit("formUpdated", { id, newStatus: "Initializing" });
+    // Require a denial reason when denying a form
+    if (!denial_reason || denial_reason.trim() === '') {
+      return res.status(400).json({ message: 'A denial reason is required.' });
+    }
 
-    return res.status(200).json({ message: "Form moved back to Initializing stage." });
+    // Update form status to 'denied' and save the denial reason
+    formInstance.status = 'denied';
+    formInstance.denial_reason = denial_reason;
+    await formInstance.save();
+
+    return res.status(200).json({ message: 'Form denied successfully.', formInstance });
   } catch (error) {
-    console.error("Error denying form:", error);
-    return res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ message: error.message });
   }
 };
+
 
 module.exports = {
   createFormInstance,

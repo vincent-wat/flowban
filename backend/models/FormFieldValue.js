@@ -1,4 +1,4 @@
-const { DataTypes } = require('sequelize');
+/*const { DataTypes } = require('sequelize');
 const sequelize = require('../db'); 
 
 const FormFieldValue = sequelize.define('FormFieldValue', {
@@ -32,3 +32,4 @@ const FormFieldValue = sequelize.define('FormFieldValue', {
 });
 
 module.exports = FormFieldValue;
+*/

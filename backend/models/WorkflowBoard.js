@@ -51,19 +51,19 @@ WorkflowBoard.belongsTo(FormsTemplate, {
   as: "template",
 });
 
-WorkflowBoard.belongsTo(User, {
+/*WorkflowBoard.belongsTo(User, {
   foreignKey: "created_by",
   as: "creator",
-});
+});*/
 
 FormsTemplate.hasMany(WorkflowBoard, {
   foreignKey: "template_id",
   as: "boards",
 });
 
-User.hasMany(WorkflowBoard, {
+/*User.hasMany(WorkflowBoard, {
   foreignKey: "created_by",
   as: "createdBoards",
-});
+});*/
 
 module.exports = WorkflowBoard;
