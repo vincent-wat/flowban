@@ -166,3 +166,18 @@ CREATE TABLE forms_templates (
 
 #### Installs
 npm i multer 
+
+## SSL Instructions
+On macOS:
+    Open Keychain Access (Cmd + Space, type "Keychain Access").
+    Go to System → Certificates.
+    Click File → Import Items
+    Import localhost.crt
+    Double-click it, expand *Trust*, and set **Always Trust**.
+
+On Windows:
+    Open Run (Win + R), type mmc, and press Enter.
+    Go to File → Add/Remove Snap-in.
+    Select Certificates → Computer Account → Next → Local Computer → Finish.
+    In Certificates (Local Computer), expand Trusted Root Certification Authorities → Certificates.
+    Right-click, choose Import, and select localhost.crt.
