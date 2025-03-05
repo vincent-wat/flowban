@@ -23,7 +23,7 @@ export const WorkflowBoard = () => {
     try {
       console.log(templateId);
       const stagesResponse = await fetch(
-        `http://localhost:3000/api/workflowStages/template/${templateId}`
+        `https://localhost:3000/api/workflowStages/template/${templateId}`
       );
       const stagesData = await stagesResponse.json();
   

@@ -14,7 +14,7 @@ export const Dashboard = () => {
   useEffect(() => {
     const fetchBoards = async () => {
       try {
-        const response = await fetch('http://localhost:3000/api/boards');
+        const response = await fetch('https://localhost:3000/api/boards');
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -27,7 +27,7 @@ export const Dashboard = () => {
 
     const fetchTemplates = async () => {
       try {
-        const response = await fetch('http://localhost:3000/api/forms/templates');
+        const response = await fetch('https://localhost:3000/api/forms/templates');
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
