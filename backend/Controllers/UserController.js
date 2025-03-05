@@ -1,5 +1,6 @@
+
 const bcrypt = require("bcrypt");
-const User = require("../models/User"); 
+const { User } = require("../models");
 const Role = require("../models/Role");
 const pool = require("../models/db");
 const queries = require("../models/queries");
@@ -12,21 +13,28 @@ const nodemailer = require("nodemailer");
 async function getUsers(req, res) {
   console.log("getting users");
   try {
-    const allUsers = await pool.query(queries.getUsers);
-    res.json(allUsers.rows);
+    const allUsers = await user.findAll(); // Use Sequelize to get all users
+    res.json(allUsers);
   } catch (err) {
     console.error(err.message);
+    res.status(500).json({ error: "Server error" });
   }
 }
 
 //Find user by ID number
 async function getUserByID(req, res) {
   try {
+    console.log("getting user by ID");
     const { id } = req.params;
-    const user = await pool.query(queries.findUser, [id]);
-    res.json(user.rows[0]);
+    console.log("req.params " + req.params);
+    const foundUser = await User.findByPk(id); // Use Sequelize to find the user by primary key
+    if (!foundUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json(foundUser);
   } catch (err) {
     console.error(err.message);
+    res.status(500).json({ error: "Server error" });
   }
 }
 
@@ -34,10 +42,14 @@ async function getUserByID(req, res) {
 async function getUserByEmail(req, res) {
   try {
     const { email } = req.params;
-    const user = await pool.query(queries.findUserByEmail, [email]);
-    res.json(user.rows[0]);
+    const foundUser = await User.findOne({ where: { email } });
+    if (!foundUser) {
+      return res.status(404).json({ message: "User not found" });
+    } 
+    res.json(foundUser);
   } catch (err) {
     console.error(err.message);
+    res.status(500).json({ error: "Server error" });
   }
 }
 
@@ -45,10 +57,16 @@ async function getUserByEmail(req, res) {
 async function getUserByResetToken(req, res) {
   try {
     const { token } = req.params; 
-    const user = await pool.query(queries.findUserByResetToken, [token]);
-    res.json(user.rows[0]);
+    console.log("token in get is " + token);
+    const foundUser = await User.findOne({ where: { password_reset_token: token } });
+    if (!foundUser) {
+      console.log("User not found with token: " + token);
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json(foundUser);
   } catch (err) {
     console.error(err.message);
+    res.status(500).json({ error: "Server error" });
   }
 }
 
@@ -99,7 +117,6 @@ async function postUser(req, res) {
 //Login a user
 async function loginUser(req, res) {
   const { email, password } = req.body;
-
   try {
     // Find user by email using Sequelize
     const user = await User.findOne({ where: { email } });
@@ -127,24 +144,26 @@ async function loginUser(req, res) {
   }
 }
 
+
 async function forgotPassword(req, res) {
   const { email } = req.body;
   try {
-    const user = await pool.query(queries.findUserByEmail, [email]);
-    if (user.rows.length === 0) {
+    const oneUser = await User.findOne({where : {email}});
+    if (!oneUser) {
       return res.status(404).json({ message: "User not found" });
     }
-    // Generate a password reset token
-    const jwtToken = jwtGeneratorExpiry(user.rows[0].email);
-    console.log("Reset token:", jwtToken);
-
-    // Assign the token to the user
-    await pool.query(queries.insertResetToken, [jwtToken, email]);
-
-    // Create a password reset link
-    const resetLink = `http://localhost:3001/reset-password?token=${jwtToken}`;
+    //Generate a password reset token
+    const jwtToken = jwtGeneratorExpiry(email);
+    console.log("Reset token: ", jwtToken);
     
-    // Send email with password reset link
+    //Assign the token to the user
+    oneUser.password_reset_token = jwtToken;
+    await oneUser.save();
+
+    //Create a password reset link
+    const resetLink = `http://localhost:3001/reset-password?token=${jwtToken}`;
+
+    //send email with password reset link
     const transporter = nodemailer.createTransport({
       service: "gmail",
       host: "smtp.gmail.com",
@@ -161,9 +180,10 @@ async function forgotPassword(req, res) {
       to: email,
       subject: "Password Reset",
       text: `Click the link to reset your password\n${resetLink}`,
-    });
-
+    }); 
+    
     res.status(200).json({ message: "Password reset email sent" });
+
   } catch (error) {
     console.error("Error resetting password:", error);
     res.status(500).json({ message: "Internal server error" });
@@ -173,12 +193,21 @@ async function forgotPassword(req, res) {
 async function resetPassword(req, res) {
   const { password, password_reset_token } = req.body;
   try {
+    // Find user by reset token
+    const user = await User.findOne({where: { password_reset_token }});
+    if (!user) {
+      return res.status(404).json({ message: "Invalid token" });
+    }
     // Hash the password
     const saltRound = 10;
     const salt = await bcrypt.genSalt(saltRound);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    await pool.query(queries.resetPassword, [hashedPassword, password_reset_token]);
+    //Store password and delete reset token
+    user.password = hashedPassword;
+    user.password_reset_token = null;
+    await user.save();
+
     res.status(200).json({ message: "Password reset successfully" });
   } catch (e) {
     console.error("Error resetting password:", e);
