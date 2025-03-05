@@ -16,17 +16,22 @@ router.post("/", async (req, res) => {
 });
 
 // update column by id
-router.put("/name/:id", async (req, res) => {
+router.put("/id/:id", async (req, res) => {
     try {
         const column = await Column.findByPk(req.params.id);
         if (!column) {
             return res.status(404).json({ error: 'Column not found' });
         }
-        await column.update({ name: req.body.name, board_id: req.body.board_id });
+
+        const updateData = { name: req.body.name };
+        if (req.body.board_id) {
+            updateData.board_id = req.body.board_id;
+        }
+
+        await column.update(updateData);
         res.json(column);
     } catch (error) {
         res.status(500).json({ error: 'Column not updated' });
-        
     }
 });
 
@@ -43,7 +48,7 @@ router.get("/", async (req, res) => {
 });
 
 // get column by id
-router.get("/:id", async (req, res) => {
+router.get("/id/:id", async (req, res) => {
     try {
         const column = await Column.findByPk(req.params.id);
         if (!column) {
