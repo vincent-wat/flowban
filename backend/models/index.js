@@ -13,6 +13,8 @@ const sequelize = new Sequelize(config.database, config.username, config.passwor
   ...config,
 });
 
+db.FormsTemplate = require("./FormsTemplate")(sequelize, Sequelize.DataTypes);
+
 const excludeFiles = ["database.js", "db.js", "list.js", "task.js", "queries.js"];
 
 fs.readdirSync(__dirname)

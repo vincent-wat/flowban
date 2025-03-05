@@ -50,7 +50,12 @@ io.on("connection", (socket) => {
 const PORT = 3000;
 
 app.use(express.json());
-app.use(cors({ origin: "https://localhost:3001" }));
+app.use(cors({
+  origin: ["http://localhost:3001", "https://localhost:3001"],
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  credentials: true
+}));
+
 
 app.get("/", (req, res) => {
   res.send("Welcome to the Flowban API!");

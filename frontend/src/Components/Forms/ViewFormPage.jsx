@@ -6,7 +6,7 @@ import "./pdfViewer.css";
 
 const ViewFormPage = () => {
     const { templateId } = useParams();
-    const pdfUrl = `http://localhost:3000/api/forms/templates/pdf/${templateId}`;
+    const pdfUrl = `https://localhost:3000/api/forms/templates/pdf/${templateId}`;
 
     const handleSubmit = async () => {
         try {

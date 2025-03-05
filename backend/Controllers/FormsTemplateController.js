@@ -1,5 +1,5 @@
 const path = require('path'); 
-const FormTemplate = require("../models/FormsTemplate");
+const { FormsTemplate } = require("../models");
 
 async function createAndUploadTemplate(req, res) {
   try {
@@ -21,7 +21,7 @@ async function createAndUploadTemplate(req, res) {
     const pdf_file_path = `/uploads/templates/${req.file.filename}`;
     const metadata = fields_metadata ? JSON.stringify(fields_metadata) : null;
 
-    const newTemplate = await FormTemplate.create({
+    const newTemplate = await FormsTemplate.create({
       name,
       description,
       pdf_file_path,
@@ -41,7 +41,7 @@ async function createAndUploadTemplate(req, res) {
 
 async function getAllFormTemplates(req, res) {
   try {
-    const templates = await FormTemplate.findAll();
+    const templates = await FormsTemplate.findAll();
 
     return res.status(200).json(templates);
   } catch (error) {
@@ -58,7 +58,7 @@ async function getFormTemplateById(req, res) {
     }
 
     console.log("Fetching FormTemplate with ID:", id);
-    const template = await FormTemplate.findByPk(id);
+    const template = await FormsTemplate.findByPk(id);
 
     if (!template) {
       return res.status(404).json({ error: "Form template not found" });
@@ -87,7 +87,7 @@ async function updateFormTemplate(req, res) {
 
     console.log("Updating FormTemplate with ID:", id);
 
-    const template = await FormTemplate.findByPk(id);
+    const template = await FormsTemplate.findByPk(id);
 
     if (!template) {
       return res.status(404).json({ error: "Form template not found" });
@@ -116,7 +116,7 @@ async function deleteFormTemplate(req, res) {
 
     console.log("Deleting FormTemplate with ID:", id);
 
-    const template = await FormTemplate.findByPk(id);
+    const template = await FormsTemplate.findByPk(id);
 
     if (!template) {
       return res.status(404).json({ error: "Form template not found" });
@@ -139,7 +139,7 @@ async function getPdfById(req, res) {
       return res.status(400).json({ error: "Invalid template ID" });
     }
 
-    const template = await FormTemplate.findByPk(id);
+    const template = await FormsTemplate.findByPk(id);
 
     if (!template) {
       return res.status(404).json({ error: "Template not found!" });

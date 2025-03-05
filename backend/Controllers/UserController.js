@@ -1,7 +1,7 @@
 
 const bcrypt = require("bcrypt");
 const { User } = require("../models");
-const Role = require("../models/Role");
+const { Role } = require("../models");
 const pool = require("../models/db");
 const queries = require("../models/queries");
 const { jwtGenerator, jwtGeneratorExpiry } = require("../utils/jwtGenerator");
