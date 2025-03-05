@@ -26,11 +26,12 @@ router.put("/id/:id", async (req, res) => {
     try {
         const task = await Task.findByPk(req.params.id);
         if(task) {
-            await task.update({
-                title: req.body.title,
-                description: req.body.description,
-                column_id: req.body.column_id
-            });
+            const updateData = {};
+            if (req.body.title) updateData.title = req.body.title;
+            if (req.body.description) updateData.description = req.body.description;
+            if (req.body.column_id) updateData.column_id = req.body.column_id;
+
+            await task.update(updateData);
             res.json(task);
         } else {
             res.status(404).json({ error: 'Task not found' });
@@ -104,4 +105,23 @@ router.delete("/column_id/:column_id", async (req, res) => {
         res.status(500).json({ error: 'Tasks not deleted' });
     }
 });
+
+
+// Batch update tasks
+router.put("/batch", async (req, res) => {
+    const tasks = req.body.tasks;
+    try {
+        const updatePromises = tasks.map(task => {
+            const updateData = {};
+            if (task.column_id) updateData.column_id = task.column_id;
+            return Task.update(updateData, { where: { id: task.id } });
+        });
+        await Promise.all(updatePromises);
+        res.json({ message: "Tasks updated successfully" });
+    } catch (error) {
+        res.status(500).json({ error: "Error updating tasks" });
+    }
+});
+
+
 module.exports = router;
