@@ -48,7 +48,7 @@ export const Dashboard = () => {
 
   const handleCreateNewBoard = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/boards', {
+      const response = await fetch('https://localhost:3000/api/boards', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

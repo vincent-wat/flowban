@@ -10,10 +10,6 @@
     "sequelize": "^6.37.5"
   },
   "devDependencies": {
-<<<<<<< Updated upstream
-    "jest": "^29.7.0",
-=======
->>>>>>> Stashed changes
     "supertest": "^7.0.0"
   }
 }
