@@ -32,7 +32,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/login" element={<LoginPage />} />
-            <Route path="/kanban" element={<KanbanBoard />} />
+            <Route path="/kanban/:board_id" element={<KanbanBoard />} />
             <Route path="/signup" element={<SignUpPage />} />
             <Route path="/profile/settings" element={<Settings />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />

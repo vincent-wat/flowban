@@ -1,0 +1,50 @@
+.task {
+  background-color: rgb(252, 247, 247);
+  border: black;
+  border-radius: 5px;
+  box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+  width: 100%;
+  padding: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 20px;
+  touch-action: none;
+  width: 380px; 
+  height: 100px; 
+}
+.drag-handle {
+    cursor: grab;
+    padding: 5px;
+    background-color: #ccc;
+    border-radius: 4px;
+    display: inline-block;
+    margin-right: 10px;
+  }
+  
+.drag-handle:active {
+    cursor: grabbing;
+  }
+  
+.drag-icon {
+    cursor: grab;
+  }
+.task-content {
+    display: flex;
+    flex-direction: column; 
+    gap: 5px;
+  }
+  
+.task-title {
+    font-weight: bold;
+  }
+  
+.task-description {
+    color: #666;
+  }
+
+.task-dragging {
+    width: 50%; 
+    height: 50%; 
+    opacity: 0.8; 
+  }
