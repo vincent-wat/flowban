@@ -1,6 +1,6 @@
 
 const bcrypt = require("bcrypt");
-const User = require("../models/user"); 
+const { User } = require("../models");
 const Role = require("../models/Role");
 const pool = require("../models/db");
 const queries = require("../models/queries");
@@ -117,7 +117,6 @@ async function postUser(req, res) {
 //Login a user
 async function loginUser(req, res) {
   const { email, password } = req.body;
-
   try {
     // Find user by email using Sequelize
     const user = await User.findOne({ where: { email } });

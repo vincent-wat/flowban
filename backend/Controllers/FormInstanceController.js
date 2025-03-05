@@ -1,6 +1,6 @@
 const pool = require('../models/db');
 const queries = require('../models/queries');
-const FormInstance = require("../models/FormsInstances");
+const FormInstance = require("../models/FormInstance");
 const FormTemplate = require("../models/FormsTemplate");
 const User = require("../models/User");
 const WorkflowStage = require("../models/WorkflowStage");
@@ -49,9 +49,6 @@ async function createFormInstance(req, res) {
     return res.status(500).json({ error: "Failed to create form instance" });
   }
 }
-
-module.exports = { createFormInstance };
-
 
 
 async function getFormInstanceById(req, res) {
