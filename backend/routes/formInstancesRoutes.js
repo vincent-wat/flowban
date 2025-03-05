@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const formInstanceController = require('../controllers/formInstanceController');
+const formInstanceController = require('../Controllers/FormInstanceController');
 const { uploadUserForms } = require("../middleware/multerConfig");
 
 router.post("/instances", uploadUserForms, formInstanceController.createFormInstance);

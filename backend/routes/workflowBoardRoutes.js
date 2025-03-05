@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const workflowBoardController = require('../controllers/workflowBoardController');
+const workflowBoardController = require('../Controllers/workflowBoardController');
 
 
 router.post('/', workflowBoardController.createWorkflowBoard);

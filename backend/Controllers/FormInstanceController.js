@@ -2,7 +2,7 @@ const pool = require('../models/db');
 const queries = require('../models/queries');
 const FormInstance = require("../models/FormInstance");
 const FormTemplate = require("../models/FormsTemplate");
-const User = require("../models/User");
+const User = require("../models/user");
 const WorkflowStage = require("../models/WorkflowStage");
 
 

@@ -7,7 +7,6 @@ const taskRoutes = require("./routes/tasksRoutes");
 const columnRoutes = require("./routes/columnRoutes");
 const formTemplateRoutes = require("./routes/formTemplateRoutes"); 
 const formInstanceRoutes = require("./routes/formInstancesRoutes");
-const formFieldValueRoutes = require("./routes/formFieldValueRoutes");
 const userActionsLogs = require("./routes/userActionLogsRoutes");
 const workflowBoardRoutes = require('./routes/workflowBoardRoutes');
 const workflowStagesRoutes = require('./routes/workflowStagesRoutes'); 
@@ -66,7 +65,6 @@ app.use("/api/tasks", taskRoutes);
 //workflow routes
 app.use('/api/forms', formTemplateRoutes);
 app.use("/api/formInstance", formInstanceRoutes);
-app.use("/api/formFieldValue", formFieldValueRoutes);
 app.use("/api/userActionsLogs", userActionsLogs); 
 app.use('/api/workflowBoards', workflowBoardRoutes);
 app.use('/api/workflowStages', workflowStagesRoutes);
