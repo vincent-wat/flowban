@@ -2,19 +2,28 @@ version: '3.8'
 
 services:
   backend:
-    build: ./backend
+    build: ./Backend
     ports:
       - "3000:3000"
     depends_on:
       - postgres
     env_file:
-      - .env  # Load environment variables from .env
+      - .env
+
+  frontend:
+    build: ./Frontend
+    ports:
+      - "3001:3000"  # Map container port 3000 to local port 3001
+    depends_on:
+      - backend
+    stdin_open: true
+    tty: true
 
   postgres:
     image: postgres:16
     restart: always
     env_file:
-      - .env  # Load environment variables for the database
+      - .env
     ports:
       - "5432:5432"
     volumes:
