@@ -1,14 +1,26 @@
-/* General Layout */
+/* Home.css */
+
 .home-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 60px 20px;
+  background-color: #f1f1f1;
+  min-height: 100vh;
+  width: 100%;
+}
+
+/* Hero Section */
+.hero-section {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 60px 20px;
-  background-color: #f1f1f1; /* Light background for modern look */
-  min-height: 100vh;
+  width: 100%;
+  max-width: 1200px;
+  margin-bottom: 80px;
+  padding-top: 350px; 
 }
 
-/* Left Content (Text and Button) */
 .left-content {
   flex: 1;
   padding: 20px;
@@ -32,7 +44,7 @@
 .get-started-btn {
   display: inline-flex;
   align-items: center;
-  background-color: #C51D34; /* Main brand color */
+  background-color: #C51D34;
   color: white;
   border: none;
   padding: 15px 25px;
@@ -41,10 +53,11 @@
   cursor: pointer;
   transition: background-color 0.3s ease-in-out;
   font-weight: bold;
+  margin-top: 20px;
 }
 
 .get-started-btn:hover {
-  background-color: #a3152e; /* Slightly darker red for hover */
+  background-color: #a3152e;
 }
 
 .get-started-btn svg {
@@ -52,7 +65,6 @@
   font-size: 20px;
 }
 
-/* Right Content (Graphic or Illustration) */
 .right-content {
   flex: 1;
   display: flex;
@@ -61,8 +73,97 @@
 }
 
 .graphic-image {
-  max-width: 500px; /* Adjust size of graphic */
+  max-width: 500px;
   width: 100%;
   height: auto;
   object-fit: contain;
+}
+
+/* Features Section */
+.features-section {
+  text-align: center;
+  width: 100vw;  /* Use 100% of the viewport width */
+  margin-left: 0; /* Reset any left margin */
+  margin-right: 0; /* Reset any right margin */
+  margin-bottom: 80px;
+  background-color: #f1f1f1; /* Your desired background color */
+  padding: 20px 0;  /* Optional: Add padding to the top and bottom */
+}
+
+.features-wrapper {
+  width: 100%;
+  max-width: 1000px;  /* This keeps your content constrained */
+  margin: 0 auto; /* Center content */
+}
+
+h2 {
+  padding-bottom: 15px;
+}
+
+.features {
+  display: flex;
+  justify-content: space-around;
+  gap: 40px;
+}
+
+.feature-card {
+  background: white;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  max-width: 300px;
+}
+
+.feature-icon {
+  font-size: 40px;
+  color: #C51D34;
+  margin-bottom: 15px;
+}
+
+.feature-title {
+  font-size: 22px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.feature-description {
+  font-size: 16px;
+  color: #555;
+  line-height: 1.5;
+}
+
+/* Testimonials Section */
+.testimonials-section {
+  text-align: center;
+  width: 100%;
+  max-width: 800px;
+  margin-bottom: 80px;
+}
+
+.testimonials {
+  display: flex;
+  justify-content: space-around;
+  gap: 40px;
+}
+
+.testimonial-card {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  max-width: 350px;
+}
+
+.testimonial-text {
+  font-size: 16px;
+  font-style: italic;
+  color: #444;
+  margin-bottom: 15px;
+}
+
+.testimonial-author {
+  font-size: 14px;
+  font-weight: bold;
+  color: #222;
 }
