@@ -3,56 +3,72 @@ import { useParams, useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
 import "./WorkflowBoardPage.css";
 
-const socket = io("http://localhost:3000", {
+const socket = io("https://localhost:3000", {
   transports: ["websocket", "polling"],
 });
 
 export const WorkflowBoard = () => {
   const { templateId } = useParams();
   const navigate = useNavigate();
+
   const [stages, setStages] = useState([]);
   const [formInstances, setFormInstances] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [loadingForms, setLoadingForms] = useState({}); // Track loading state for each form
+  const [loadingForms, setLoadingForms] = useState({});
+  
   const [showModal, setShowModal] = useState(false);
   const [selectedFormId, setSelectedFormId] = useState(null);
   const [denialReason, setDenialReason] = useState("");
 
-  // Function to fetch workflow data
   const fetchWorkflowData = async () => {
     try {
-      console.log(templateId);
       const stagesResponse = await fetch(
         `https://localhost:3000/api/workflowStages/template/${templateId}`
       );
       const stagesData = await stagesResponse.json();
-  
-      console.log("Fetched stages:", stagesData); // Debugging log
-  
+
       if (!Array.isArray(stagesData)) {
         console.error("Error: Stages data is not an array!", stagesData);
-        setStages([]); // Prevents breaking .map()
+        setStages([]);
       } else {
         setStages(stagesData);
       }
-  
     } catch (error) {
       console.error("Error fetching stages:", error);
-      setStages([]); // Ensures `stages` is never undefined
+      setStages([]);
     } finally {
       setLoading(false);
     }
   };
-  
-    
+
+  const fetchFormInstances = async () => {
+    try {
+      const res = await fetch(
+        `https://localhost:3000/api/formInstance/instances/${templateId}`
+      );
+      const data = await res.json();
+      
+      if (!Array.isArray(data)) {
+        console.error("Error: form instances is not an array!", data);
+        setFormInstances([]);
+      } else {
+        setFormInstances(data);
+      }
+    } catch (error) {
+      console.error("Error fetching form instances:", error);
+      setFormInstances([]);
+    }
+  };
 
   useEffect(() => {
     fetchWorkflowData();
+    fetchFormInstances();
 
-    // Set up WebSocket listener inside useEffect
+    // WebSocket listener
     const handleFormUpdate = ({ id, newStatus }) => {
       console.log(`Received WebSocket update: Form ${id} -> ${newStatus}`);
-      fetchWorkflowData(); 
+      fetchWorkflowData();
+      fetchFormInstances();
     };
 
     socket.on("formUpdated", handleFormUpdate);
@@ -62,21 +78,21 @@ export const WorkflowBoard = () => {
     };
   }, [templateId]);
 
-  // Handle approving a form
+  const createNewForm = () => {
+    navigate(`/form/${templateId}`);
+  };
+
   const handleApprove = async (formId) => {
     setLoadingForms((prev) => ({ ...prev, [formId]: true }));
-
     try {
       const response = await fetch(
-        `http://localhost:3000/api/formInstance/instances/approve/${formId}`,
+        `https://localhost:3000/api/formInstance/instances/approve/${formId}`,
         { method: "POST" }
       );
-
       if (!response.ok) {
         throw new Error(`Failed to approve form ${formId}`);
       }
-
-      fetchWorkflowData();
+      fetchFormInstances();
     } catch (error) {
       console.error("Error approving form:", error);
     } finally {
@@ -84,32 +100,29 @@ export const WorkflowBoard = () => {
     }
   };
 
-  // Open modal for denying a form
   const openDenyModal = (formId) => {
     setSelectedFormId(formId);
-    setDenialReason(""); // Reset reason field
+    setDenialReason("");
     setShowModal(true);
   };
 
-  // Close the modal
+  // Close denial modal
   const closeModal = () => {
     setShowModal(false);
     setSelectedFormId(null);
     setDenialReason("");
   };
 
-  // Handle denying a form
   const confirmDeny = async () => {
     if (!denialReason.trim()) {
       alert("Please enter a denial reason.");
       return;
     }
-
     setLoadingForms((prev) => ({ ...prev, [selectedFormId]: true }));
 
     try {
       const response = await fetch(
-        `http://localhost:3000/api/formInstance/instances/deny/${selectedFormId}`,
+        `https://localhost:3000/api/formInstance/instances/deny/${selectedFormId}`,
         {
           method: "PATCH",
           headers: {
@@ -118,12 +131,10 @@ export const WorkflowBoard = () => {
           body: JSON.stringify({ denial_reason: denialReason }),
         }
       );
-
       if (!response.ok) {
         throw new Error(`Failed to deny form ${selectedFormId}`);
       }
-
-      fetchWorkflowData();
+      fetchFormInstances();
       closeModal();
     } catch (error) {
       console.error("Error denying form:", error);
@@ -131,10 +142,6 @@ export const WorkflowBoard = () => {
     } finally {
       setLoadingForms((prev) => ({ ...prev, [selectedFormId]: false }));
     }
-  };
-
-  const createNewForm = () => {
-    navigate(`/form/${templateId}`);
   };
 
   return (
@@ -147,39 +154,51 @@ export const WorkflowBoard = () => {
           <button onClick={createNewForm} className="create-form-button">
             Create New Form
           </button>
+
           <div className="stages-container">
             {stages.map((stage) => (
               <div key={stage.id} className="stage-card">
                 <h3>{stage.stage_name}</h3>
                 <div className="form-instances-list">
-                {Array.isArray(formInstances) &&
-                  formInstances.filter((form) => form.status === stage.stage_name)
-                  .map((form) => (
-                      <div key={form.id} className="form-instance-card">
-                        <p>Form {form.id}</p>
-                        <p>Status: {form.status}</p>
-                        <button
-                          onClick={() => navigate(`/formInstance/${form.id}`)}
-                          className="view-form-button"
-                        >
-                          View/Edit
-                        </button>
-                        <button
-                          onClick={() => handleApprove(form.id)}
-                          className="approve-button"
-                          disabled={loadingForms[form.id]}
-                        >
-                          {loadingForms[form.id] ? <span className="spinner"></span> : "Approve"}
-                        </button>
-                        <button
-                          onClick={() => openDenyModal(form.id)}
-                          className="deny-button"
-                          disabled={loadingForms[form.id]}
-                        >
-                          {loadingForms[form.id] ? <span className="spinner"></span> : "Deny"}
-                        </button>
-                      </div>
-                    ))}
+                  {Array.isArray(formInstances) &&
+                    formInstances
+                      .filter((form) => form.status === stage.stage_name)
+                      .map((form) => (
+                        <div key={form.id} className="form-instance-card">
+                          <p>Form {form.id}</p>
+                          <p>Status: {form.status}</p>
+                          <button
+                            onClick={() => navigate(`/formInstance/${form.id}`)}
+                            className="view-form-button"
+                          >
+                            View/Edit
+                          </button>
+                          <button
+                            onClick={() => handleApprove(form.id)}
+                            className="approve-button"
+                            disabled={loadingForms[form.id]}
+                          >
+                            {loadingForms[form.id] ? (
+                              <span className="spinner"></span>
+                            ) : (
+                              "Approve"
+                            )}
+                          </button>
+                          <button
+                            onClick={() => openDenyModal(form.id)}
+                            className="deny-button"
+                            disabled={loadingForms[form.id]}
+                          >
+                            {loadingForms[form.id] ? (
+                              <span className="spinner"></span>
+                            ) : (
+                              "Deny"
+                            )}
+                          </button>
+                        </div>
+                      ))}
+
+                  {/* If no form matches this stage */}
                   {formInstances?.filter((form) => form.status === stage.stage_name).length === 0 && (
                     <p>No forms in this stage.</p>
                   )}
