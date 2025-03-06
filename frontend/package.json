@@ -3,6 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@atlaskit/pragmatic-drag-and-drop": "^1.5.0",
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
     "@react-pdf-viewer/core": "^3.12.0",
     "@react-pdf-viewer/default-layout": "^3.12.0",
     "@svgr/plugin-svgo": "^8.1.0",
@@ -11,6 +15,7 @@
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
     "@userfront/core": "^1.1.1",
+    "ant": "^0.0.0",
     "axios": "^1.7.7",
     "dotenv": "^16.4.5",
     "pdf-lib": "^1.17.1",
@@ -25,6 +30,7 @@
     "resolve-url-loader": "^5.0.0",
     "sequelize": "^6.37.4",
     "socket.io-client": "^4.8.1",
+    "styled-components": "^6.1.15",
     "svgo": "^3.3.2",
     "web-vitals": "^2.1.4"
   },
