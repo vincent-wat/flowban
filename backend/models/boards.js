@@ -1,19 +1,27 @@
-const { DataTypes } = require("sequelize");
-const sequelize = require("../database"); 
+// const { DataTypes } = require("sequelize");
+// const sequelize = require("../database");
+"use strict";
 
-const Board = sequelize.define("Board", {
-    id: {
+module.exports = (sequelize, DataTypes) => {
+  const Board = sequelize.define(
+    "Board",
+    {
+      id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true,
-    },
-    name: {
+      },
+      name: {
         type: DataTypes.STRING,
         allowNull: false,
+      },
     },
-}, {
-    tableName: 'boards'
-});
+    {
+      tableName: "boards",
+    }
+  );
+  return Board;
+};
 
 // Sync the model with the database
 // not sure if neccessary
@@ -21,5 +29,3 @@ const Board = sequelize.define("Board", {
 //     await sequelize.sync({ force: false }); // Set `force: true` to drop and recreate tables
 //     console.log("Database synced");
 //   })();
-
-module.exports = Board;
