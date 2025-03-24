@@ -11,7 +11,7 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: "forms_templates", // ✅ Ensure this table is created before this migration
+          model: "forms_templates",
           key: "id",
         },
         onDelete: "CASCADE",

@@ -65,13 +65,11 @@ async function getFormInstanceById(req, res) {
   }
 }
 
-// formInstanceController.js
-async function getAllFormInstances(req, res) {
+
+async function getAllFormInstancesofTemplate(req, res) {
   try {
-    // Destructure the templateId from route params
     const { templateId } = req.params;
 
-    // If you only want form instances with that template ID:
     const formInstances = await FormInstance.findAll({
       where: { template_id: templateId },
     });
@@ -200,10 +198,9 @@ const approveFormInstance = async (req, res) => {
 
 const denyFormInstance = async (req, res) => {
   try {
-    const { id } = req.params; // Get form instance ID
-    const { denial_reason } = req.body; // Get denial reason from request
+    const { id } = req.params; 
+    const { denial_reason } = req.body;
 
-    // Find the form instance by ID
     const formInstance = await FormInstance.findByPk(id);
     if (!formInstance) {
       return res.status(404).json({ message: 'Form not found.' });
@@ -234,7 +231,7 @@ const denyFormInstance = async (req, res) => {
 module.exports = {
   createFormInstance,
   getFormInstanceById,
-  getAllFormInstances,
+  getAllFormInstancesofTemplate,
   updateFormInstance,
   deleteFormInstance,
   approveFormInstance,
