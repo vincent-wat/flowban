@@ -1,10 +1,6 @@
 const { Router } = require("express");
-//const Task = require("../models/KanbanBoardDB/tasks");
+const { Task } = require("../models");
 const router = Router();
-
-// // delete routes
-// router.delete("/id/:id", controller.deleteTask);
-// router.delete("/column/:column_id", controller.deleteAllTasksForColumn);
 
 // create new task
 router.post("/", async (req, res) => {

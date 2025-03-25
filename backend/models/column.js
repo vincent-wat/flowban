@@ -19,6 +19,8 @@ module.exports = (sequelize, DataTypes) => {
           model: "board",
           key: "id",
         },
+        onUpdate: "CASCADE",
+        onDelete: "CASCADE",
       },
       created_at: {
         allowNull: false,
@@ -38,5 +40,14 @@ module.exports = (sequelize, DataTypes) => {
       },
     }
   );
+
+  Column.associate = (models) => {
+    Column.belongsTo(models.Board, {
+      foreignKey: "board_id",
+    });
+    Column.hasMany(models.Task, {
+      foreignKey: "column_id",
+    });
+  };
   return Column;
 };

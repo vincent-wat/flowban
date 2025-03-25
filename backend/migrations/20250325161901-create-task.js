@@ -2,21 +2,23 @@
 
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable("column", {
+    await queryInterface.createTable("task", {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER,
       },
-      name: {
+      title: {
         type: Sequelize.STRING,
       },
-      board_id: {
+      description: {
+        type: Sequelize.STRING,
+      },
+      column_id: {
         type: Sequelize.INTEGER,
-        allowNull: false,
         references: {
-          model: "board",
+          model: "column",
           key: "id",
         },
         onUpdate: "CASCADE",
@@ -33,6 +35,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable("column");
+    await queryInterface.dropTable("task");
   },
 };

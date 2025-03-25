@@ -3,7 +3,7 @@ const express = require("express");
 const User = require("./models/user");
 const userRoutes = require("./routes/userRoutes");
 const boardRoutes = require("./routes/boardRoutes");
-//const taskRoutes = require("./routes/taskRoutes");
+const taskRoutes = require("./routes/taskRoutes");
 const columnRoutes = require("./routes/columnRoutes");
 const formTemplateRoutes = require("./routes/formTemplateRoutes");
 const formInstanceRoutes = require("./routes/formInstancesRoutes");
@@ -65,7 +65,7 @@ app.get("/", (req, res) => {
 app.use("/api/users", userRoutes);
 app.use("/api/boards", boardRoutes);
 app.use("/api/columns", columnRoutes);
-//app.use("/api/tasks", taskRoutes);
+app.use("/api/tasks", taskRoutes);
 
 //workflow routes
 app.use("/api/forms", formTemplateRoutes);

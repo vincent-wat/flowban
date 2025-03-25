@@ -59,7 +59,7 @@ module.exports = {
         updated_at: new Date(),
       },
     ]);
-  }, // <-- Add this closing bracket and comma
+  },
 
   async down(queryInterface, Sequelize) {
     return queryInterface.bulkDelete("column", null, {});

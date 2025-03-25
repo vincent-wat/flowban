@@ -1,16 +1,29 @@
 "use strict";
 
 module.exports = (sequelize, DataTypes) => {
-  const Board = sequelize.define(
-    "Board",
+  const Task = sequelize.define(
+    "Task",
     {
       id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true,
+        allowNull: false,
       },
-      name: {
+      title: {
         type: DataTypes.STRING,
+      },
+      description: {
+        type: DataTypes.STRING,
+      },
+      column_id: {
+        type: DataTypes.INTEGER,
+        references: {
+          model: "column",
+          key: "id",
+        },
+        onUpdate: "CASCADE",
+        onDelete: "CASCADE",
       },
       created_at: {
         allowNull: false,
@@ -22,7 +35,7 @@ module.exports = (sequelize, DataTypes) => {
       },
     },
     {
-      tableName: "board",
+      tableName: "task",
       underscored: true,
       timestamps: true,
       defaultScope: {
@@ -30,10 +43,12 @@ module.exports = (sequelize, DataTypes) => {
       },
     }
   );
-  Board.associate = (models) => {
-    Board.hasMany(models.Column, {
-      foreignKey: "board_id",
+
+  Task.associate = (models) => {
+    Task.belongsTo(models.Column, {
+      foreignKey: "column_id",
     });
   };
-  return Board;
+
+  return Task;
 };
