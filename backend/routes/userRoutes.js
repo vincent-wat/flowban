@@ -3,6 +3,7 @@
 
 const controller = require('../Controllers/UserController');
 const router = require("express").Router();
+const dns = require('dns').promises;
 const validInfo = require("../middleware/validInfo");
 const authenticateToken = require('../middleware/authMiddleware');
 
@@ -44,5 +45,26 @@ router.put("/me", authenticateToken, validateUpdateUser, controller.updateUserPr
 router.get('/me', authenticateToken, controller.getCurrentUserProfile);
 
 router.get('/roles/:id', authenticateToken, controller.getCurrentUserProfile);
+
+//Validate email domain
+router.get('/validate-domain', async (req, res) => {
+  const { email } = req.query;
+
+  if(!email || !email.includes('@')) {return res.status(400).json({ valid: false, message: "Invalid email format" });}
+
+  const domain = email.split('@')[1];
+
+  try {
+    const mxRecords = await dns.resolveMx(domain);
+    if (mxRecords.length > 0) {
+      return res.json({valid: true});
+    }
+
+    return res.status(400).json({ valid: false, message: "Domain has no email servers (MX records)"});
+  } catch (error) {
+    return res.status(400).json({ valid: false, message: "Invalid email domain" });
+  }
+});
+
 
 module.exports = router;
