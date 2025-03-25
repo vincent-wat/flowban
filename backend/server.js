@@ -5,14 +5,14 @@ const userRoutes = require("./routes/userRoutes");
 const boardRoutes = require("./routes/boardRoutes");
 const taskRoutes = require("./routes/taskRoutes");
 const columnRoutes = require("./routes/columnRoutes");
-const formTemplateRoutes = require("./routes/formTemplateRoutes"); 
+const formTemplateRoutes = require("./routes/formTemplateRoutes");
 const formInstanceRoutes = require("./routes/formInstancesRoutes");
 const userActionsLogs = require("./routes/userActionLogsRoutes");
-const workflowBoardRoutes = require('./routes/workflowBoardRoutes');
-const workflowStagesRoutes = require('./routes/workflowStagesRoutes'); 
+const workflowBoardRoutes = require("./routes/workflowBoardRoutes");
+const workflowStagesRoutes = require("./routes/workflowStagesRoutes");
 const pool = require("./models/db");
 const cors = require("cors");
-const path = require("path"); 
+const path = require("path");
 const fs = require("fs");
 
 const https = require("https");
@@ -24,17 +24,16 @@ const options = {
 };
 
 const app = express();
-const server = https.createServer(options, app); 
+const server = https.createServer(options, app);
 
 const io = new Server(server, {
   cors: {
     origin: "https://localhost:3001",
-    methods: ["GET", "POST"]
-  }
+    methods: ["GET", "POST"],
+  },
 });
 
 //Load SSL certificate and key from the certs folder
-
 
 // Attach io to app so it can be used in controllers
 app.set("io", io);
@@ -50,12 +49,13 @@ io.on("connection", (socket) => {
 const PORT = 3000;
 
 app.use(express.json());
-app.use(cors({
-  origin: ["http://localhost:3001", "https://localhost:3001"],
-  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-  credentials: true
-}));
-
+app.use(
+  cors({
+    origin: ["http://localhost:3001", "https://localhost:3001"],
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+    credentials: true,
+  })
+);
 
 app.get("/", (req, res) => {
   res.send("Welcome to the Flowban API!");
@@ -68,11 +68,11 @@ app.use("/api/columns", columnRoutes);
 app.use("/api/tasks", taskRoutes);
 
 //workflow routes
-app.use('/api/forms', formTemplateRoutes);
+app.use("/api/forms", formTemplateRoutes);
 app.use("/api/formInstance", formInstanceRoutes);
-app.use("/api/userActionsLogs", userActionsLogs); 
-app.use('/api/workflowBoards', workflowBoardRoutes);
-app.use('/api/workflowStages', workflowStagesRoutes);
+app.use("/api/userActionsLogs", userActionsLogs);
+app.use("/api/workflowBoards", workflowBoardRoutes);
+app.use("/api/workflowStages", workflowStagesRoutes);
 
 // Test Route
 app.post("/signuptest", (req, res) => {
@@ -87,16 +87,16 @@ app.post("/signuptest", (req, res) => {
 
 // Ensure Upload Directories Exist
 const ensureUploadsDirectory = () => {
-  const userFormsDir = path.join(__dirname, '../uploads/userForms');
+  const userFormsDir = path.join(__dirname, "../uploads/userForms");
   if (!fs.existsSync(userFormsDir)) {
     fs.mkdirSync(userFormsDir, { recursive: true });
-    console.log('Created directory:', userFormsDir);
+    console.log("Created directory:", userFormsDir);
   }
 };
 ensureUploadsDirectory();
 
 const ensureTemplateDirectory = () => {
-  const templateDir = path.join(__dirname, '../uploads/templates');
+  const templateDir = path.join(__dirname, "../uploads/templates");
   if (!fs.existsSync(templateDir)) {
     fs.mkdirSync(templateDir, { recursive: true });
     console.log("Created Directory:", templateDir);
@@ -105,7 +105,7 @@ const ensureTemplateDirectory = () => {
 ensureTemplateDirectory();
 
 // Start Server
-if (process.env.NODE_ENV !== 'test') {
+if (process.env.NODE_ENV !== "test") {
   server.listen(PORT, () => {
     console.log(`Server is running on https://localhost:${PORT}`);
   });

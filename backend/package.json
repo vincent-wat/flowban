@@ -3,8 +3,13 @@
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
-    "test": "jest",
-    "start": "nodemon"
+    "test": "test",
+    "start": "nodemon",
+    "migrate": "npx sequelize-cli db:migrate",
+    "migrate:undo": "npx sequelize-cli db:migrate:undo",
+    "migrate:undo_all": "npx sequelize-cli db:migrate:undo:all",
+    "seed:all": "npx sequelize-cli db:seed:all",
+    "seed:undo_all": "npx sequelize-cli db:seed:undo:all"
   },
   "keywords": [],
   "author": "",
