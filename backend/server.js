@@ -66,6 +66,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/boards", boardRoutes);
 app.use("/api/columns", columnRoutes);
 app.use("/api/tasks", taskRoutes);
+app.use("/api", userRoutes);
 
 //workflow routes
 app.use("/api/forms", formTemplateRoutes);

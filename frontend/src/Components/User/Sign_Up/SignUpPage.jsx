@@ -27,24 +27,25 @@ const SignUpPage = () => {
   const USER_URL = "/api/users/register";
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name: fieldName, value } = e.target;
 
     // Update the form data state
     setFormData({
       ...formData,
-      [name]: value,
+      [fieldName]: value,
     });
 
-    // Perform validation checks
-    if (name === "password" || name === "confirmPassword") {
-      if (name === "password" && !passwordRegex.test(value)) {
+    
+    // Perform validation checks for passwords
+    if (fieldName === "password" || fieldName === "confirmPassword") {
+      if (fieldName === "password" && !passwordRegex.test(value)) {
         setError(
           "Password must be at least 8 characters long and include at least one number and one special character."
         );
-      } else if (name === "confirmPassword" && value !== formData.password) {
+      } else if (fieldName === "confirmPassword" && value !== formData.password) {
         setError("Passwords do not match");
       } else if (
-        name === "password" &&
+        fieldName === "password" &&
         formData.confirmPassword &&
         value !== formData.confirmPassword
       ) {
@@ -53,10 +54,32 @@ const SignUpPage = () => {
         setError("");
       }
     }
+
+
+
   };
+
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Perform validation checks for the email
+    if (!formData.email) {
+      setError("Email is required");
+      return;
+    }
+
+    try {
+      const response = await axios.get(`/api/validate-domain?email=${formData.email}`);
+      if (!response.data.valid) {
+        setError("Invalid email domain");
+        return;
+      }
+    } catch (error) {
+      setError("Invalid email domain");
+      return;
+    }
     
     if (!passwordRegex.test(formData.password)) {
       setError("Password must be at least 8 characters long and include at least one number and one special character.");
