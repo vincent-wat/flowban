@@ -9,28 +9,37 @@ const config = require(path.join(__dirname, "..", "config", "config.js"))[env];
 
 const db = {};
 
-const sequelize = new Sequelize(config.database, config.username, config.password, {
-  ...config,
-});
+const sequelize = new Sequelize(
+  config.database,
+  config.username,
+  config.password,
+  {
+    ...config,
+  }
+);
 
-const excludeFiles = ["database.js", "db.js", "list.js", "task.js", "queries.js"];
+db.FormsTemplate = require("./FormsTemplate")(sequelize, Sequelize.DataTypes);
+
+const excludeFiles = ["database.js", "db.js", "list.js", "queries.js"];
 
 fs.readdirSync(__dirname)
   .filter((file) => {
     return (
-      file.indexOf(".") !== 0 && 
-      file !== basename && 
+      file.indexOf(".") !== 0 &&
+      file !== basename &&
       file.slice(-3) === ".js" &&
-      !excludeFiles.includes(file) 
+      !excludeFiles.includes(file)
     );
   })
   .forEach((file) => {
-    console.log(`Loading model: ${file}`); 
+    console.log(`Loading model: ${file}`);
 
     const modelDef = require(path.join(__dirname, file));
 
     if (typeof modelDef !== "function") {
-      throw new Error(`ERROR: ${file} does not export a function! It exports ${typeof modelDef}`);
+      throw new Error(
+        `ERROR: ${file} does not export a function! It exports ${typeof modelDef}`
+      );
     }
 
     const model = modelDef(sequelize, Sequelize.DataTypes);
@@ -49,4 +58,3 @@ db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 
 module.exports = db;
-

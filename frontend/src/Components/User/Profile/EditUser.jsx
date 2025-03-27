@@ -23,7 +23,7 @@ function Profile() {
           throw new Error('No token found. Please log in.');
         }
 
-        const response = await axios.get('http://localhost:3000/api/users/me', {
+        const response = await axios.get('https://localhost:3000/api/users/me', {
           headers: {
             'Authorization': `Bearer ${token}`,
           },
@@ -64,7 +64,7 @@ function Profile() {
         payload.password = profile.password; 
       }
 
-      const response = await axios.put('http://localhost:3000/api/users/me', payload, {
+      const response = await axios.put('https://localhost:3000/api/users/me', payload, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },

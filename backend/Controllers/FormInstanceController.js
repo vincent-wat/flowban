@@ -1,16 +1,9 @@
-const pool = require('../models/db');
-const queries = require('../models/queries');
-const FormInstance = require("../models/FormInstance");
-const FormTemplate = require("../models/FormsTemplate");
-const User = require("../models/User");
-const WorkflowStage = require("../models/WorkflowStage");
-
-
+const { FormInstance, FormsTemplate, user, WorkflowStage } = require("../models");
 const path = require("path"); 
 
 async function createFormInstance(req, res) {
   try {
-    console.log("🛠 Processing form submission...");
+    console.log("Processing form submission...");
     console.log("Request Body:", req.body);
     console.log("Uploaded File:", req.file);
 
@@ -22,15 +15,15 @@ async function createFormInstance(req, res) {
 
     const filePath = path.join("uploads/userForms", req.file.filename);
 
-    const templateExists = await FormTemplate.findByPk(template_id);
+    const templateExists = await FormsTemplate.findByPk(template_id);
     if (!templateExists) {
       return res.status(404).json({ error: "Template not found" });
     }
-
-    const userExists = await User.findByPk(submitted_by);
+    //issue here
+    /*const userExists = await user.findByPk(submitted_by);
     if (!userExists) {
       return res.status(404).json({ error: "Submitting user not found" });
-    }
+    }*/
 
     const newFormInstance = await FormInstance.create({
       template_id,
@@ -72,9 +65,14 @@ async function getFormInstanceById(req, res) {
   }
 }
 
-async function getAllFormInstances(req, res) {
+
+async function getAllFormInstancesofTemplate(req, res) {
   try {
-    const formInstances = await FormInstance.findAll();
+    const { templateId } = req.params;
+
+    const formInstances = await FormInstance.findAll({
+      where: { template_id: templateId },
+    });
 
     if (formInstances.length === 0) {
       return res.status(200).json({ message: "No form instances found", data: [] });
@@ -86,6 +84,7 @@ async function getAllFormInstances(req, res) {
     return res.status(500).json({ error: "Failed to fetch form instances" });
   }
 }
+
 
 async function updateFormInstance(req, res) {
   try {
@@ -199,10 +198,9 @@ const approveFormInstance = async (req, res) => {
 
 const denyFormInstance = async (req, res) => {
   try {
-    const { id } = req.params; // Get form instance ID
-    const { denial_reason } = req.body; // Get denial reason from request
+    const { id } = req.params; 
+    const { denial_reason } = req.body;
 
-    // Find the form instance by ID
     const formInstance = await FormInstance.findByPk(id);
     if (!formInstance) {
       return res.status(404).json({ message: 'Form not found.' });
@@ -233,7 +231,7 @@ const denyFormInstance = async (req, res) => {
 module.exports = {
   createFormInstance,
   getFormInstanceById,
-  getAllFormInstances,
+  getAllFormInstancesofTemplate,
   updateFormInstance,
   deleteFormInstance,
   approveFormInstance,

@@ -1,11 +1,12 @@
 
 const bcrypt = require("bcrypt");
 const { User } = require("../models");
-const Role = require("../models/Role");
+const { Role } = require("../models");
 const pool = require("../models/db");
 const queries = require("../models/queries");
 const { jwtGenerator, jwtGeneratorExpiry } = require("../utils/jwtGenerator");
 const nodemailer = require("nodemailer");
+const { Op } = require("sequelize");
 
 // this is to get all users from the local database
 // this can then be used to create more functions for database queries
@@ -71,12 +72,17 @@ async function getUserByResetToken(req, res) {
 }
 
 
-//Create a new user
 async function postUser(req, res) {
   console.log("Inserting a new user");
 
   try {
-    const { email, password, phone_number, first_name, last_name, additional_roles = [] } = req.body;
+    const {
+      email,
+      password,
+      phone_number,
+      first_name,
+      last_name
+    } = req.body;
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -86,17 +92,17 @@ async function postUser(req, res) {
       phone_number,
       first_name,
       last_name,
-    }, { logging: console.log }); 
+    });
 
     const userRole = await Role.findOne({ where: { name: "user" } });
 
-    const roleIds = [userRole.id, ...additional_roles];
-
-    for (const roleId of roleIds) {
-      await newUser.addRole(roleId, {
-        through: { user_id: newUser.id, role_id: roleId },
+    if (!userRole) {
+      return res.status(500).json({
+        message: "Default role 'user' not found in the database.",
       });
     }
+
+    await newUser.addRole(userRole); 
 
     const jwtToken = jwtGenerator(newUser.id);
 
@@ -111,6 +117,7 @@ async function postUser(req, res) {
     res.status(500).json({ message: "Server error", error: err.errors || err.message });
   }
 }
+
 
 
 

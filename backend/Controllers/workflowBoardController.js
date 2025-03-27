@@ -1,4 +1,4 @@
-const WorkflowBoard = require("../models/WorkflowBoard");
+const { WorkflowBoard }= require("../models");
 
 const createWorkflowBoard = async (req, res) => {
     try {

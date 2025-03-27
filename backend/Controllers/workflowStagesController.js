@@ -1,7 +1,7 @@
 const pool = require("../models/db");
 const queries = require('../models/queries');
 
-const WorkflowStage = require("../models/WorkflowStage");
+const { WorkflowStage } = require("../models");
 
 const createWorkflowStage = async (req, res) => {
   try {
