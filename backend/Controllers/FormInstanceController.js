@@ -217,7 +217,7 @@ const denyFormInstance = async (req, res) => {
     }
 
     // Update form status to 'denied' and save the denial reason
-    formInstance.status = 'denied';
+    formInstance.status = 'Initializing';
     formInstance.denial_reason = denial_reason;
     await formInstance.save();
 

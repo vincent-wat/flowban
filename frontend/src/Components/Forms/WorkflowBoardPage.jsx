@@ -44,7 +44,7 @@ export const WorkflowBoard = () => {
   const fetchFormInstances = async () => {
     try {
       const res = await fetch(
-        `https://localhost:3000/api/formInstance/instances/${templateId}`
+        `https://localhost:3000/api/formInstance/templates/${templateId}/instances`
       );
       const data = await res.json();
       
@@ -87,7 +87,7 @@ export const WorkflowBoard = () => {
     try {
       const response = await fetch(
         `https://localhost:3000/api/formInstance/instances/approve/${formId}`,
-        { method: "POST" }
+        { method: "PUT" }
       );
       if (!response.ok) {
         throw new Error(`Failed to approve form ${formId}`);
@@ -124,7 +124,7 @@ export const WorkflowBoard = () => {
       const response = await fetch(
         `https://localhost:3000/api/formInstance/instances/deny/${selectedFormId}`,
         {
-          method: "PATCH",
+          method: "PUT",
           headers: {
             "Content-Type": "application/json",
           },
