@@ -5,6 +5,7 @@ const userRoutes = require("./routes/userRoutes");
 const boardRoutes = require("./routes/boardRoutes");
 const taskRoutes = require("./routes/taskRoutes");
 const columnRoutes = require("./routes/columnRoutes");
+const userBoardsRoutes = require("./routes/userBoardsRoutes");
 const formTemplateRoutes = require("./routes/formTemplateRoutes");
 const formInstanceRoutes = require("./routes/formInstancesRoutes");
 const userActionsLogs = require("./routes/userActionLogsRoutes");
