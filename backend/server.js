@@ -10,7 +10,6 @@ const formInstanceRoutes = require("./routes/formInstancesRoutes");
 const userActionsLogs = require("./routes/userActionLogsRoutes");
 const workflowBoardRoutes = require("./routes/workflowBoardRoutes");
 const workflowStagesRoutes = require("./routes/workflowStagesRoutes");
-const userBoardsRoutes = require("./routes/userBoardsRoutes");
 const pool = require("./models/db");
 const cors = require("cors");
 const path = require("path");
@@ -76,6 +75,7 @@ app.use("/api/formInstance", formInstanceRoutes);
 app.use("/api/userActionsLogs", userActionsLogs);
 app.use("/api/workflowBoards", workflowBoardRoutes);
 app.use("/api/workflowStages", workflowStagesRoutes);
+app.use("/api/formAssignment", formAssignmentsRoutes);
 
 // Test Route
 app.post("/signuptest", (req, res) => {

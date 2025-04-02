@@ -1,4 +1,4 @@
-const { FormInstance, FormsTemplate, user, WorkflowStage } = require("../models");
+const { FormInstance, FormsTemplate, user, FormAssignment, WorkflowStage } = require("../models");
 const path = require("path"); 
 
 async function createFormInstance(req, res) {
@@ -139,37 +139,72 @@ async function deleteFormInstance(req, res) {
 
 const approveFormInstance = async (req, res) => {
   const { id } = req.params;
+  const userId = req.user.id;
   const io = req.app.get("io");
-
-  console.log(`Received request to approve form with ID: ${id}`);
 
   try {
     const formInstance = await FormInstance.findByPk(id);
-
     if (!formInstance) {
-      console.log(`Form instance with ID ${id} not found`);
       return res.status(404).json({ error: "Form instance not found" });
     }
 
-    console.log(`Found form instance:`, formInstance.dataValues);
-
     const currentStageName = formInstance.status;
-    console.log(`Current stage for form ${id}: ${currentStageName}`);
 
     const currentStage = await WorkflowStage.findOne({
       where: {
-        template_id: formInstance.template_id, 
-        stage_name: currentStageName, 
+        template_id: formInstance.template_id,
+        stage_name: currentStageName,
       },
     });
 
     if (!currentStage) {
-      console.log(`Current stage "${currentStageName}" not found in workflow_stages`);
       return res.status(400).json({ error: "Current stage not found in workflow stages" });
     }
 
-    console.log(`Found current stage in workflow_stages:`, currentStage.dataValues);
+    //user assignment
+    const assignment = await FormAssignment.findOne({
+      where: {
+        form_instance_id: formInstance.id,
+        stage_id: currentStage.id,
+        assigned_user_id: userId,
+      },
+    });
 
+    if (!assignment) {
+      return res.status(403).json({ error: "You are not assigned to approve this form at this stage." });
+    }
+
+    if (!["approver", "final_approver"].includes(assignment.role)) {
+      return res.status(403).json({ error: "You do not have approval permissions for this form." });
+    }
+
+    if (assignment.approval_status === "approved") {
+      return res.status(400).json({ error: "You have already approved this form." });
+    }
+
+    // Update assignment
+    assignment.approval_status = "approved";
+    assignment.approved_at = new Date();
+    assignment.comment = req.body.comment || null;
+    await assignment.save();
+
+    // approvers at this stage are done
+    const pendingAssignments = await FormAssignment.findAll({
+      where: {
+        form_instance_id: formInstance.id,
+        stage_id: currentStage.id,
+        approval_status: "pending",
+        role: ["approver", "final_approver"],
+      },
+    });
+
+    if (pendingAssignments.length > 0) {
+      return res.status(200).json({
+        message: "Your approval has been recorded. Awaiting others at this stage.",
+      });
+    }
+
+    // next stage
     const nextStage = await WorkflowStage.findOne({
       where: {
         template_id: formInstance.template_id,
@@ -178,21 +213,17 @@ const approveFormInstance = async (req, res) => {
     });
 
     if (!nextStage) {
-      console.log(`Form ${id} has reached the final stage: ${currentStageName}`);
       return res.status(200).json({ message: "Form has reached the final stage." });
     }
 
-    const newStage = nextStage.stage_name;
-    console.log(`Updating form ${id} to new stage: ${newStage}`);
+    await formInstance.update({ status: nextStage.stage_name });
 
-    await formInstance.update({ status: newStage });
+    io.emit("formUpdated", { id, newStatus: nextStage.stage_name });
 
-    io.emit("formUpdated", { id, newStatus: newStage });
-
-    return res.status(200).json({ message: `Form moved to ${newStage} stage.` });
+    return res.status(200).json({ message: `Form moved to ${nextStage.stage_name} stage.` });
   } catch (error) {
     console.error("Error approving form:", error);
-    return res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error", details: error.message });
   }
 };
 
