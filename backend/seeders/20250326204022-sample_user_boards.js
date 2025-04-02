@@ -9,12 +9,12 @@ module.exports = {
         permissions: "owner",
       },
       {
-        user_id: 2,
+        user_id: 3,
         board_id: 1,
         permissions: "viewer",
       },
       {
-        user_id: 3,
+        user_id: 5,
         board_id: 1,
         permissions: "editor",
       },
@@ -24,12 +24,12 @@ module.exports = {
         permissions: "owner",
       },
       {
-        user_id: 2,
+        user_id: 3,
         board_id: 2,
         permissions: "viewer",
       },
       {
-        user_id: 3,
+        user_id: 5,
         board_id: 2,
         permissions: "editor",
       },
@@ -39,12 +39,12 @@ module.exports = {
         permissions: "owner",
       },
       {
-        user_id: 2,
+        user_id: 3,
         board_id: 3,
         permissions: "viewer",
       },
       {
-        user_id: 3,
+        user_id: 5,
         board_id: 3,
         permissions: "editor",
       },
