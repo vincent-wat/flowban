@@ -9,6 +9,8 @@ router.post("/", async (req, res) => {
       title: req.body.title,
       description: req.body.description,
       column_id: req.body.column_id,
+      created_at: new Date(),
+      updated_at: new Date(),
     });
     res.json(task);
   } catch (error) {
@@ -25,6 +27,7 @@ router.put("/id/:id", async (req, res) => {
       if (req.body.title) updateData.title = req.body.title;
       if (req.body.description) updateData.description = req.body.description;
       if (req.body.column_id) updateData.column_id = req.body.column_id;
+      updateData.updated_at = new Date();
 
       await task.update(updateData);
       res.json(task);

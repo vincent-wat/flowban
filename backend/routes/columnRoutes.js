@@ -9,6 +9,8 @@ router.post("/", async (req, res) => {
     const column = await Column.create({
       name: req.body.name,
       board_id: req.body.board_id,
+      created_at: new Date(),
+      updated_at: new Date(),
     });
     res.json(column);
   } catch (error) {
@@ -27,6 +29,7 @@ router.put("/id/:id", async (req, res) => {
     const updateData = { name: req.body.name };
     if (req.body.board_id) {
       updateData.board_id = req.body.board_id;
+      updateData.updated_at = new Date();
     }
 
     await column.update(updateData);

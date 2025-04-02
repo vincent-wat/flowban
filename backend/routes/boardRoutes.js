@@ -8,6 +8,8 @@ router.post("/", async (req, res) => {
   try {
     const board = await Board.create({
       name: req.body.name,
+      created_at: new Date(),
+      updated_at: new Date(),
     });
     res.status(201).json(board);
   } catch (error) {
@@ -50,6 +52,7 @@ router.put("/:id", async (req, res) => {
       return res.status(404).json({ error: "Board not found" });
     }
     board.name = req.body.name;
+    board.updated_at = new Date();
     await board.save();
     res.json(board);
   } catch (error) {

@@ -10,6 +10,7 @@ const formInstanceRoutes = require("./routes/formInstancesRoutes");
 const userActionsLogs = require("./routes/userActionLogsRoutes");
 const workflowBoardRoutes = require("./routes/workflowBoardRoutes");
 const workflowStagesRoutes = require("./routes/workflowStagesRoutes");
+const userBoardsRoutes = require("./routes/userBoardsRoutes");
 const pool = require("./models/db");
 const cors = require("cors");
 const path = require("path");
@@ -61,11 +62,12 @@ app.get("/", (req, res) => {
   res.send("Welcome to the Flowban API!");
 });
 
-// API Routes
+// Kanban Routes
 app.use("/api/users", userRoutes);
 app.use("/api/boards", boardRoutes);
 app.use("/api/columns", columnRoutes);
 app.use("/api/tasks", taskRoutes);
+app.use("/api/userBoards", userBoardsRoutes);
 app.use("/api", userRoutes);
 
 //workflow routes
