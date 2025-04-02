@@ -10,6 +10,7 @@ const formInstanceRoutes = require("./routes/formInstancesRoutes");
 const userActionsLogs = require("./routes/userActionLogsRoutes");
 const workflowBoardRoutes = require("./routes/workflowBoardRoutes");
 const workflowStagesRoutes = require("./routes/workflowStagesRoutes");
+const formAssignmentsRoutes = require("./routes/formAssignmentRoutes");
 const pool = require("./models/db");
 const cors = require("cors");
 const path = require("path");
