@@ -122,7 +122,15 @@ export const Dashboard = () => {
   };
 
   return (
+    <>
+    <div className="btn-container">
+       <button className="fixed-create-board" onClick={() => setIsModalOpen(true)}>
+        <FaPlus className="fixed-plus-icon" />
+        Create New Kanban Board
+      </button>
+    </div>
     <div className="container">
+
       <div className="template-section">
         <div className="template-card new-board" onClick={handleOpenModal}>
           <FaPlus className="template-icon" />
@@ -184,6 +192,7 @@ export const Dashboard = () => {
         )}
       </div>
     </div>
+    </>
   );
 };
 

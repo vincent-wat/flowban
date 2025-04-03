@@ -200,3 +200,32 @@ input::placeholder {
 .modal-buttons button:last-of-type {
     background-color: #ccc;
 }
+
+.btn-container {
+    position: fixed;
+    top: 15%;
+    left: 20px;
+    z-index: 10;
+  }
+  
+  .fixed-create-board {
+    background-color: #C51D34; 
+    color: white; 
+    border: none;
+    border-radius: 8px; 
+    padding: 12px 20px; 
+    font-size: 16px; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  
+  .fixed-create-board:hover {
+    background-color: #A11628; 
+  }
+  
+  .fixed-plus-icon {
+    margin-right: 8px;
+  }
+  
