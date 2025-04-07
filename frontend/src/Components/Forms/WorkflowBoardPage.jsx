@@ -15,7 +15,7 @@ export const WorkflowBoard = () => {
   const [formInstances, setFormInstances] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadingForms, setLoadingForms] = useState({});
-  
+
   const [showModal, setShowModal] = useState(false);
   const [selectedFormId, setSelectedFormId] = useState(null);
   const [denialReason, setDenialReason] = useState("");
@@ -47,7 +47,7 @@ export const WorkflowBoard = () => {
         `https://localhost:3000/api/formInstance/templates/${templateId}/instances`
       );
       const data = await res.json();
-      
+
       if (!Array.isArray(data)) {
         console.error("Error: form instances is not an array!", data);
         setFormInstances([]);
@@ -199,9 +199,9 @@ export const WorkflowBoard = () => {
                       ))}
 
                   {/* If no form matches this stage */}
-                  {formInstances?.filter((form) => form.status === stage.stage_name).length === 0 && (
-                    <p>No forms in this stage.</p>
-                  )}
+                  {formInstances?.filter(
+                    (form) => form.status === stage.stage_name
+                  ).length === 0 && <p>No forms in this stage.</p>}
                 </div>
               </div>
             ))}

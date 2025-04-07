@@ -31,7 +31,7 @@ const server = https.createServer(options, app);
 const io = new Server(server, {
   cors: {
     origin: "https://localhost:3001",
-    methods: ["GET", "POST"],
+    methods: ["GET", "POST", "PUT", "DELETE"],
   },
 });
 
@@ -45,6 +45,16 @@ io.on("connection", (socket) => {
 
   socket.on("disconnect", () => {
     console.log(`User disconnected: ${socket.id}`);
+  });
+
+  socket.on("columnData", (data) => {
+    //console.log("Received column data:", data);
+    socket.broadcast.emit("reciveColumnData", data);
+  });
+
+  socket.on("taskData", (data) => {
+    //console.log("Received task data:", data);
+    socket.broadcast.emit("reciveTaskData", data);
   });
 });
 

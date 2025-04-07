@@ -1,81 +1,19 @@
-const { Router } = require("express");
-//const Board = require("../models/board");
-const { Board } = require("../models");
-const router = Router();
+const controller = require("../Controllers/BoardController");
+const router = require("express").Router();
 
 // create new board
-router.post("/", async (req, res) => {
-  try {
-    const board = await Board.create({
-      name: req.body.name,
-      created_at: new Date(),
-      updated_at: new Date(),
-    });
-    res.status(201).json(board);
-  } catch (error) {
-    res.status(500).json({ error: "Board not created" });
-  }
-});
+router.post("/", controller.addBoard);
 
 // get all boards
-router.get("/", async (req, res) => {
-  try {
-    const boards = await Board.findAll();
-    res.json(boards);
-  } catch (error) {
-    res
-      .status(500)
-      .json({ error: "Internal Server Error", message: error.message });
-  }
-});
+router.get("/", controller.getAllBoards);
 
 // get board by id
-router.get("/:id", async (req, res) => {
-  try {
-    const board = await Board.findByPk(req.params.id);
-    if (!board) {
-      return res.status(404).json({ error: "Board not found" });
-    }
-    res.json(board);
-  } catch (error) {
-    res
-      .status(500)
-      .json({ error: "Internal Server Error", message: error.message });
-  }
-});
+router.get("/:id", controller.getBoardbyID);
 
 // update board by id
-router.put("/:id", async (req, res) => {
-  try {
-    const board = await Board.findByPk(req.params.id);
-    if (!board) {
-      return res.status(404).json({ error: "Board not found" });
-    }
-    board.name = req.body.name;
-    board.updated_at = new Date();
-    await board.save();
-    res.json(board);
-  } catch (error) {
-    res
-      .status(500)
-      .json({ error: "Internal Server Error", message: error.message });
-  }
-});
+router.put("/:id", controller.updateBoard);
 
 // delete board by id
-router.delete("/:id", async (req, res) => {
-  try {
-    const board = await Board.findByPk(req.params.id);
-    if (!board) {
-      return res.status(404).json({ error: "Board not found" });
-    }
-    await board.destroy();
-    res.json({ message: "Board deleted successfully" });
-  } catch (error) {
-    res
-      .status(500)
-      .json({ error: "Internal Server Error", message: error.message });
-  }
-});
+router.delete("/:id", controller.deleteBoard);
 
 module.exports = router;
