@@ -66,13 +66,16 @@ async function deleteBoard(req, res) {
 // Add a board
 async function addBoard(req, res) {
   try {
-    const { name } = req.body;
-    const result = await pool.query(queries.addBoard, [name]);
-    res.json(result.rows[0]);
-  } catch (err) {
+    const board = await Board.create({
+      name: req.body.name,
+      created_at: new Date(),
+      updated_at: new Date(),
+    });
+    res.json(board);
+  } catch (error) {
     res
       .status(500)
-      .json({ error: "Internal Server Error", message: err.message });
+      .json({ error: "Board not created", message: error.message });
   }
 }
 
