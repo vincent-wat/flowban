@@ -203,7 +203,7 @@ input::placeholder {
 
 .btn-container {
     position: fixed;
-    top: 15%;
+    top: 45%;
     left: 20px;
     z-index: 10;
   }
@@ -227,5 +227,42 @@ input::placeholder {
   
   .fixed-plus-icon {
     margin-right: 8px;
+  }
+  
+  .view-toggle {
+    position: fixed;
+    top: 60px;
+    right: 20px;
+    z-index: 1000;
+    cursor: pointer;
+  }
+  
+  .toggle-slider {
+    display: flex;
+    align-items: center;
+    background-color: #C51D34;
+    border-radius: 25px;
+    padding: 8px 12px;
+    transition: background-color 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    color: white;
+  }
+  
+  .toggle-slider.manager {
+    background-color: #A11628;
+  }
+  
+  .toggle-icon {
+    font-size: 20px;
+    margin-right: 10px;
+  }
+  
+  .toggle-label {
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .modal input {
+    margin-bottom: 10px;
   }
   
