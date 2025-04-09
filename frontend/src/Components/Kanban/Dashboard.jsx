@@ -251,7 +251,7 @@ export const Dashboard = () => {
                         throw new Error("No template ID returned from upload.");
                       }
 
-                      // POST REQUEST
+                      // POST REQUEST (HARD CODED USER_ID)
                       const boardRes = await fetch(
                         "https://localhost:3000/api/workflowBoards",
                         {
