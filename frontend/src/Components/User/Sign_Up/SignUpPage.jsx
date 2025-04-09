@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./SignUpPage.css";
 //import { FaUser } from "react-icons/fa";
@@ -27,6 +27,10 @@ async function auth() {
     
     const data = await response.json();
     console.log("Auth URL received:", data);
+    
+    // Store the state or any identifier in localStorage if needed for verification
+    localStorage.setItem("googleAuthPending", "true");
+    
     navigateToGoogleAuth(data.url);
   } catch (error) {
     console.error("Error during auth request:", error);
@@ -37,6 +41,7 @@ async function auth() {
 
 const SignUpPage = () => {
   useAuth();
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -49,9 +54,64 @@ const SignUpPage = () => {
 
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
-  const navigate = useNavigate();
 
   const passwordRegex = /^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,}$/;
+
+  async function handleGoogleAuth() {
+    try {
+      const response = await fetch("https://localhost:3000/api/request", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        credentials: "include"
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log("Auth URL received:", data);
+      
+      // Store the state or any identifier in localStorage if needed for verification
+      localStorage.setItem("googleAuthPending", "true");
+      
+      // Navigate to Google Auth
+      window.location.href = data.url;
+    } catch (error) {
+      console.error("Error during auth request:", error);
+      alert("Failed to authenticate with Google. Please try again later.");
+    }
+  }
+
+  // Modified useEffect to handle Google auth redirect
+  useEffect(() => {
+    console.log("useEffect running, checking for token");
+    console.log("Current URL:", window.location.href);
+    
+    const urlParams = new URLSearchParams(window.location.search);
+    console.log("URL params:", Object.fromEntries(urlParams.entries()));
+    
+    const token = urlParams.get("jwtToken"); // Match the parameter name from oAuthController
+    
+    if (token) {
+      console.log("Found JWT token in URL:", token);
+      
+      // Store the token in localStorage
+      localStorage.setItem("token", token);
+      console.log("Token stored in localStorage");
+      
+      // Clear the googleAuthPending flag if it exists
+      localStorage.removeItem("googleAuthPending");
+      
+      // Use React Router's navigate for redirection
+      navigate("/dashboard", { replace: true });
+    } else {
+      console.log("No token found in URL");
+    }
+  }, [navigate]);
+
   // base url for new users to be added
   const USER_URL = "/api/users/register";
 
@@ -231,7 +291,7 @@ const SignUpPage = () => {
         </span>
       </p>
       <h3>
-      <button type="button" onClick={() => auth()}>
+      <button type="button" onClick={handleGoogleAuth}>
         <img src={googleButton} alt="Sign in with Google" style={{ width: "200px", height: "50px" }} />
       </button>
       </h3>

@@ -1,7 +1,16 @@
 const dotenv = require('dotenv');
 dotenv.config();
 const { OAuth2Client } = require('google-auth-library');
+const { User } = require('../models');
+const { jwtGenerator } = require('../utils/jwtGenerator');
 const fetch = require('node-fetch'); // Add this import
+const crypto = require("crypto");
+
+
+
+function generateRandomPassword() {
+    return crypto.randomBytes(16).toString("hex"); // Generates a 32-character random string
+}
 
 async function getUserData(access_token) {
     try {
@@ -25,44 +34,64 @@ async function getUserData(access_token) {
 async function getData(req, res) {
     const code = req.query.code;
     console.log("Received code:", code);
-    
+
     if (!code) {
-        return res.status(400).json({ error: 'No authorization code provided' });
+        return res.status(400).json({ error: "No authorization code provided" });
     }
-    
+
     try {
-        const redirectUrl = 'https://localhost:3000/api/oauth';
+        const redirectUrl = "https://localhost:3000/api/oauth";
         const oAuth2Client = new OAuth2Client(
             process.env.CLIENT_ID,
             process.env.CLIENT_SECRET,
             redirectUrl
         );
-        
-        console.log("Client ID:", process.env.CLIENT_ID.substring(0, 5) + "...");
-        console.log("Redirect URL:", redirectUrl);
-        
+
         const tokenResponse = await oAuth2Client.getToken(code);
         console.log("Token response received");
-        
+
         await oAuth2Client.setCredentials(tokenResponse.tokens);
-        console.log('Tokens acquired');
-        
+        console.log("Tokens acquired");
+
         const user = oAuth2Client.credentials;
-        
         const userData = await getUserData(user.access_token);
-        console.log("User data retrieved:", userData.email || userData.sub); // Log identifier
-        
-        
-        // For now, just redirect to dashboard
-        res.redirect('https://localhost:3001/dashboard');
-        
-    } catch(err) {
-        console.error('Error with signing in with Google:', err.message);
+        console.log("User data retrieved:", userData.email || userData.sub);
+
+        // Check if user exists in the database
+        let dbUser = await User.findOne({ where: { email: userData.email } });
+
+        if (!dbUser) {
+            // Generate a random password for Google-authenticated users
+            const randomPassword = generateRandomPassword();
+
+            // Hash the random password before storing it in the database
+            const bcrypt = require("bcrypt");
+            const hashedPassword = await bcrypt.hash(randomPassword, 10);
+
+            // Create a new user if they don't exist
+            dbUser = await User.create({
+                email: userData.email,
+                first_name: userData.given_name || "",
+                last_name: userData.family_name || "",
+                google_id: userData.sub,
+                role_id: 1, // Default role id
+                password: hashedPassword, // Store the hashed random password
+            });
+            console.log("New user created:", dbUser.email);
+        }
+
+        // Generate a JWT token
+        const jwtToken = jwtGenerator(dbUser.id);
+
+        // Redirect to the frontend with the JWT token in the URL
+        res.redirect(`https://localhost:3001/signup?jwtToken=${jwtToken}`);
+    } catch (err) {
+        console.error("Error with signing in with Google:", err.message);
         console.error(err.stack);
-        
+
         // Redirect to frontend with error
-        res.redirect('https://localhost:3001/login?error=auth_failed');
-    } 
+        res.redirect("https://localhost:3001/login?error=auth_failed");
+    }
 }
 
 module.exports = {
