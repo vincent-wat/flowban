@@ -8,6 +8,7 @@ import {
 import "./Dashboard.css";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
 
 export const Dashboard = () => {
   const [boards, setBoards] = useState([]);
@@ -24,20 +25,19 @@ export const Dashboard = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchUserId = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) throw new Error("No token found. Please log in.");
-        const response = await fetch("https://localhost:3000/api/users/me", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = await response.json();
-        setUser_id(data.id);
-      } catch (error) {
-        console.error("Error fetching user id:", error);
-      }
-    };
-    fetchUserId();
+    const token = localStorage.getItem("token");
+    if (!token) {
+      console.error("No token found. Please log in.");
+      return;
+    }
+
+    try {
+      const decodedToken = jwtDecode(token); // Decode the token
+      setUser_id(decodedToken.id); // Extract the user's ID from the token
+      console.log("Decoded user ID:", decodedToken.id);
+    } catch (error) {
+      console.error("Error decoding token:", error);
+    }
   }, []);
 
   useEffect(() => {
