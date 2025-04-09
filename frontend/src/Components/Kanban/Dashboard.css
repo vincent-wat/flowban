@@ -2,15 +2,15 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-}
-
-body {
+  }
+  
+  body {
     font-family: Arial, sans-serif;
     background-color: hsl(0, 0%, 95%);
     padding: 20px;
-}
-
-.container {
+  }
+  
+  .container {
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -19,16 +19,16 @@ body {
     padding: 20px;
     max-height: calc(100vh - 40px);
     overflow-y: auto;
-}
-
-.template-section {
+  }
+  
+  .template-section {
     display: flex;
     gap: 20px;
     margin-bottom: 30px;
     justify-content: center;
-}
-
-.template-card {
+  }
+  
+  .template-card {
     width: 150px;
     height: 200px;
     background-color: white;
@@ -40,24 +40,24 @@ body {
     justify-content: center;
     cursor: pointer;
     transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.template-card:hover {
+  }
+  
+  .template-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
-}
-
-.template-icon {
+  }
+  
+  .template-icon {
     font-size: 50px;
     margin-bottom: 15px;
     color: #C51D34;
-}
-
-.new-board {
+  }
+  
+  .new-board {
     border: 2px dashed #C51D34;
-}
-
-.input-wrapper {
+  }
+  
+  .input-wrapper {
     display: flex;
     align-items: center;
     background-color: #f5f5f5;
@@ -70,41 +70,41 @@ body {
     left: 50%;
     transform: translateX(-50%);
     z-index: 1000;
-}
-
-#search-icon {
+  }
+  
+  #search-icon {
     color: #C51D34;
     font-size: 18px;
     margin-right: 10px;
-}
-
-input {
+  }
+  
+  input {
     border: none;
     outline: none;
     font-size: 16px;
     background: transparent;
     width: 100%;
     color: #333;
-}
-
-input::placeholder {
+  }
+  
+  input::placeholder {
     color: #888;
-}
-
-.input-wrapper:hover {
+  }
+  
+  .input-wrapper:hover {
     box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.15);
-}
-
-.board-row {
+  }
+  
+  .board-row {
     width: 100%;
     margin: 20px auto;
     display: flex;
     flex-direction: column;
     gap: 5px;
     align-items: center;
-}
-
-.doc-button {
+  }
+  
+  .doc-button {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -119,25 +119,25 @@ input::placeholder {
     transition: background-color 0.2s, box-shadow 0.2s;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
     width: 70%;
-}
-
-.doc-button:hover {
+  }
+  
+  .doc-button:hover {
     background-color: #f7f7f7;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.ellipsis-icon {
+  }
+  
+  .ellipsis-icon {
     margin-left: 10px; 
     color: #C51D34;
     font-size: 18px; 
-}
-
-.board-name {
+  }
+  
+  .board-name {
     text-align: left; 
     flex-grow: 1; 
-}
-
-.modal-overlay {
+  }
+  
+  .modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
@@ -148,62 +148,66 @@ input::placeholder {
     justify-content: center;
     align-items: center;
     z-index: 1000;
-}
-
-.modal {
+  }
+  
+  .modal {
     background: white;
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
     width: 300px;
     max-width: 100%;
-}
-
-.modal h2 {
+  }
+  
+  .modal h2 {
     margin-bottom: 15px;
     font-size: 20px;
     color: #333;
-}
-
-.modal input {
+  }
+  
+  .modal input {
     width: 100%;
     padding: 10px;
-    margin-bottom: 15px;
+    margin-bottom: 12px;
     font-size: 16px;
     border: 1px solid #ddd;
     border-radius: 4px;
-}
-
-.modal-buttons {
+  }
+  
+  .modal input::placeholder {
+    color: #aaa;
+  }
+  
+  .modal-buttons {
     display: flex;
     justify-content: space-between;
-}
-
-.modal-buttons button {
+  }
+  
+  .modal-buttons button {
     padding: 10px 15px;
     font-size: 16px;
     cursor: pointer;
     border: none;
     border-radius: 4px;
     transition: background-color 0.2s ease-in-out;
-}
-
-.modal-buttons button:hover {
+  }
+  
+  .modal-buttons button:hover {
     opacity: 0.9;
-}
-
-.modal-buttons button:first-of-type {
+  }
+  
+  .modal-buttons button:first-of-type {
     background-color: #C51D34;
     color: white;
-}
-
-.modal-buttons button:last-of-type {
+  }
+  
+  .modal-buttons button:last-of-type {
     background-color: #ccc;
-}
-
-.btn-container {
+  }
+  
+  .btn-container {
     position: fixed;
-    top: 45%;
+    top: 25%;
     left: 20px;
     z-index: 10;
   }
@@ -249,7 +253,7 @@ input::placeholder {
   }
   
   .toggle-slider.manager {
-    background-color: #A11628;
+    background-color: #a6192c;
   }
   
   .toggle-icon {
@@ -260,9 +264,5 @@ input::placeholder {
   .toggle-label {
     font-size: 14px;
     font-weight: 600;
-  }
-
-  .modal input {
-    margin-bottom: 10px;
   }
   

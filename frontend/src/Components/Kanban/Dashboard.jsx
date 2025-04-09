@@ -1,4 +1,10 @@
-import { FaSearch, FaRegFileAlt, FaEllipsisV, FaPlus, FaUser} from "react-icons/fa";
+import {
+  FaSearch,
+  FaRegFileAlt,
+  FaEllipsisV,
+  FaPlus,
+  FaUser,
+} from "react-icons/fa";
 import "./Dashboard.css";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -9,12 +15,10 @@ export const Dashboard = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newBoardName, setNewBoardName] = useState("");
+  const [description, setDescription] = useState("");
   const [user_id, setUser_id] = useState("");
   const [isManagerView, setIsManagerView] = useState(false);
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
-  const [stage1, setStage1] = useState("");
-  const [stage2, setStage2] = useState("");
-  const [stage3, setStage3] = useState("");
 
   const navigate = useNavigate();
 
@@ -28,7 +32,6 @@ export const Dashboard = () => {
         });
         const data = await response.json();
         setUser_id(data.id);
-        console.log("user_id:", user_id);
       } catch (error) {
         console.error("Error fetching user id:", error);
       }
@@ -45,7 +48,6 @@ export const Dashboard = () => {
         if (!response.ok)
           throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
-        console.log("boards:", data);
         setBoards(data);
       } catch (error) {
         console.error("Error fetching boards:", error);
@@ -66,8 +68,10 @@ export const Dashboard = () => {
       }
     };
 
-    fetchBoards();
-    fetchTemplates();
+    if (user_id) {
+      fetchBoards();
+      fetchTemplates();
+    }
   }, [user_id]);
 
   const filteredBoards = boards
@@ -96,12 +100,6 @@ export const Dashboard = () => {
     }
   };
 
-  const handleOpenModal = () => setIsModalOpen(true);
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setNewBoardName("");
-  };
-
   const handleBoardClick = (boardId) => {
     navigate(`/kanban/${boardId}`);
   };
@@ -122,131 +120,138 @@ export const Dashboard = () => {
         </button>
       </div>
 
-      <div className="view-toggle" onClick={() => setIsManagerView(!isManagerView)}>
-  <div className={`toggle-slider ${isManagerView ? "manager" : "user"}`}>
-    <FaUser className="toggle-icon" />
-    <span className="toggle-label">
-      {isManagerView ? "Manager View" : "User View"}
-    </span>
-  </div>
-</div>
-
+      <div
+        className="view-toggle"
+        onClick={() => setIsManagerView(!isManagerView)}
+      >
+        <div className={`toggle-slider ${isManagerView ? "manager" : "user"}`}>
+          <FaUser className="toggle-icon" />
+          <span className="toggle-label">
+            {isManagerView ? "Manager View" : "User View"}
+          </span>
+        </div>
+      </div>
 
       <div className="container">
-      <div className="template-section">
-  {isManagerView && (
-    <div className="template-card new-board" onClick={() => setIsTemplateModalOpen(true)}>
-      <FaPlus className="template-icon" />
-      <span>New Workflow</span>
-    </div>
-  )}
-  {templates.map((template) => (
-    <div
-      key={template.id}
-      className="template-card"
-      onClick={() => handleTemplateClick(template.id)}
-    >
-      <FaRegFileAlt className="template-icon" />
-      <span>{template.name}</span>
-    </div>
-  ))}
-</div>
+        <div className="template-section">
+          {isManagerView && (
+            <div
+              className="template-card new-board"
+              onClick={() => setIsTemplateModalOpen(true)}
+            >
+              <FaPlus className="template-icon" />
+              <span>New Workflow</span>
+            </div>
+          )}
+          {templates.map((template) => (
+            <div
+              key={template.id}
+              className="template-card"
+              onClick={() => handleTemplateClick(template.id)}
+            >
+              <FaRegFileAlt className="template-icon" />
+              <span>{template.name}</span>
+            </div>
+          ))}
+        </div>
 
-{isModalOpen && (
-  <div className="modal-overlay">
-    <div className="modal">
-      <h2>Create New Board</h2>
-      <input
-        type="text"
-        placeholder="Enter board name"
-        value={newBoardName}
-        onChange={(e) => setNewBoardName(e.target.value)}
-      />
-      <div className="modal-buttons">
-        <button onClick={handleCreateNewBoard} disabled={!newBoardName}>
-          Create
-        </button>
-        <button onClick={handleCloseModal}>Cancel</button>
-      </div>
-    </div>
-  </div>
-)}
+        {/* Modal: Regular Kanban Board */}
+        {isModalOpen && (
+          <div className="modal-overlay">
+            <div className="modal">
+              <h2>Create New Board</h2>
+              <input
+                type="text"
+                placeholder="Enter board name"
+                value={newBoardName}
+                onChange={(e) => setNewBoardName(e.target.value)}
+              />
+              <div className="modal-buttons">
+                <button
+                  onClick={handleCreateNewBoard}
+                  disabled={!newBoardName}
+                >
+                  Create
+                </button>
+                <button
+                  onClick={() => {
+                    setIsModalOpen(false);
+                    setNewBoardName("");
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
-{isTemplateModalOpen && (
-  <div className="modal-overlay">
-    <div className="modal">
-      <h2>Create New Workflow Template</h2>
-      <input
-        type="text"
-        placeholder="Workflow Template Name"
-        value={newBoardName}
-        onChange={(e) => setNewBoardName(e.target.value)}
-      />
-      <input
-        type="text"
-        placeholder="Stage 1"
-        value={stage1}
-        onChange={(e) => setStage1(e.target.value)}
-      />
-      <input
-        type="text"
-        placeholder="Stage 2"
-        value={stage2}
-        onChange={(e) => setStage2(e.target.value)}
-      />
-      <input
-        type="text"
-        placeholder="Stage 3"
-        value={stage3}
-        onChange={(e) => setStage3(e.target.value)}
-      />
-      <div className="modal-buttons">
-        <button
-          onClick={async () => {
-            try {
-              const response = await fetch("https://localhost:3000/api/boards/withStages", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  name: newBoardName,
-                  stages: [stage1, stage2, stage3],
-                }),
-              });
+        {/* Modal: Workflow Template Board */}
+        {isTemplateModalOpen && (
+          <div className="modal-overlay">
+            <div className="modal">
+              <h2>Create New Workflow Board</h2>
+              <input
+                type="text"
+                placeholder="Board name"
+                value={newBoardName}
+                onChange={(e) => setNewBoardName(e.target.value)}
+              />
+              <input
+                type="text"
+                placeholder="Description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+              />
+              <div className="modal-buttons">
+                <button
+                  onClick={async () => {
+                    try {
+                      const response = await fetch(
+                        "https://localhost:3000/api/workflowBoards",
+                        {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({
+                            name: newBoardName,
+                            description,
+                            template_id: null,
+                            created_by: user_id,
+                          }),
+                        }
+                      );
 
-              if (!response.ok)
-                throw new Error(`HTTP error! status: ${response.status}`);
+                      if (!response.ok)
+                        throw new Error(
+                          `HTTP error! status: ${response.status}`
+                        );
 
-              const newBoard = await response.json();
-              setBoards((prevBoards) => [newBoard, ...prevBoards]);
-              setIsTemplateModalOpen(false);
-              setNewBoardName("");
-              setStage1("");
-              setStage2("");
-              setStage3("");
-            } catch (error) {
-              console.error("Error creating staged board:", error);
-            }
-          }}
-          disabled={!newBoardName || !stage1 || !stage2 || !stage3}
-        >
-          Create
-        </button>
-        <button
-          onClick={() => {
-            setIsTemplateModalOpen(false);
-            setNewBoardName("");
-            setStage1("");
-            setStage2("");
-            setStage3("");
-          }}
-        >
-          Cancel
-        </button>
-      </div>
-    </div>
-  </div>
-)}
-
+                      const newBoard = await response.json();
+                      setBoards((prevBoards) => [newBoard.board, ...prevBoards]);
+                      setIsTemplateModalOpen(false);
+                      setNewBoardName("");
+                      setDescription("");
+                    } catch (error) {
+                      console.error("Error creating workflow board:", error);
+                    }
+                  }}
+                  disabled={!newBoardName || !description}
+                >
+                  Create
+                </button>
+                <button
+                  onClick={() => {
+                    setIsTemplateModalOpen(false);
+                    setNewBoardName("");
+                    setDescription("");
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="input-wrapper">
           <FaSearch id="search-icon" />
