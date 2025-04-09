@@ -52,7 +52,7 @@ async function getData(req, res) {
         const userData = await getUserData(user.access_token);
         console.log("User data retrieved:", userData.email || userData.sub); // Log identifier
         
-        // Store user info in session or redirect with token
+        
         // For now, just redirect to dashboard
         res.redirect('https://localhost:3001/dashboard');
         

@@ -13,7 +13,7 @@ function navigateToGoogleAuth(url) {
 
 async function auth() {
   try {
-    const response = await fetch("https://localhost:3000/api/request/request", {
+    const response = await fetch("https://localhost:3000/api/request", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"

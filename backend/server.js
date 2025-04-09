@@ -93,7 +93,7 @@ app.use("/api/formAssignment", formAssignmentsRoutes);
 
 // OAuth Routes
 app.use("/api/oauth", authRoutes);
-app.use("/api/request", requestRoutes);
+app.use("/api/", requestRoutes);
 
 // Test Route
 app.post("/signuptest", (req, res) => {
