@@ -1,24 +1,24 @@
-const contoller = require("../Controllers/ColumnsController");
+const controller = require("../Controllers/ColumnsController");
 const router = require("express").Router();
 
 // create new column
-router.post("/", contoller.addColumn);
+router.post("/", controller.addColumn);
 // update column by id
-router.put("/id/:id", contoller.updateColumn);
+router.put("/id/:id", controller.updateColumn);
 
 // get all columns
-router.get("/", contoller.getAllColumns);
+router.get("/", controller.getAllColumns);
 
 // get column by id
-router.get("/id/:id", contoller.getColumn);
+router.get("/id/:id", controller.getColumn);
 
 // get all columns for board
-router.get("/board/:board_id", contoller.getAllColumnsForBoard);
+router.get("/board/:board_id", controller.getAllColumnsForBoard);
 
 // delete column by id
-router.delete("/id/:id", contoller.deleteColumn);
+router.delete("/id/:id", controller.deleteColumn);
 
 // delete all columns for board
-router.delete("/board/:board_id", contoller.deleteAllColumnsForBoard);
+router.delete("/board/:board_id", controller.deleteAllColumnsForBoard);
 
 module.exports = router;

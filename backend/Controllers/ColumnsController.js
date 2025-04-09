@@ -10,7 +10,10 @@ async function getAllColumns(req, res) {
   } catch (error) {
     res
       .status(500)
-      .json({ error: "Internal Server Error", message: error.message });
+      .json({
+        error: "Cannot get all Columns for board",
+        message: error.message,
+      });
   }
 }
 // get an individual column
@@ -40,7 +43,10 @@ async function getAllColumnsForBoard(req, res) {
   } catch (error) {
     res
       .status(500)
-      .json({ error: "Internal Server Error", message: error.message });
+      .json({
+        error: "Cannot get all Columns for board",
+        message: error.message,
+      });
   }
 }
 // add a column

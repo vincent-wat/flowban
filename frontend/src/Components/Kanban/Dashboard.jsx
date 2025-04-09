@@ -3,6 +3,7 @@ import "./Dashboard.css";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
+import axios from "../../axios";
 
 export const Dashboard = () => {
   const [boards, setBoards] = useState([]);
@@ -31,23 +32,25 @@ export const Dashboard = () => {
     }
   }, []);
 
-  useEffect(() => {
-    const fetchBoards = async () => {
-      try {
-        const response = await fetch(
-          `https://localhost:3000/api/userBoards/boards/all/${user_id}`
-        );
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        console.log("boards:", data);
-        setBoards(data);
-      } catch (error) {
-        console.error("Error fetching boards:", error);
+  // took out fetchBoards from the useEffect and put it in its own function
+  // to be able to call it in the handleCreateNewBoard function
+  const fetchBoards = async () => {
+    console.log("user_id in boards:", user_id);
+    try {
+      const response = await fetch(
+        `https://localhost:3000/api/userBoards/boards/all/${user_id}`
+      );
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-    };
-
+      const data = await response.json();
+      console.log("boards:", data);
+      setBoards(data);
+    } catch (error) {
+      console.error("Error fetching boards:", error);
+    }
+  };
+  useEffect(() => {
     const fetchTemplates = async () => {
       try {
         const response = await fetch(
@@ -64,6 +67,7 @@ export const Dashboard = () => {
     };
 
     fetchBoards();
+
     fetchTemplates();
   }, [user_id]);
 
@@ -75,24 +79,33 @@ export const Dashboard = () => {
 
   const handleCreateNewBoard = async () => {
     try {
-      const response = await fetch("https://localhost:3000/api/boards", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: newBoardName,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      if (user_id === "") {
+        console.error("No user ID found. Please log in.");
+        return;
       }
+      const newBoard = {
+        name: newBoardName,
+      };
+      const response = await axios.post(
+        "https://localhost:3000/api/boards",
+        newBoard
+      );
+      const newBoardId = response.data.id;
 
-      const newBoard = await response.json();
-      setBoards((prevBoards) => [newBoard, ...prevBoards]);
-      setIsModalOpen(false);
+      const newUserBoard = {
+        user_id: user_id,
+        board_id: newBoardId,
+      };
+
+      const userBoardResponse = await axios.post(
+        "https://localhost:3000/api/userBoards",
+        newUserBoard
+      );
+      console.log("User board created:", userBoardResponse.data);
+
       setNewBoardName("");
+      setIsModalOpen(false);
+      fetchBoards();
     } catch (error) {
       console.error("Error creating new board:", error);
     }
@@ -116,75 +129,79 @@ export const Dashboard = () => {
 
   return (
     <>
-    <div className="btn-container">
-       <button className="fixed-create-board" onClick={() => setIsModalOpen(true)}>
-        <FaPlus className="fixed-plus-icon" />
-        Create New Kanban Board
-      </button>
-    </div>
-    <div className="container">
-
-      <div className="template-section">
-        <div className="template-card new-board" onClick={handleOpenModal}>
-          <FaPlus className="template-icon" />
-          <span>New Board</span>
-        </div>
-        {templates.map((template) => (
-          <div
-            key={template.id}
-            className="template-card"
-            onClick={() => handleTemplateClick(template.id)}
-          >
-            <FaRegFileAlt className="template-icon" />
-            <span>{template.name}</span>
-          </div>
-        ))}
+      <div className="btn-container">
+        <button
+          className="fixed-create-board"
+          onClick={() => setIsModalOpen(true)}
+        >
+          <FaPlus className="fixed-plus-icon" />
+          Create New Kanban Board
+        </button>
       </div>
-      {isModalOpen && (
-        <div className="modal-overlay">
-          <div className="modal">
-            <h2>Create New Board</h2>
-            <input
-              type="text"
-              placeholder="Enter board name"
-              value={newBoardName}
-              onChange={(e) => setNewBoardName(e.target.value)}
-            />
-            <div className="modal-buttons">
-              <button onClick={handleCreateNewBoard} disabled={!newBoardName}>
-                Create
-              </button>
-              <button onClick={handleCloseModal}>Cancel</button>
+      <div className="container">
+        <div className="template-section">
+          <div className="template-card new-board" onClick={handleOpenModal}>
+            <FaPlus className="template-icon" />
+            <span>New Board</span>
+          </div>
+          {templates.map((template) => (
+            <div
+              key={template.id}
+              className="template-card"
+              onClick={() => handleTemplateClick(template.id)}
+            >
+              <FaRegFileAlt className="template-icon" />
+              <span>{template.name}</span>
+            </div>
+          ))}
+        </div>
+        {isModalOpen && (
+          <div className="modal-overlay">
+            <div className="modal">
+              <h2>Create New Board</h2>
+              <input
+                type="text"
+                placeholder="Enter board name"
+                value={newBoardName}
+                onChange={(e) => setNewBoardName(e.target.value)}
+              />
+              <div className="modal-buttons">
+                <button onClick={handleCreateNewBoard} disabled={!newBoardName}>
+                  Create
+                </button>
+                <button onClick={handleCloseModal}>Cancel</button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
-      <div className="input-wrapper">
-        <FaSearch id="search-icon" />
-        <input
-          placeholder="Search"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-      </div>
-      <div className="board-row">
-        {filteredBoards.length === 0 ? (
-          <p>No boards match your search.</p>
-        ) : (
-          filteredBoards.map((board) => (
-            <button
-              key={board.id}
-              className="doc-button"
-              onClick={() => handleBoardClick(board.id)}
-            >
-              <FaRegFileAlt style={{ marginRight: "10px", color: "#C51D34" }} />
-              <span className="board-name">{board.name}</span>
-              <FaEllipsisV className="ellipsis-icon" />
-            </button>
-          ))
         )}
+        <div className="input-wrapper">
+          <FaSearch id="search-icon" />
+          <input
+            placeholder="Search"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+        <div className="board-row">
+          {filteredBoards.length === 0 ? (
+            <p>No boards match your search.</p>
+          ) : (
+            filteredBoards.map((board) => (
+              <button
+                key={board.id}
+                className="doc-button"
+                onClick={() => handleBoardClick(board.id)}
+              >
+                <FaRegFileAlt
+                  style={{ marginRight: "10px", color: "#C51D34" }}
+                />
+                <span className="board-name">{board.name}</span>
+                <FaEllipsisV className="ellipsis-icon" />
+              </button>
+            ))
+          )}
+        </div>
       </div>
-    </div>
     </>
   );
 };

@@ -135,7 +135,22 @@ async function getAllBoardsForUser(req, res) {
       .json({ error: "Error fetching user boards from database" });
   }
 }
+async function getUserRole(req, res) {
+  try {
+    const { user_id, board_id } = req.params;
+    const userBoard = await UserBoard.findOne({
+      where: { user_id, board_id },
+    });
 
+    if (!userBoard) {
+      return res.status(404).json({ error: "User board not found" });
+    }
+    return res.status(200).json(userBoard.permissions);
+  } catch (error) {
+    console.error("Error fetching user role:", error);
+    return res.status(500).json({ error: "Error fetching user role" });
+  }
+}
 module.exports = {
   createUserBoard,
   getUserBoardsByUserId,
@@ -144,4 +159,5 @@ module.exports = {
   getUserBoard,
   deleteUserBoard,
   getAllBoardsForUser,
+  getUserRole,
 };
