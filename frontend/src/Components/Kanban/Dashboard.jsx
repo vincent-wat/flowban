@@ -19,6 +19,7 @@ export const Dashboard = () => {
   const [user_id, setUser_id] = useState("");
   const [isManagerView, setIsManagerView] = useState(false);
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
+  const [pdfFile, setPdfFile] = useState(null);
 
   const navigate = useNavigate();
 
@@ -167,10 +168,7 @@ export const Dashboard = () => {
                 onChange={(e) => setNewBoardName(e.target.value)}
               />
               <div className="modal-buttons">
-                <button
-                  onClick={handleCreateNewBoard}
-                  disabled={!newBoardName}
-                >
+                <button onClick={handleCreateNewBoard} disabled={!newBoardName}>
                   Create
                 </button>
                 <button
@@ -203,42 +201,103 @@ export const Dashboard = () => {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
               />
+              <input
+                type="file"
+                accept="application/pdf"
+                onChange={(e) => setPdfFile(e.target.files[0])}
+              />
+
               <div className="modal-buttons">
                 <button
                   onClick={async () => {
                     try {
-                      const response = await fetch(
+                      // ADD "(!newBoardName || !description || !pdfFile || !user_id)" WHEN USER_ID WORKS
+                      if (!newBoardName || !description || !pdfFile) {
+                        alert(
+                          "Please fill out all fields and wait for user ID to load."
+                        );
+                        return;
+                      }
+
+                      const formData = new FormData();
+                      formData.append("name", `${newBoardName} Template`);
+                      formData.append("description", description);
+                      formData.append("created_by", 1); // PLACEHOLDER UNTIL USER_ID WORKS
+                      //formData.append("created_by", user_id);  USE THIS WHEN USER_ID WORKS
+                      formData.append("file", pdfFile);
+
+                      const templateRes = await fetch(
+                        "https://localhost:3000/api/forms/templates",
+                        {
+                          method: "POST",
+                          body: formData,
+                        }
+                      );
+
+                      if (!templateRes.ok) {
+                        throw new Error(
+                          `Template upload failed. Status: ${templateRes.status}`
+                        );
+                      }
+
+                      const templateData = await templateRes.json();
+
+                      // Debug log to verify template structure
+                      console.log("Uploaded template:", templateData);
+
+                      const templateId = templateData?.template?.id;
+
+                      if (!templateId) {
+                        throw new Error("No template ID returned from upload.");
+                      }
+
+                      // POST REQUEST
+                      const boardRes = await fetch(
                         "https://localhost:3000/api/workflowBoards",
                         {
                           method: "POST",
-                          headers: { "Content-Type": "application/json" },
+                          headers: {
+                            "Content-Type": "application/json",
+                          },
                           body: JSON.stringify({
                             name: newBoardName,
                             description,
-                            template_id: null,
-                            created_by: user_id,
+                            created_by: 1,
+                            template_id: templateId,
                           }),
                         }
                       );
 
-                      if (!response.ok)
+                      if (!boardRes.ok) {
                         throw new Error(
-                          `HTTP error! status: ${response.status}`
+                          `Board creation failed. Status: ${boardRes.status}`
                         );
+                      }
 
-                      const newBoard = await response.json();
-                      setBoards((prevBoards) => [newBoard.board, ...prevBoards]);
+                      const newBoard = await boardRes.json();
+
+                      // Update board list and clear form
+                      setBoards((prevBoards) => [
+                        newBoard.board,
+                        ...prevBoards,
+                      ]);
                       setIsTemplateModalOpen(false);
                       setNewBoardName("");
                       setDescription("");
+                      setPdfFile(null);
                     } catch (error) {
-                      console.error("Error creating workflow board:", error);
+                      console.error("Error during workflow creation:", error);
+                      alert(
+                        "Something went wrong — check console for details."
+                      );
                     }
                   }}
-                  disabled={!newBoardName || !description}
+                  // ADD "(!newBoardName || !description || !pdfFile || !user_id)" WHEN USER_ID WORKS
+                  disabled={!newBoardName || !description || !pdfFile}
                 >
                   Create
                 </button>
+
                 <button
                   onClick={() => {
                     setIsTemplateModalOpen(false);
