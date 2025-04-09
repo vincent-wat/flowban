@@ -25,6 +25,6 @@ const KanbanBoard = () => {
   }, []);
 
   const { board_id } = useParams();
-  return <Board board_id={board_id} user_id={user_id} roler={role} />;
+  return <Board board_id={board_id} user_id={user_id} />;
 };
 export default KanbanBoard;
