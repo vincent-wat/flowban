@@ -5,6 +5,35 @@ import "./SignUpPage.css";
 import { RiLockPasswordFill } from "react-icons/ri";
 import axios from "../../../axios";
 import useAuth from "../../../hooks/useAuth";
+import googleButton from "../../Assets/google_signin_buttons/web/1x/btn_google_signin_dark_pressed_web.png"
+
+function navigateToGoogleAuth(url) {
+  window.location.href = url;
+}
+
+async function auth() {
+  try {
+    const response = await fetch("https://localhost:3000/api/request/request", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      credentials: "include"
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    console.log("Auth URL received:", data);
+    navigateToGoogleAuth(data.url);
+  } catch (error) {
+    console.error("Error during auth request:", error);
+    alert("Failed to authenticate with Google. Please try again later.");
+  }
+}
+
 
 const SignUpPage = () => {
   useAuth();
@@ -201,6 +230,11 @@ const SignUpPage = () => {
           </a>
         </span>
       </p>
+      <h3>
+      <button type="button" onClick={() => auth()}>
+        <img src={googleButton} alt="Sign in with Google" style={{ width: "200px", height: "50px" }} />
+      </button>
+      </h3>
     </div>
   );
 };

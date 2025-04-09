@@ -12,6 +12,8 @@ const userActionsLogs = require("./routes/userActionLogsRoutes");
 const workflowBoardRoutes = require("./routes/workflowBoardRoutes");
 const workflowStagesRoutes = require("./routes/workflowStagesRoutes");
 const formAssignmentsRoutes = require("./routes/formAssignmentRoutes");
+const authRoutes = require("./routes/oAuthRoutes");
+const requestRoutes = require("./routes/requestRoutes");
 const pool = require("./models/db");
 const cors = require("cors");
 const path = require("path");
@@ -88,6 +90,10 @@ app.use("/api/userActionsLogs", userActionsLogs);
 app.use("/api/workflowBoards", workflowBoardRoutes);
 app.use("/api/workflowStages", workflowStagesRoutes);
 app.use("/api/formAssignment", formAssignmentsRoutes);
+
+// OAuth Routes
+app.use("/api/oauth", authRoutes);
+app.use("/api/request", requestRoutes);
 
 // Test Route
 app.post("/signuptest", (req, res) => {
