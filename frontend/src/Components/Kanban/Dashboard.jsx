@@ -216,7 +216,7 @@ export const Dashboard = () => {
                 <button
                   onClick={async () => {
                     try {
-                      if (!newBoardName || !description || !pdfFile) {
+                      if (!newBoardName || !description || !pdfFile || !user_id) {
                         alert(
                           "Please fill out all fields and wait for user ID to load."
                         );
@@ -226,7 +226,7 @@ export const Dashboard = () => {
                       const formData = new FormData();
                       formData.append("name", `${newBoardName} Template`);
                       formData.append("description", description);
-                      formData.append("created_by", 1); // Placeholder until user_id works
+                      formData.append("created_by", user_id); // Placeholder until user_id works
                       // formData.append("created_by", user_id); // Use this when user_id is available
                       formData.append("file", pdfFile);
 
@@ -262,7 +262,7 @@ export const Dashboard = () => {
                           body: JSON.stringify({
                             name: newBoardName,
                             description,
-                            created_by: 1,
+                            created_by: user_id,
                             template_id: templateId,
                           }),
                         }
@@ -285,7 +285,7 @@ export const Dashboard = () => {
                       alert("Something went wrong — check console for details.");
                     }
                   }}
-                  disabled={!newBoardName || !description || !pdfFile}
+                  disabled={!newBoardName || !description || !pdfFile || !user_id}
                 >
                   Create
                 </button>

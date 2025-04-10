@@ -42,6 +42,11 @@
     justify-content: center;
     cursor: pointer;
     transition: transform 0.2s, box-shadow 0.2s;
+    gap: 8px;
+  }
+
+  .template-card span {        
+    text-align: center; 
   }
   
   .template-card:hover {
