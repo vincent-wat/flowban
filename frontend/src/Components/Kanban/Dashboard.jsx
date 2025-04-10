@@ -9,6 +9,7 @@ import "./Dashboard.css";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
+import axios from "../../axios";
 
 export const Dashboard = () => {
   const [boards, setBoards] = useState([]);
@@ -55,6 +56,25 @@ export const Dashboard = () => {
       }
     };
 
+  // took out fetchBoards from the useEffect and put it in its own function
+  // to be able to call it in the handleCreateNewBoard function
+  const fetchBoards = async () => {
+    console.log("user_id in boards:", user_id);
+    try {
+      const response = await fetch(
+        `https://localhost:3000/api/userBoards/boards/all/${user_id}`
+      );
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      console.log("boards:", data);
+      setBoards(data);
+    } catch (error) {
+      console.error("Error fetching boards:", error);
+    }
+  };
+  useEffect(() => {
     const fetchTemplates = async () => {
       try {
         const response = await fetch(
@@ -95,7 +115,7 @@ export const Dashboard = () => {
       const newBoard = await response.json();
       setBoards((prevBoards) => [newBoard, ...prevBoards]);
       setIsModalOpen(false);
-      setNewBoardName("");
+      fetchBoards();
     } catch (error) {
       console.error("Error creating new board:", error);
     }

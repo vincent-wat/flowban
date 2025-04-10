@@ -47,14 +47,9 @@ io.on("connection", (socket) => {
     console.log(`User disconnected: ${socket.id}`);
   });
 
-  socket.on("columnData", (data) => {
-    //console.log("Received column data:", data);
-    socket.broadcast.emit("reciveColumnData", data);
-  });
-
-  socket.on("taskData", (data) => {
-    //console.log("Received task data:", data);
-    socket.broadcast.emit("reciveTaskData", data);
+  socket.on("kanbanData", (data) => {
+    //console.log("Received kanban data:", data);
+    socket.broadcast.emit("reciveKanbanData", data);
   });
 });
 
