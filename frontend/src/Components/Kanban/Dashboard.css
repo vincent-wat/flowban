@@ -224,10 +224,11 @@
     border-radius: 8px; 
     padding: 12px 20px; 
     font-size: 16px; 
-    display: flex;
+    display: block;
     align-items: center;
     justify-content: center;
     cursor: pointer;
+    text-align: center;
   }
   
   .fixed-create-board:hover {
