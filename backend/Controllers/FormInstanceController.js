@@ -31,6 +31,23 @@ async function createFormInstance(req, res) {
       pdf_file_path: filePath,
     });
 
+    const initializingStage = await WorkflowStage.findOne({
+      where: { stage_name: 'Initializing' },
+    });
+    
+    if (!initializingStage) {
+      return res.status(500).json({ error: "Initializing stage not found" });
+    }
+
+    await FormAssignment.create({
+      form_instance_id: newFormInstance.id,
+      stage_id: initializingStage.id,
+      assigned_user_id: submitted_by,
+      role: 'approver',
+      approval_status: 'pending',
+    });
+    
+
     console.log("Form Instance Created:", newFormInstance);
 
     return res.status(201).json({

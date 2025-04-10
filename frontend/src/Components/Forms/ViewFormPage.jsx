@@ -72,7 +72,7 @@ const ViewFormPage = () => {
       const formData = new FormData();
       formData.append("file", pdfBlob, fileName); 
       formData.append("template_id", templateId);
-      formData.append("submitted_by", "11"); // fix for actual id later
+      formData.append("submitted_by", "19"); // fix for actual id later
 
       // 8. Submit to your server
       console.log("[handleSubmit] Submitting form data to backend...");

@@ -32,6 +32,8 @@ const io = new Server(server, {
   cors: {
     origin: "https://localhost:3001",
     methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
   },
 });
 
@@ -88,7 +90,7 @@ app.use("/api/userActionsLogs", userActionsLogs);
 app.use("/api/workflowBoards", workflowBoardRoutes);
 app.use("/api/workflowStages", workflowStagesRoutes);
 app.use("/api/formAssignment", formAssignmentsRoutes);
-
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // Test Route
 app.post("/signuptest", (req, res) => {
   try {

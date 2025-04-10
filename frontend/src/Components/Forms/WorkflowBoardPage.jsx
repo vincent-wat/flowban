@@ -15,7 +15,7 @@ export const WorkflowBoard = () => {
   const [formInstances, setFormInstances] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadingForms, setLoadingForms] = useState({});
-
+  
   const [showModal, setShowModal] = useState(false);
   const [selectedFormId, setSelectedFormId] = useState(null);
   const [denialReason, setDenialReason] = useState("");
@@ -47,7 +47,7 @@ export const WorkflowBoard = () => {
         `https://localhost:3000/api/formInstance/templates/${templateId}/instances`
       );
       const data = await res.json();
-
+      
       if (!Array.isArray(data)) {
         console.error("Error: form instances is not an array!", data);
         setFormInstances([]);
@@ -64,7 +64,6 @@ export const WorkflowBoard = () => {
     fetchWorkflowData();
     fetchFormInstances();
 
-    // WebSocket listener
     const handleFormUpdate = ({ id, newStatus }) => {
       console.log(`Received WebSocket update: Form ${id} -> ${newStatus}`);
       fetchWorkflowData();
@@ -84,21 +83,33 @@ export const WorkflowBoard = () => {
 
   const handleApprove = async (formId) => {
     setLoadingForms((prev) => ({ ...prev, [formId]: true }));
+  
     try {
-      const response = await fetch(
-        `https://localhost:3000/api/formInstance/instances/approve/${formId}`,
-        { method: "PUT" }
-      );
+      const token = localStorage.getItem("token"); 
+  
+          const response = await fetch(`https://localhost:3000/api/formInstance/instances/approve/${formId}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+        },
+      });
+
+  
       if (!response.ok) {
-        throw new Error(`Failed to approve form ${formId}`);
+        const errorText = await response.text();
+        throw new Error(`Failed to approve form ${formId}: ${errorText}`);
       }
-      fetchFormInstances();
+  
+      fetchFormInstances(); 
     } catch (error) {
-      console.error("Error approving form:", error);
+      console.error("Error approving form:", error.message);
+      alert("Error approving form: " + error.message); 
     } finally {
       setLoadingForms((prev) => ({ ...prev, [formId]: false }));
     }
   };
+  
 
   const openDenyModal = (formId) => {
     setSelectedFormId(formId);
@@ -106,7 +117,6 @@ export const WorkflowBoard = () => {
     setShowModal(true);
   };
 
-  // Close denial modal
   const closeModal = () => {
     setShowModal(false);
     setSelectedFormId(null);
@@ -167,12 +177,27 @@ export const WorkflowBoard = () => {
                         <div key={form.id} className="form-instance-card">
                           <p>Form {form.id}</p>
                           <p>Status: {form.status}</p>
+
                           <button
-                            onClick={() => navigate(`/formInstance/${form.id}`)}
+                            onClick={() =>
+                              navigate(`/formInstance/${form.id}`)
+                            }
                             className="view-form-button"
                           >
                             View/Edit
                           </button>
+
+                          <button
+                          onClick={() => {
+                            const url = `https://localhost:3000/${form.pdf_file_path}`;
+                            console.log("Opening PDF at:", url);
+                            window.open(url, "_blank");
+                          }}
+                            className="view-pdf-button"
+                          >
+                            View PDF
+                          </button>
+
                           <button
                             onClick={() => handleApprove(form.id)}
                             className="approve-button"
@@ -184,6 +209,7 @@ export const WorkflowBoard = () => {
                               "Approve"
                             )}
                           </button>
+
                           <button
                             onClick={() => openDenyModal(form.id)}
                             className="deny-button"
@@ -199,9 +225,9 @@ export const WorkflowBoard = () => {
                       ))}
 
                   {/* If no form matches this stage */}
-                  {formInstances?.filter(
-                    (form) => form.status === stage.stage_name
-                  ).length === 0 && <p>No forms in this stage.</p>}
+                  {formInstances?.filter((form) => form.status === stage.stage_name).length === 0 && (
+                    <p>No forms in this stage.</p>
+                  )}
                 </div>
               </div>
             ))}
@@ -209,7 +235,6 @@ export const WorkflowBoard = () => {
         </>
       )}
 
-      {/* Denial Modal */}
       {showModal && (
         <div className="modal">
           <div className="modal-content">
