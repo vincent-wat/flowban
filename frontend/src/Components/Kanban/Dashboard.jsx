@@ -1,3 +1,4 @@
+import React, { useEffect, useState } from "react";
 import {
   FaSearch,
   FaRegFileAlt,
@@ -5,11 +6,10 @@ import {
   FaPlus,
   FaUser,
 } from "react-icons/fa";
-import "./Dashboard.css";
-import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
-import axios from "../../axios";
+import "./Dashboard.css";
+
 
 export const Dashboard = () => {
   const [boards, setBoards] = useState([]);
@@ -25,82 +25,66 @@ export const Dashboard = () => {
 
   const navigate = useNavigate();
 
+  // Decode token and set the user ID.
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
       console.error("No token found. Please log in.");
       return;
     }
-
     try {
-      const decodedToken = jwtDecode(token); // Decode the token
-      setUser_id(decodedToken.id); // Extract the user's ID from the token
+      const decodedToken = jwtDecode(token);
+      setUser_id(decodedToken.id);
       console.log("Decoded user ID:", decodedToken.id);
     } catch (error) {
       console.error("Error decoding token:", error);
     }
   }, []);
 
-  useEffect(() => {
-    const fetchBoards = async () => {
-      try {
-        const response = await fetch(
-          `https://localhost:3000/api/userBoards/boards/all/${user_id}`
-        );
-        if (!response.ok)
-          throw new Error(`HTTP error! status: ${response.status}`);
-        const data = await response.json();
-        setBoards(data);
-      } catch (error) {
-        console.error("Error fetching boards:", error);
-      }
-    };
-
-  // took out fetchBoards from the useEffect and put it in its own function
-  // to be able to call it in the handleCreateNewBoard function
+  // Fetch boards from the API.
   const fetchBoards = async () => {
-    console.log("user_id in boards:", user_id);
     try {
       const response = await fetch(
         `https://localhost:3000/api/userBoards/boards/all/${user_id}`
       );
-      if (!response.ok) {
+      if (!response.ok)
         throw new Error(`HTTP error! status: ${response.status}`);
-      }
       const data = await response.json();
-      console.log("boards:", data);
       setBoards(data);
     } catch (error) {
       console.error("Error fetching boards:", error);
     }
   };
-  useEffect(() => {
-    const fetchTemplates = async () => {
-      try {
-        const response = await fetch(
-          "https://localhost:3000/api/forms/templates"
-        );
-        if (!response.ok)
-          throw new Error(`HTTP error! status: ${response.status}`);
-        const data = await response.json();
-        setTemplates(data);
-      } catch (error) {
-        console.error("Error fetching templates:", error);
-      }
-    };
 
+  // Fetch templates from the API.
+  const fetchTemplates = async () => {
+    try {
+      const response = await fetch("https://localhost:3000/api/forms/templates");
+      if (!response.ok)
+        throw new Error(`HTTP error! status: ${response.status}`);
+      const data = await response.json();
+      setTemplates(data);
+    } catch (error) {
+      console.error("Error fetching templates:", error);
+    }
+  };
+
+  // When user_id is available, fetch boards and templates.
+  useEffect(() => {
     if (user_id) {
       fetchBoards();
       fetchTemplates();
     }
   }, [user_id]);
 
+  // Filter and sort boards for display.
   const filteredBoards = boards
     .filter((board) =>
       board.name.toLowerCase().includes(searchTerm.toLowerCase())
     )
     .sort((a, b) => b.id - a.id);
 
+  // Create a new Kanban board.
   const handleCreateNewBoard = async () => {
     try {
       const response = await fetch("https://localhost:3000/api/boards", {
@@ -108,10 +92,8 @@ export const Dashboard = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: newBoardName }),
       });
-
       if (!response.ok)
         throw new Error(`HTTP error! status: ${response.status}`);
-
       const newBoard = await response.json();
       setBoards((prevBoards) => [newBoard, ...prevBoards]);
       setIsModalOpen(false);
@@ -132,13 +114,17 @@ export const Dashboard = () => {
   return (
     <>
       <div className="btn-container">
-        <button
-          className="fixed-create-board"
-          onClick={() => setIsModalOpen(true)}
-        >
-          <FaPlus className="fixed-plus-icon" />
-          Create New Kanban Board
-        </button>
+      <button
+  className="fixed-create-board"
+  onClick={() => setIsModalOpen(true)}
+>
+  <FaPlus className="fixed-plus-icon" />
+  <span>
+    Create New <br />
+    Kanban Board
+  </span>
+</button>
+
       </div>
 
       <div
@@ -226,12 +212,10 @@ export const Dashboard = () => {
                 accept="application/pdf"
                 onChange={(e) => setPdfFile(e.target.files[0])}
               />
-
               <div className="modal-buttons">
                 <button
                   onClick={async () => {
                     try {
-                      // ADD "(!newBoardName || !description || !pdfFile || !user_id)" WHEN USER_ID WORKS
                       if (!newBoardName || !description || !pdfFile) {
                         alert(
                           "Please fill out all fields and wait for user ID to load."
@@ -242,8 +226,8 @@ export const Dashboard = () => {
                       const formData = new FormData();
                       formData.append("name", `${newBoardName} Template`);
                       formData.append("description", description);
-                      formData.append("created_by", 1); // PLACEHOLDER UNTIL USER_ID WORKS
-                      //formData.append("created_by", user_id);  USE THIS WHEN USER_ID WORKS
+                      formData.append("created_by", 1); // Placeholder until user_id works
+                      // formData.append("created_by", user_id); // Use this when user_id is available
                       formData.append("file", pdfFile);
 
                       const templateRes = await fetch(
@@ -261,17 +245,13 @@ export const Dashboard = () => {
                       }
 
                       const templateData = await templateRes.json();
-
-                      // Debug log to verify template structure
                       console.log("Uploaded template:", templateData);
-
                       const templateId = templateData?.template?.id;
 
                       if (!templateId) {
                         throw new Error("No template ID returned from upload.");
                       }
 
-                      // POST REQUEST (HARD CODED USER_ID)
                       const boardRes = await fetch(
                         "https://localhost:3000/api/workflowBoards",
                         {
@@ -295,29 +275,20 @@ export const Dashboard = () => {
                       }
 
                       const newBoard = await boardRes.json();
-
-                      // Update board list and clear form
-                      setBoards((prevBoards) => [
-                        newBoard.board,
-                        ...prevBoards,
-                      ]);
+                      setBoards((prevBoards) => [newBoard.board, ...prevBoards]);
                       setIsTemplateModalOpen(false);
                       setNewBoardName("");
                       setDescription("");
                       setPdfFile(null);
                     } catch (error) {
                       console.error("Error during workflow creation:", error);
-                      alert(
-                        "Something went wrong — check console for details."
-                      );
+                      alert("Something went wrong — check console for details.");
                     }
                   }}
-                  // ADD "(!newBoardName || !description || !pdfFile || !user_id)" WHEN USER_ID WORKS
                   disabled={!newBoardName || !description || !pdfFile}
                 >
                   Create
                 </button>
-
                 <button
                   onClick={() => {
                     setIsTemplateModalOpen(false);
