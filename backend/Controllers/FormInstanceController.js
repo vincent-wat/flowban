@@ -248,6 +248,7 @@ const denyFormInstance = async (req, res) => {
   try {
     const { id } = req.params;
     const { denial_reason } = req.body;
+    const io = req.app.get("io");
 
     const formInstance = await FormInstance.findByPk(id);
     if (!formInstance) {
@@ -291,6 +292,7 @@ const denyFormInstance = async (req, res) => {
         },
       }
     );
+    io.emit("formUpdated", { id, newStatus: initializingStage.stage_name });
 
     return res.status(200).json({ message: 'Form denied successfully and reassigned for re-approval.', formInstance });
   } catch (error) {
