@@ -195,9 +195,9 @@ const approveFormInstance = async (req, res) => {
       return res.status(403).json({ error: "You do not have approval permissions for this form." });
     }
 
-    if (assignment.approval_status === "approved") {
-      return res.status(400).json({ error: "You have already approved this form." });
-    }
+    if (assignment.approval_status !== "pending") {
+      return res.status(400).json({ error: `This form is currently marked as '${assignment.approval_status}', and cannot be approved.` });
+    }    
 
     // Update assignment
     assignment.approval_status = "approved";
@@ -246,7 +246,7 @@ const approveFormInstance = async (req, res) => {
 
 const denyFormInstance = async (req, res) => {
   try {
-    const { id } = req.params; 
+    const { id } = req.params;
     const { denial_reason } = req.body;
 
     const formInstance = await FormInstance.findByPk(id);
@@ -254,26 +254,50 @@ const denyFormInstance = async (req, res) => {
       return res.status(404).json({ message: 'Form not found.' });
     }
 
-    // Check if form is already denied (optional safeguard)
     if (formInstance.status === 'denied') {
       return res.status(400).json({ message: 'This form has already been denied.' });
     }
-
-    // Require a denial reason when denying a form
     if (!denial_reason || denial_reason.trim() === '') {
       return res.status(400).json({ message: 'A denial reason is required.' });
     }
 
-    // Update form status to 'denied' and save the denial reason
+    // Reset form status and denial reason
     formInstance.status = 'Initializing';
     formInstance.denial_reason = denial_reason;
     await formInstance.save();
 
-    return res.status(200).json({ message: 'Form denied successfully.', formInstance });
+    const initializingStage = await WorkflowStage.findOne({
+      where: {
+        template_id: formInstance.template_id,
+        stage_name: 'Initializing',
+      },
+    });
+
+    if (!initializingStage) {
+      return res.status(500).json({ message: 'Initializing stage not found.' });
+    }
+
+    await FormAssignment.update(
+      {
+        approval_status: 'pending',
+        approved_at: null,
+        comment: null,
+      },
+      {
+        where: {
+          form_instance_id: id,
+          stage_id: initializingStage.id,
+          assigned_user_id: formInstance.submitted_by,
+        },
+      }
+    );
+
+    return res.status(200).json({ message: 'Form denied successfully and reassigned for re-approval.', formInstance });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
 };
+
 
 
 module.exports = {
