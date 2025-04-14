@@ -179,15 +179,6 @@ export const WorkflowBoard = () => {
                           <p>Status: {form.status}</p>
 
                           <button
-                            onClick={() =>
-                              navigate(`/formInstance/${form.id}`)
-                            }
-                            className="view-form-button"
-                          >
-                            View/Edit
-                          </button>
-
-                          <button
                           onClick={() => {
                             const url = `https://localhost:3000/${form.pdf_file_path}`;
                             console.log("Opening PDF at:", url);

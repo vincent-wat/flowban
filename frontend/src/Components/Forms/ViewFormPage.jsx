@@ -1,5 +1,5 @@
 import React from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { PDFDocument } from "pdf-lib";
 import PdfViewer from "./PdfViewer";
 import "./pdfViewer.css";
@@ -7,6 +7,7 @@ import "./pdfViewer.css";
 const ViewFormPage = () => {
   const { templateId } = useParams();
   const pdfUrl = `https://localhost:3000/api/forms/templates/pdf/${templateId}`;
+  const navigate = useNavigate();
 
   const handleSubmit = async () => {
     try {
@@ -83,6 +84,7 @@ const ViewFormPage = () => {
 
       if (response.ok) {
         alert("Form submitted successfully!");
+        navigate(`/workflowboard/${templateId}`);
       } else {
         console.error("Error submitting form");
       }
