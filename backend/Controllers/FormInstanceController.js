@@ -7,7 +7,7 @@ async function createFormInstance(req, res) {
     console.log("Request Body:", req.body);
     console.log("Uploaded File:", req.file);
 
-    const { template_id, submitted_by } = req.body;
+    const { template_id, submitted_by, suggestedAssignments } = req.body;
 
     if (!req.file) {
       return res.status(400).json({ error: "No file uploaded" });
@@ -19,11 +19,6 @@ async function createFormInstance(req, res) {
     if (!templateExists) {
       return res.status(404).json({ error: "Template not found" });
     }
-    //issue here
-    /*const userExists = await user.findByPk(submitted_by);
-    if (!userExists) {
-      return res.status(404).json({ error: "Submitting user not found" });
-    }*/
 
     const newFormInstance = await FormInstance.create({
       template_id,
@@ -32,9 +27,9 @@ async function createFormInstance(req, res) {
     });
 
     const initializingStage = await WorkflowStage.findOne({
-      where: { stage_name: 'Initializing' },
+      where: { template_id, stage_name: 'Initializing' },
     });
-    
+
     if (!initializingStage) {
       return res.status(500).json({ error: "Initializing stage not found" });
     }
@@ -46,7 +41,24 @@ async function createFormInstance(req, res) {
       role: 'approver',
       approval_status: 'pending',
     });
-    
+    const parsedSuggestedAssignments = suggestedAssignments
+      ? JSON.parse(suggestedAssignments)
+      : [];
+    console.log("Parsed suggested assignments:", parsedSuggestedAssignments);
+
+    if (parsedSuggestedAssignments.length > 0) {
+      for (const assignment of parsedSuggestedAssignments) {
+        const { stage_id, assigned_user_id } = assignment;
+
+        await FormAssignment.create({
+          form_instance_id: newFormInstance.id,
+          stage_id,
+          assigned_user_id,
+          role: 'approver',
+          approval_status: 'suggested',
+        });
+      }
+    }
 
     console.log("Form Instance Created:", newFormInstance);
 
@@ -59,6 +71,7 @@ async function createFormInstance(req, res) {
     return res.status(500).json({ error: "Failed to create form instance" });
   }
 }
+
 
 
 async function getFormInstanceById(req, res) {
