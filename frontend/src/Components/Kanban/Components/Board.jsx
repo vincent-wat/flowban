@@ -13,10 +13,11 @@ const socket = io("https://localhost:3000", {
   transports: ["websocket", "polling"],
 });
 
-export default function Board({ board_id, user_id }) {
+export default function Board({ board_id, user_id, user_role }) {
   console.log("Board ID: " + board_id);
   console.log("User ID: " + user_id);
-
+  console.log("User Role: " + user_role);
+  console.log("\n\n\n\n");
   const isFirstRender = useRef(true);
 
   // column data: here now just to test
@@ -24,11 +25,20 @@ export default function Board({ board_id, user_id }) {
   const [tasks, setTasks] = useState([]);
   const [newName, setNewName] = useState("");
   const [updateBoard, setUpdateBoard] = useState(true);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [activeTask, setActiveTask] = useState(null);
   // url for columns and tasks
   const COLUMN_URL = "/api/columns";
   const TASK_URL = "/api/tasks";
   const BOARD_URL = "/api/boards";
+
+  function checkUserRole() {
+    if (user_role === "owner" || user_role === "editor") {
+      return true; // User has permission to edit
+    } else {
+      return false; // User does not have permission to edit
+    }
+  }
 
   // Fetch board data including columns and tasks
   const fetchBoardData = async () => {
@@ -48,7 +58,8 @@ export default function Board({ board_id, user_id }) {
     try {
       const response = await axios.get(`${COLUMN_URL}/board/${board_id}`);
 
-      const allColumns = response.data;
+      const allColumns = response.data.sort((a, b) => a.id - b.id);
+
       setColumns(allColumns);
       console.log("Column Data: ");
       console.log(allColumns);
@@ -91,6 +102,10 @@ export default function Board({ board_id, user_id }) {
   };
 
   const handleDragStart = (event) => {
+    if (!checkUserRole()) {
+      console.log("User does not have permission to drag tasks.");
+      return;
+    }
     const { active } = event;
     const task = tasks.find((task) => task.id === active.id);
     setActiveTask(task);
@@ -98,6 +113,9 @@ export default function Board({ board_id, user_id }) {
   // function to handle the drag and drop of tasks
   // need to update DB still with new values
   const handleDragEnd = async (event) => {
+    if (!checkUserRole()) {
+      return;
+    }
     setActiveTask(null);
 
     const { active, over } = event;
@@ -123,6 +141,9 @@ export default function Board({ board_id, user_id }) {
 
   // Function to add a new column
   const addColumn = async () => {
+    if (!checkUserRole()) {
+      return;
+    }
     if (!board_id) {
       console.error("No board ID provided");
       return;
@@ -142,6 +163,9 @@ export default function Board({ board_id, user_id }) {
   };
   // function to delete a column
   const deleteColumn = async (column_id) => {
+    if (!checkUserRole()) {
+      return;
+    }
     try {
       deleteAllTasksForColumn(column_id);
       await axios.delete(`${COLUMN_URL}/id/${column_id}`);
@@ -156,11 +180,6 @@ export default function Board({ board_id, user_id }) {
   const editColumn = async (column_id, newName) => {
     try {
       await axios.put(`${COLUMN_URL}/id/${column_id}`, { name: newName });
-      // setColumns(
-      //   columns.map((column) =>
-      //     column.id === column_id ? { ...column, name: newName } : column
-      //   )
-      // );
       setUpdateBoard(true);
     } catch (error) {
       console.error("Error updating column:", error);
@@ -171,6 +190,9 @@ export default function Board({ board_id, user_id }) {
       ------------------------------------------------------------*/
   // function to add a new task
   const addTask = async (column_id, newTitle, NewDescription) => {
+    if (!checkUserRole()) {
+      return;
+    }
     const newTask = {
       title: newTitle,
       description: NewDescription,
@@ -185,6 +207,9 @@ export default function Board({ board_id, user_id }) {
     }
   };
   const deleteTask = async (task_id) => {
+    if (!checkUserRole()) {
+      return;
+    }
     try {
       await axios.delete(`${TASK_URL}/id/${task_id}`);
       setUpdateBoard(true);
@@ -194,6 +219,9 @@ export default function Board({ board_id, user_id }) {
   };
 
   const editTask = async (task_id, newTitle, newDescription) => {
+    if (!checkUserRole()) {
+      return;
+    }
     try {
       await axios.put(`${TASK_URL}/id/${task_id}`, {
         title: newTitle,
@@ -260,28 +288,8 @@ export default function Board({ board_id, user_id }) {
 
   const columnColors = ["#FF5733", "#33FF57", "#3357FF", "#FF33A1"];
   return (
-    <div className="board">
-      <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-        {columns.map((column) => {
-          const columnTasks = tasks.filter(
-            (task) => task.column_id === column.id
-          );
-          return (
-            <Column
-              key={column.id}
-              id={column.id}
-              column={column}
-              tasks={columnTasks}
-              deleteColumn={deleteColumn}
-              addTask={addTask}
-              editColumn={editColumn}
-              deleteTask={deleteTask}
-              editTask={editTask}
-              color={columnColors[column.id % columnColors.length]}
-            />
-          );
-        })}
-      </DndContext>
+    <div>
+      <h2></h2>
       <div>
         <h3>Add New Column</h3>
         <input
@@ -294,6 +302,29 @@ export default function Board({ board_id, user_id }) {
           <FaPlus />
           Add Column
         </button>
+      </div>
+      <div className="board">
+        <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+          {columns.map((column) => {
+            const columnTasks = tasks.filter(
+              (task) => task.column_id === column.id
+            );
+            return (
+              <Column
+                key={column.id}
+                id={column.id}
+                column={column}
+                tasks={columnTasks}
+                deleteColumn={deleteColumn}
+                addTask={addTask}
+                editColumn={editColumn}
+                deleteTask={deleteTask}
+                editTask={editTask}
+                color={columnColors[column.id % columnColors.length]}
+              />
+            );
+          })}
+        </DndContext>
       </div>
     </div>
   );
