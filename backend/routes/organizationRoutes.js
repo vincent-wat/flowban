@@ -3,6 +3,9 @@ const router = express.Router();
 const Controller = require('../Controllers/OrganizationController.js');
 
 router.post('/create', Controller.createOrganization);
-router.put('/add-user', Controller.addUserToOrganization);
+router.post('/invite', Controller.inviteUserToOrganization);
+router.post('/invite-accept', Controller.acceptOrganizationInvite);
+
+
 
 module.exports = router;
