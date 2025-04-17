@@ -16,6 +16,7 @@ const pool = require("./models/db");
 const cors = require("cors");
 const path = require("path");
 const fs = require("fs");
+const organizationRoutes = require("./routes/organizationRoutes");
 
 const https = require("https");
 const { Server } = require("socket.io");
@@ -86,6 +87,7 @@ app.use("/api/workflowBoards", workflowBoardRoutes);
 app.use("/api/workflowStages", workflowStagesRoutes);
 app.use("/api/formAssignment", formAssignmentsRoutes);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/api/organizations', organizationRoutes);
 // Test Route
 app.post("/signuptest", (req, res) => {
   try {

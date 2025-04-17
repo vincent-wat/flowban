@@ -2,7 +2,7 @@
 
 module.exports = {
   async up(queryInterface, Sequelize) {
-    const organizations = [
+    await queryInterface.bulkInsert("organizations", [
       {
         id: 1,
         name: "Flowban University",
@@ -15,12 +15,17 @@ module.exports = {
         created_at: new Date(),
         updated_at: new Date(),
       },
-    ];
+    ]);
 
-    return queryInterface.bulkInsert("organizations", organizations);
+    await queryInterface.sequelize.query(`
+      SELECT setval(
+        pg_get_serial_sequence('organizations', 'id'),
+        (SELECT MAX(id) FROM organizations)
+      );
+    `);
   },
 
   async down(queryInterface, Sequelize) {
-    return queryInterface.bulkDelete("organizations", null, {});
+    await queryInterface.bulkDelete("organizations", null, {});
   },
 };
