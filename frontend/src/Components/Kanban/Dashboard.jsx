@@ -87,17 +87,29 @@ export const Dashboard = () => {
   // Create a new Kanban board.
   const handleCreateNewBoard = async () => {
     try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        console.error("No token found. Please log in.");
+        return;
+      }
+  
+      const decodedToken = jwtDecode(token);
+      const user_id = decodedToken.id;
+  
       const response = await fetch("https://localhost:3000/api/boards", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: newBoardName }),
+        body: JSON.stringify({ name: newBoardName, user_id }),
       });
-      if (!response.ok)
+  
+      if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
+      }
+  
       const newBoard = await response.json();
       setBoards((prevBoards) => [newBoard, ...prevBoards]);
       setIsModalOpen(false);
-      fetchBoards();
+      setNewBoardName("");
     } catch (error) {
       console.error("Error creating new board:", error);
     }

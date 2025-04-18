@@ -1,5 +1,5 @@
 const { Router } = require("express");
-const { Board } = require("../models");
+const { Board, UserBoard } = require("../models");
 const router = Router();
 
 // Returns Board by ID, will be updated
@@ -66,16 +66,26 @@ async function deleteBoard(req, res) {
 // Add a board
 async function addBoard(req, res) {
   try {
+    const { name, user_id } = req.body;
+
+    // Create the board
     const board = await Board.create({
-      name: req.body.name,
+      name,
       created_at: new Date(),
       updated_at: new Date(),
     });
-    res.json(board);
+
+    // Add an entry to the user_boards table
+    await UserBoard.create({
+      user_id,
+      board_id: board.id,
+      permissions: "owner", // Default permission for the creator
+    });
+
+    res.status(201).json(board);
   } catch (error) {
-    res
-      .status(500)
-      .json({ error: "Board not created", message: error.message });
+    console.error("Error creating board:", error.message);
+    res.status(500).json({ error: "Board not created", message: error.message });
   }
 }
 
