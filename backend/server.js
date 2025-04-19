@@ -12,10 +12,13 @@ const userActionsLogs = require("./routes/userActionLogsRoutes");
 const workflowBoardRoutes = require("./routes/workflowBoardRoutes");
 const workflowStagesRoutes = require("./routes/workflowStagesRoutes");
 const formAssignmentsRoutes = require("./routes/formAssignmentRoutes");
+const authRoutes = require("./routes/oAuthRoutes");
+const requestRoutes = require("./routes/requestRoutes");
 const pool = require("./models/db");
 const cors = require("cors");
 const path = require("path");
 const fs = require("fs");
+const organizationRoutes = require("./routes/organizationRoutes");
 
 const https = require("https");
 const { Server } = require("socket.io");
@@ -32,6 +35,8 @@ const io = new Server(server, {
   cors: {
     origin: "https://localhost:3001",
     methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
   },
 });
 
@@ -83,6 +88,12 @@ app.use("/api/userActionsLogs", userActionsLogs);
 app.use("/api/workflowBoards", workflowBoardRoutes);
 app.use("/api/workflowStages", workflowStagesRoutes);
 app.use("/api/formAssignment", formAssignmentsRoutes);
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/api/organizations', organizationRoutes);
+
+// OAuth Routes
+app.use("/api/oauth", authRoutes);
+app.use("/api/", requestRoutes);
 
 // Test Route
 app.post("/signuptest", (req, res) => {

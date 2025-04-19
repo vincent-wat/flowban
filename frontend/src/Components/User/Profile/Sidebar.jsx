@@ -9,6 +9,7 @@ function Sidebar({ isOpen }) {
 
   function handleLogout() {
     localStorage.removeItem('token');
+    localStorage.removeItem('googleAuthPending');
     navigate("/");
   }
 
