@@ -58,7 +58,10 @@ async function getData(req, res) {
         console.log("User data retrieved:", userData.email || userData.sub);
 
         // Check if user exists in the database
-        let dbUser = await User.findOne({ where: { email: userData.email } });
+        let dbUser = await User.findOne({
+            where: { email: userData.email },
+            attributes: ['id', 'email', 'first_name', 'last_name'], // Explicitly include the id field
+        });
 
         if (!dbUser) {
             // Generate a random password for Google-authenticated users
@@ -77,11 +80,15 @@ async function getData(req, res) {
                 role_id: 1, // Default role id
                 password: hashedPassword, // Store the hashed random password
             });
+            dbUser = await User.findOne({
+                where: { email: userData.email },
+                attributes: ['id', 'email', 'first_name', 'last_name'],
+            });
             console.log("New user created:", dbUser.email);
         }
 
         // Generate a JWT token
-        const jwtToken = jwtGenerator(dbUser.id);
+        const jwtToken = jwtGenerator(dbUser);
 
         // Redirect to the frontend with the JWT token in the URL
         res.redirect(`https://localhost:3001/signup?jwtToken=${jwtToken}`);
