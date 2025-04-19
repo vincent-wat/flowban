@@ -1,6 +1,6 @@
 const { Organization, User } = require('../models');
 const generateInviteToken = require("../utils/inviteToken");
-const sendInviteEmail = require("../utils/sendEmail");
+const sendInviteEmail = require("../middleware/sendEmail");
 
 const createOrganization = async (req, res) => {
   try {
