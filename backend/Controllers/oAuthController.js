@@ -33,70 +33,58 @@ async function getUserData(access_token) {
 
 async function getData(req, res) {
     const code = req.query.code;
-    console.log("Received code:", code);
 
     if (!code) {
         return res.status(400).json({ error: "No authorization code provided" });
     }
 
     try {
-        const redirectUrl = "https://localhost:3000/api/oauth";
+        const redirectUrl = "https://localhost:3000/api/oauth"; // Ensure this matches your redirect URI
         const oAuth2Client = new OAuth2Client(
             process.env.CLIENT_ID,
             process.env.CLIENT_SECRET,
             redirectUrl
         );
 
+        // Exchange the authorization code for tokens
         const tokenResponse = await oAuth2Client.getToken(code);
-        console.log("Token response received");
+        const { tokens } = tokenResponse; // Extract tokens from the response
+        const access_token = tokens.access_token; // Get the access_token
 
-        await oAuth2Client.setCredentials(tokenResponse.tokens);
-        console.log("Tokens acquired");
+        if (!access_token) {
+            throw new Error("Access token not found in token response");
+        }
 
-        const user = oAuth2Client.credentials;
-        const userData = await getUserData(user.access_token);
-        console.log("User data retrieved:", userData.email || userData.sub);
+        console.log("Access token retrieved:", access_token);
 
-        // Check if user exists in the database
+        // Fetch user data using the access token
+        const userData = await getUserData(access_token);
+
+        // Check if the user exists in the database
         let dbUser = await User.findOne({
             where: { email: userData.email },
-            attributes: ['id', 'email', 'first_name', 'last_name'], // Explicitly include the id field
+            attributes: ['id', 'email', 'organization_id'], // Include organization_id
         });
 
         if (!dbUser) {
-            // Generate a random password for Google-authenticated users
-            const randomPassword = generateRandomPassword();
-
-            // Hash the random password before storing it in the database
-            const bcrypt = require("bcrypt");
-            const hashedPassword = await bcrypt.hash(randomPassword, 10);
-
             // Create a new user if they don't exist
             dbUser = await User.create({
                 email: userData.email,
                 first_name: userData.given_name || "",
                 last_name: userData.family_name || "",
                 google_id: userData.sub,
-                role_id: 1, // Default role id
-                password: hashedPassword, // Store the hashed random password
+                organization_id: null, // Set a default organization_id if necessary
+                password: null,
             });
-            dbUser = await User.findOne({
-                where: { email: userData.email },
-                attributes: ['id', 'email', 'first_name', 'last_name'],
-            });
-            console.log("New user created:", dbUser.email);
         }
 
-        // Generate a JWT token
-        const jwtToken = jwtGenerator(dbUser);
+        // Generate a JWT token for the user
+        const jwtToken = jwtGenerator(dbUser); // Pass the full user object to jwtGenerator
 
         // Redirect to the frontend with the JWT token in the URL
         res.redirect(`https://localhost:3001/signup?jwtToken=${jwtToken}`);
     } catch (err) {
         console.error("Error with signing in with Google:", err.message);
-        console.error(err.stack);
-
-        // Redirect to frontend with error
         res.redirect("https://localhost:3001/login?error=auth_failed");
     }
 }

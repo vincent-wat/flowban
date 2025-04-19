@@ -138,7 +138,7 @@ async function loginUser(req, res) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    const jwtToken = jwtGenerator(user.id);
+    const jwtToken = jwtGenerator(user);
 
     console.log("User logged in");
     return res.status(200).json({
