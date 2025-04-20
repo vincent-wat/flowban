@@ -12,13 +12,18 @@ export const WorkflowBoard = () => {
   const navigate = useNavigate();
 
   const [stages, setStages] = useState([]);
+  const [users, setUsers] = useState([]);
   const [formInstances, setFormInstances] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadingForms, setLoadingForms] = useState({});
-
   const [showModal, setShowModal] = useState(false);
   const [selectedFormId, setSelectedFormId] = useState(null);
   const [denialReason, setDenialReason] = useState("");
+  const [adminView, setAdminView] = useState(false);
+  const [showSuggestModal, setShowSuggestModal] = useState(false);
+  const [selectedStageId, setSelectedStageId] = useState("");
+  const [selectedUserId, setSelectedUserId] = useState("");
+  const [suggestedAssignments, setSuggestedAssignments] = useState([]);
 
   const fetchWorkflowData = async () => {
     try {
@@ -26,7 +31,6 @@ export const WorkflowBoard = () => {
         `https://localhost:3000/api/workflowStages/template/${templateId}`
       );
       const stagesData = await stagesResponse.json();
-
       if (!Array.isArray(stagesData)) {
         console.error("Error: Stages data is not an array!", stagesData);
         setStages([]);
@@ -41,13 +45,29 @@ export const WorkflowBoard = () => {
     }
   };
 
+  const fetchAllUsers = async () => {
+    try {
+      const res = await fetch(`https://localhost:3000/api/users`);
+      const data = await res.json();
+  
+      if (Array.isArray(data)) {
+        setUsers(data);
+      } else {
+        console.error("User data is not an array:", data);
+        setUsers([]);
+      }
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      setUsers([]);
+    }
+  };
+
   const fetchFormInstances = async () => {
     try {
       const res = await fetch(
         `https://localhost:3000/api/formInstance/templates/${templateId}/instances`
       );
       const data = await res.json();
-
       if (!Array.isArray(data)) {
         console.error("Error: form instances is not an array!", data);
         setFormInstances([]);
@@ -63,8 +83,8 @@ export const WorkflowBoard = () => {
   useEffect(() => {
     fetchWorkflowData();
     fetchFormInstances();
+    fetchAllUsers();
 
-    // WebSocket listener
     const handleFormUpdate = ({ id, newStatus }) => {
       console.log(`Received WebSocket update: Form ${id} -> ${newStatus}`);
       fetchWorkflowData();
@@ -72,7 +92,6 @@ export const WorkflowBoard = () => {
     };
 
     socket.on("formUpdated", handleFormUpdate);
-
     return () => {
       socket.off("formUpdated", handleFormUpdate);
     };
@@ -85,16 +104,25 @@ export const WorkflowBoard = () => {
   const handleApprove = async (formId) => {
     setLoadingForms((prev) => ({ ...prev, [formId]: true }));
     try {
+      const token = localStorage.getItem("token");
       const response = await fetch(
         `https://localhost:3000/api/formInstance/instances/approve/${formId}`,
-        { method: "PUT" }
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
       if (!response.ok) {
-        throw new Error(`Failed to approve form ${formId}`);
+        const errorText = await response.text();
+        throw new Error(`Failed to approve form ${formId}: ${errorText}`);
       }
       fetchFormInstances();
     } catch (error) {
-      console.error("Error approving form:", error);
+      console.error("Error approving form:", error.message);
+      alert("Error approving form: " + error.message);
     } finally {
       setLoadingForms((prev) => ({ ...prev, [formId]: false }));
     }
@@ -106,7 +134,6 @@ export const WorkflowBoard = () => {
     setShowModal(true);
   };
 
-  // Close denial modal
   const closeModal = () => {
     setShowModal(false);
     setSelectedFormId(null);
@@ -119,15 +146,12 @@ export const WorkflowBoard = () => {
       return;
     }
     setLoadingForms((prev) => ({ ...prev, [selectedFormId]: true }));
-
     try {
       const response = await fetch(
         `https://localhost:3000/api/formInstance/instances/deny/${selectedFormId}`,
         {
           method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ denial_reason: denialReason }),
         }
       );
@@ -144,13 +168,38 @@ export const WorkflowBoard = () => {
     }
   };
 
+  const addSuggestedAssignment = () => {
+    if (!selectedStageId || !selectedUserId) return;
+    const newAssignment = {
+      stage_id: parseInt(selectedStageId),
+      assigned_user_id: parseInt(selectedUserId),
+    };
+    setSuggestedAssignments((prev) => [...prev, newAssignment]);
+    setSelectedStageId("");
+    setSelectedUserId("");
+  };
+
   return (
     <div className="workflow-board-container">
       {loading ? (
         <p>Loading workflow board...</p>
       ) : (
         <>
-          <h1>Workflow Board</h1>
+          <div className="top-bar">
+            <h1>Workflow Board</h1>
+            <div className="view-toggle">
+              <label className="switch">
+                <input
+                  type="checkbox"
+                  checked={adminView}
+                  onChange={() => setAdminView(!adminView)}
+                />
+                <span className="slider round"></span>
+              </label>
+              <span className="view-label">{adminView ? "Admin View" : "User View"}</span>
+            </div>
+          </div>
+
           <button onClick={createNewForm} className="create-form-button">
             Create New Form
           </button>
@@ -168,40 +217,50 @@ export const WorkflowBoard = () => {
                           <p>Form {form.id}</p>
                           <p>Status: {form.status}</p>
                           <button
-                            onClick={() => navigate(`/formInstance/${form.id}`)}
-                            className="view-form-button"
+                            onClick={() => {
+                              const url = `https://localhost:3000/${form.pdf_file_path}`;
+                              console.log("Opening PDF at:", url);
+                              window.open(url, "_blank");
+                            }}
+                            className="view-pdf-button"
                           >
-                            View/Edit
+                            View PDF
                           </button>
-                          <button
-                            onClick={() => handleApprove(form.id)}
-                            className="approve-button"
-                            disabled={loadingForms[form.id]}
-                          >
-                            {loadingForms[form.id] ? (
-                              <span className="spinner"></span>
-                            ) : (
-                              "Approve"
-                            )}
-                          </button>
-                          <button
-                            onClick={() => openDenyModal(form.id)}
-                            className="deny-button"
-                            disabled={loadingForms[form.id]}
-                          >
-                            {loadingForms[form.id] ? (
-                              <span className="spinner"></span>
-                            ) : (
-                              "Deny"
-                            )}
-                          </button>
+                          <>
+                            <button
+                              onClick={() => handleApprove(form.id)}
+                              className="approve-button"
+                              disabled={loadingForms[form.id]}
+                            >
+                              {loadingForms[form.id] ? (
+                                <span className="spinner"></span>
+                              ) : (
+                                "Approve"
+                              )}
+                            </button>
+                            <button
+                              onClick={() => openDenyModal(form.id)}
+                              className="deny-button"
+                              disabled={loadingForms[form.id]}
+                            >
+                              {loadingForms[form.id] ? (
+                                <span className="spinner"></span>
+                              ) : (
+                                "Deny"
+                              )}
+                            </button>
+                            <button
+                              onClick={() => setShowSuggestModal(true)}
+                              className="suggest-button"
+                            >
+                              + Suggest Approver
+                            </button>
+                          </>
                         </div>
                       ))}
-
-                  {/* If no form matches this stage */}
-                  {formInstances?.filter(
-                    (form) => form.status === stage.stage_name
-                  ).length === 0 && <p>No forms in this stage.</p>}
+                  {formInstances?.filter((form) => form.status === stage.stage_name).length === 0 && (
+                    <p>No forms in this stage.</p>
+                  )}
                 </div>
               </div>
             ))}
@@ -209,7 +268,6 @@ export const WorkflowBoard = () => {
         </>
       )}
 
-      {/* Denial Modal */}
       {showModal && (
         <div className="modal">
           <div className="modal-content">
@@ -231,6 +289,53 @@ export const WorkflowBoard = () => {
           </div>
         </div>
       )}
+
+      {showSuggestModal && (
+        <div className="modal">
+          <div className="modal-content">
+            <h3>Suggest Approver</h3>
+            <select value={selectedStageId} onChange={(e) => setSelectedStageId(e.target.value)}>
+              <option value="">Select Stage</option>
+              {stages.map((stage) => (
+                <option key={stage.id} value={stage.id}>{stage.stage_name}</option>
+              ))}
+            </select>
+
+            <select value={selectedUserId} onChange={(e) => setSelectedUserId(e.target.value)}>
+              <option value="">Select User</option>
+              {Array.isArray(users) &&
+                users.map((user) => (
+                  <option key={user.id} value={user.id}>
+                    {user.firstName} {user.lastName}
+                  </option>
+                ))}
+            </select>
+
+
+            <button onClick={addSuggestedAssignment} className="confirm-button">
+              + Add Assignment
+            </button>
+
+            <div className="suggested-list">
+              <h4>Suggested Assignments</h4>
+              <ul>
+                {suggestedAssignments.map((a, idx) => (
+                  <li key={idx}>
+                    Stage ID: {a.stage_id}, User ID: {a.assigned_user_id}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="modal-buttons">
+              <button onClick={() => setShowSuggestModal(false)} className="cancel-button">
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
     </div>
   );
 };

@@ -7,7 +7,7 @@ async function createFormInstance(req, res) {
     console.log("Request Body:", req.body);
     console.log("Uploaded File:", req.file);
 
-    const { template_id, submitted_by } = req.body;
+    const { template_id, submitted_by, suggestedAssignments } = req.body;
 
     if (!req.file) {
       return res.status(400).json({ error: "No file uploaded" });
@@ -19,17 +19,46 @@ async function createFormInstance(req, res) {
     if (!templateExists) {
       return res.status(404).json({ error: "Template not found" });
     }
-    //issue here
-    /*const userExists = await user.findByPk(submitted_by);
-    if (!userExists) {
-      return res.status(404).json({ error: "Submitting user not found" });
-    }*/
 
     const newFormInstance = await FormInstance.create({
       template_id,
       submitted_by,
       pdf_file_path: filePath,
     });
+
+    const initializingStage = await WorkflowStage.findOne({
+      where: { template_id, stage_name: 'Initializing' },
+    });
+
+    if (!initializingStage) {
+      return res.status(500).json({ error: "Initializing stage not found" });
+    }
+
+    await FormAssignment.create({
+      form_instance_id: newFormInstance.id,
+      stage_id: initializingStage.id,
+      assigned_user_id: submitted_by,
+      role: 'approver',
+      approval_status: 'pending',
+    });
+    const parsedSuggestedAssignments = suggestedAssignments
+      ? JSON.parse(suggestedAssignments)
+      : [];
+    console.log("Parsed suggested assignments:", parsedSuggestedAssignments);
+
+    if (parsedSuggestedAssignments.length > 0) {
+      for (const assignment of parsedSuggestedAssignments) {
+        const { stage_id, assigned_user_id } = assignment;
+
+        await FormAssignment.create({
+          form_instance_id: newFormInstance.id,
+          stage_id,
+          assigned_user_id,
+          role: 'approver',
+          approval_status: 'suggested',
+        });
+      }
+    }
 
     console.log("Form Instance Created:", newFormInstance);
 
@@ -42,6 +71,7 @@ async function createFormInstance(req, res) {
     return res.status(500).json({ error: "Failed to create form instance" });
   }
 }
+
 
 
 async function getFormInstanceById(req, res) {
@@ -178,9 +208,9 @@ const approveFormInstance = async (req, res) => {
       return res.status(403).json({ error: "You do not have approval permissions for this form." });
     }
 
-    if (assignment.approval_status === "approved") {
-      return res.status(400).json({ error: "You have already approved this form." });
-    }
+    if (assignment.approval_status !== "pending") {
+      return res.status(400).json({ error: `This form is currently marked as '${assignment.approval_status}', and cannot be approved.` });
+    }    
 
     // Update assignment
     assignment.approval_status = "approved";
@@ -229,34 +259,60 @@ const approveFormInstance = async (req, res) => {
 
 const denyFormInstance = async (req, res) => {
   try {
-    const { id } = req.params; 
+    const { id } = req.params;
     const { denial_reason } = req.body;
+    const io = req.app.get("io");
 
     const formInstance = await FormInstance.findByPk(id);
     if (!formInstance) {
       return res.status(404).json({ message: 'Form not found.' });
     }
 
-    // Check if form is already denied (optional safeguard)
     if (formInstance.status === 'denied') {
       return res.status(400).json({ message: 'This form has already been denied.' });
     }
-
-    // Require a denial reason when denying a form
     if (!denial_reason || denial_reason.trim() === '') {
       return res.status(400).json({ message: 'A denial reason is required.' });
     }
 
-    // Update form status to 'denied' and save the denial reason
+    // Reset form status and denial reason
     formInstance.status = 'Initializing';
     formInstance.denial_reason = denial_reason;
     await formInstance.save();
 
-    return res.status(200).json({ message: 'Form denied successfully.', formInstance });
+    const initializingStage = await WorkflowStage.findOne({
+      where: {
+        template_id: formInstance.template_id,
+        stage_name: 'Initializing',
+      },
+    });
+
+    if (!initializingStage) {
+      return res.status(500).json({ message: 'Initializing stage not found.' });
+    }
+
+    await FormAssignment.update(
+      {
+        approval_status: 'pending',
+        approved_at: null,
+        comment: null,
+      },
+      {
+        where: {
+          form_instance_id: id,
+          stage_id: initializingStage.id,
+          assigned_user_id: formInstance.submitted_by,
+        },
+      }
+    );
+    io.emit("formUpdated", { id, newStatus: initializingStage.stage_name });
+
+    return res.status(200).json({ message: 'Form denied successfully and reassigned for re-approval.', formInstance });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
 };
+
 
 
 module.exports = {

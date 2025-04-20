@@ -11,16 +11,28 @@ const { Op } = require("sequelize");
 // this is to get all users from the local database
 // this can then be used to create more functions for database queries
 // use the queries file to shorthand the queries
-async function getUsers(req, res) {
-  console.log("getting users");
+
+const getUsers = async (req, res) => {
   try {
-    const allUsers = await user.findAll(); // Use Sequelize to get all users
-    res.json(allUsers);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).json({ error: "Server error" });
+    const { organization_id } = req.user;
+
+    if (!organization_id) {
+      return res.status(400).json({ error: "Organization ID is required" });
+    }
+
+    const users = await User.findAll({
+      where: { organization_id },
+      attributes: ['id', 'first_name', 'last_name', 'email', 'organization_id']
+    });
+
+    res.json(users);
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    res.status(500).json({ error: 'Failed to fetch users' });
   }
-}
+};
+
+
 
 //Find user by ID number
 async function getUserByID(req, res) {

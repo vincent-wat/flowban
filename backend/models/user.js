@@ -34,6 +34,14 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: true,
     },
+    organization_id: {
+      type: DataTypes.INTEGER,
+      references: {
+        model: 'organizations',
+        key: 'id'
+      },
+      allowNull: true,
+    },    
   }, {
     tableName: "users",
     timestamps: true,
@@ -48,7 +56,12 @@ module.exports = (sequelize, DataTypes) => {
       as: "roles",
       timestamps: false,
     });
+    User.belongsTo(models.Organization, {
+    foreignKey: 'organization_id'
+    });
   };
+  
+  
 
   return User;
 };
