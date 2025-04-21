@@ -12,6 +12,15 @@ function jwtGenerator(user) {
   return jwt.sign(payload, process.env.jwtSecret, { expiresIn: "1h" });
 }
 
+function jwtOrganizationGenerator(email, user) {
+  const payload = {
+    email: email,
+    organization_id: user.organization_id
+  };
+
+  return jwt.sign(payload, process.env.jwtSecret);
+}
+
   function jwtGeneratorExpiry(user_id) {
     const payload = { id: user_id };
       const token = jwt.sign(payload, process.env.jwtSecret, { expiresIn: "1h" });
@@ -26,5 +35,6 @@ function jwtGenerator(user) {
   
   module.exports = {
     jwtGenerator,
-    jwtGeneratorExpiry
+    jwtGeneratorExpiry,
+    jwtOrganizationGenerator
   };

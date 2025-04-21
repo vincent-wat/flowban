@@ -1,4 +1,5 @@
 const dotenv = require('dotenv');
+const bcrypt = require("bcrypt");
 dotenv.config();
 const { OAuth2Client } = require('google-auth-library');
 const { User } = require('../models');
@@ -74,7 +75,7 @@ async function getData(req, res) {
                 last_name: userData.family_name || "",
                 google_id: userData.sub,
                 organization_id: null, // Set a default organization_id if necessary
-                password: null,
+                password: await bcrypt.hash(generateRandomPassword(), 10),
             });
         }
 

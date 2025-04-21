@@ -1,7 +1,9 @@
 const { Organization, User } = require('../models');
+const jwt = require('jsonwebtoken');
+require('dotenv').config();
 const generateInviteToken = require("../utils/inviteToken");
 const sendOrganizationInviteEmail = require("../middleware/sendEmail");
-const { jwtGenerator } = require("../utils/jwtGenerator");
+const { jwtOrganizationGenerator } = require("../utils/jwtGenerator");
 
 const createOrganization = async (req, res) => {
   try {
@@ -35,11 +37,8 @@ const inviteUserToOrganization = async (req, res) => {
     if(!orgID) {
         return res.status(401).json({ error: "Unauthorized: Organization ID not found" });
     }
-
-    const token = jwtGenerator({
-        id: req.user.id,
-        organization_id: orgID
-      });
+    const token = jwtOrganizationGenerator(email, { organization_id: orgID });
+    
     await sendOrganizationInviteEmail(email, token);
 
     res.status(200).json({ message: "Invitation sent successfully" });
@@ -53,15 +52,18 @@ const inviteUserToOrganization = async (req, res) => {
 const acceptOrganizationInvite = async (req, res) => {
   try {
     const { token } = req.body;
-
+    console.log("Received token:", token);
     if (!token) {
       return res.status(400).json({ error: "Token is required" });
     }
 
     const decoded = jwt.verify(token, process.env.jwtSecret);
+    console.log("Decoded token:", decoded);
     const { email, organization_id } = decoded;
+    console.log("Email:", email, "Organization ID:", organization_id);
 
     const org = await Organization.findByPk(organization_id);
+    console.log("org is " + organization_id);
     if (!org) {
       return res.status(404).json({ error: "Organization not found" });
     }

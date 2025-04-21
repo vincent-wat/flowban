@@ -5,7 +5,7 @@ const authenticateToken = require('../middleware/authMiddleware');
 
 router.post('/create', authenticateToken, Controller.createOrganization);
 router.post('/invite', authenticateToken, Controller.inviteUserToOrganization);
-router.post('/invite-accept', authenticateToken, Controller.acceptOrganizationInvite);
+router.post('/invite-accept', Controller.acceptOrganizationInvite);
 
 
 
