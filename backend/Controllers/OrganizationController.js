@@ -1,6 +1,7 @@
 const { Organization, User } = require('../models');
 const generateInviteToken = require("../utils/inviteToken");
-const sendInviteEmail = require("../middleware/sendEmail");
+const sendOrganizationInviteEmail = require("../middleware/sendEmail");
+const { jwtGenerator } = require("../utils/jwtGenerator");
 
 const createOrganization = async (req, res) => {
   try {
@@ -29,16 +30,24 @@ const createOrganization = async (req, res) => {
 
 const inviteUserToOrganization = async (req, res) => {
   try {
-    const { email, organizationId } = req.body;
+    const { email } = req.body;
+    const orgID = req.user.organization_id;
+    if(!orgID) {
+        return res.status(401).json({ error: "Unauthorized: Organization ID not found" });
+    }
 
-    const token = generateInviteToken(email, organizationId);
-    await sendInviteEmail(email, token);
+    const token = jwtGenerator({
+        id: req.user.id,
+        organization_id: orgID
+      });
+    await sendOrganizationInviteEmail(email, token);
 
     res.status(200).json({ message: "Invitation sent successfully" });
-  } catch (err) {
-    console.error("Error sending invite:", err);
-    res.status(500).json({ error: "Failed to send invite" });
-  }
+    } catch (error) {
+    console.error("Error inviting user to organization:", error.message);
+    res.status(500).json({ error: "Failed to send invitation", details: error.message });
+    }
+  
 };
 
 const acceptOrganizationInvite = async (req, res) => {
