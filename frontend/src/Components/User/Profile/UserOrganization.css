@@ -1,0 +1,81 @@
+.settings-page {
+    display: flex;
+    position: relative;
+  }
+  
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 200px;
+    height: 100vh;
+    background-color: #C51D34;
+    color: white;
+    padding-top: 20px;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    transform: translateX(-200px);
+    transition: transform 0.3s ease;
+  }
+  
+  .sidebar.open {
+    transform: translateX(0);
+  }
+  
+  .sidebar-toggle {
+    position: fixed;
+    top: 47px;
+    left: 0;
+    padding: 5px 10px;
+    font-size: 18px;
+    background-color: #900d1c;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: left 0.3s ease;
+    z-index: 1000;
+  }
+  
+  .sidebar-toggle.open {
+    left: 200px; 
+  }
+  
+  .settings-container {
+    flex: 1;
+    margin-left: 0;
+    padding: 20px;
+    width: auto;
+    transition: margin-left 0.3s ease;
+    justify-content: center; 
+    align-items: center;
+    flex-direction: column; 
+  }
+  
+  .settings-container.sidebar-open {
+    margin-left: 200px;
+  }
+  
+  .settings-option {
+    margin-bottom: 15px;
+    font-size: 18px;
+  }
+  
+  .delete-button {
+    width: auto;
+    height: 45px;
+    background-color: #C51D34;
+    color: white;
+    border: none;
+    border-radius: 30px;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 0 15px;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  .delete-button:hover {
+    background-color: #A11227;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+  

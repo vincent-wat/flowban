@@ -23,6 +23,11 @@ function Sidebar({ isOpen }) {
         <li>
         <Link to="/profile/settings" className="sidebar-link">Settings</Link>
         </li>
+    
+        <li>
+          <Link to="/profile/organization" className="sidebar-link">Organization</Link>
+        </li>
+        
         <li>
           <button onClick={handleLogout} className="sidebar-button">
             Logout

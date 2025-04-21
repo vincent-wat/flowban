@@ -116,7 +116,7 @@ async function postUser(req, res) {
 
     await newUser.addRole(userRole); 
 
-    const jwtToken = jwtGenerator(newUser.id);
+    const jwtToken = jwtGenerator(newUser);
 
     console.log("User Inserted");
     res.status(201).json({
@@ -172,7 +172,7 @@ async function forgotPassword(req, res) {
       return res.status(404).json({ message: "User not found" });
     }
     //Generate a password reset token
-    const jwtToken = jwtGeneratorExpiry(email);
+    const jwtToken = jwtGeneratorExpiry(oneUser.id);
     console.log("Reset token: ", jwtToken);
     
     //Assign the token to the user

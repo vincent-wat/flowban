@@ -1,6 +1,9 @@
 const { Organization, User } = require('../models');
+const jwt = require('jsonwebtoken');
+require('dotenv').config();
 const generateInviteToken = require("../utils/inviteToken");
-const sendInviteEmail = require("../middleware/sendEmail");
+const sendOrganizationInviteEmail = require("../middleware/sendEmail");
+const { jwtOrganizationGenerator } = require("../utils/jwtGenerator");
 
 const createOrganization = async (req, res) => {
   try {
@@ -29,30 +32,38 @@ const createOrganization = async (req, res) => {
 
 const inviteUserToOrganization = async (req, res) => {
   try {
-    const { email, organizationId } = req.body;
-
-    const token = generateInviteToken(email, organizationId);
-    await sendInviteEmail(email, token);
+    const { email } = req.body;
+    const orgID = req.user.organization_id;
+    if(!orgID) {
+        return res.status(401).json({ error: "Unauthorized: Organization ID not found" });
+    }
+    const token = jwtOrganizationGenerator(email, { organization_id: orgID });
+    
+    await sendOrganizationInviteEmail(email, token);
 
     res.status(200).json({ message: "Invitation sent successfully" });
-  } catch (err) {
-    console.error("Error sending invite:", err);
-    res.status(500).json({ error: "Failed to send invite" });
-  }
+    } catch (error) {
+    console.error("Error inviting user to organization:", error.message);
+    res.status(500).json({ error: "Failed to send invitation", details: error.message });
+    }
+  
 };
 
 const acceptOrganizationInvite = async (req, res) => {
   try {
     const { token } = req.body;
-
+    console.log("Received token:", token);
     if (!token) {
       return res.status(400).json({ error: "Token is required" });
     }
 
     const decoded = jwt.verify(token, process.env.jwtSecret);
+    console.log("Decoded token:", decoded);
     const { email, organization_id } = decoded;
+    console.log("Email:", email, "Organization ID:", organization_id);
 
     const org = await Organization.findByPk(organization_id);
+    console.log("org is " + organization_id);
     if (!org) {
       return res.status(404).json({ error: "Organization not found" });
     }
