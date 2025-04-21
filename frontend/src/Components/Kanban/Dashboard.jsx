@@ -16,7 +16,12 @@ export const Dashboard = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newBoardName, setNewBoardName] = useState("");
+  const [description, setDescription] = useState("");
   const [user_id, setUser_id] = useState("");
+  const [isManagerView, setIsManagerView] = useState(false);
+  const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
+  const [pdfFile, setPdfFile] = useState(null);
+
   const navigate = useNavigate();
 
   // get the user_id from the local storage to only

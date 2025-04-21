@@ -22,4 +22,19 @@ async function sendInviteEmail(to, token) {
   await transporter.sendMail(mailOptions);
 }
 
+// fucntion to send email invite for kanban board.
+async function sendKanbanInviteEmail(to, token) {
+  const inviteLink = `https://yourfrontend.com/board-invite?token=${token}`;
+
+  const mailOptions = {
+    from: process.env.GMAIL_USER,
+    to,
+    subject: "You're invited to join a Kanban board on Flowban",
+    html: `<p>You have been invited to join a Kanban board. Click below to accept the invite:</p>
+           <a href="${inviteLink}">Accept Invitation</a>`,
+  };
+
+  await transporter.sendMail(mailOptions);
+}
+
 module.exports = sendInviteEmail;

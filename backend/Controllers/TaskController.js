@@ -55,6 +55,7 @@ async function addTask(req, res) {
     });
     res.json(task);
   } catch (error) {
+    console.error("Error creating task:", error);
     res.status(500).json({ error: "Task not created" });
   }
 }

@@ -1,6 +1,6 @@
-const { Organization, User } = require('../models');
+const { Organization, User } = require("../models");
 const generateInviteToken = require("../utils/inviteToken");
-const sendInviteEmail = require("../utils/sendEmail");
+const sendInviteEmail = require("../middleware/sendEmail");
 
 const createOrganization = async (req, res) => {
   try {
@@ -8,19 +8,20 @@ const createOrganization = async (req, res) => {
 
     const existing = await Organization.findOne({ where: { name } });
     if (existing) {
-      return res.status(409).json({ message: "Organization name already exists" });
+      return res
+        .status(409)
+        .json({ message: "Organization name already exists" });
     }
 
     const org = await Organization.create({ name });
 
     if (userId) {
-      await User.update(
-        { organization_id: org.id },
-        { where: { id: userId } }
-      );
+      await User.update({ organization_id: org.id }, { where: { id: userId } });
     }
 
-    res.status(201).json({ message: "Organization created", organization: org });
+    res
+      .status(201)
+      .json({ message: "Organization created", organization: org });
   } catch (error) {
     console.error("Error creating organization:", error);
     res.status(500).json({ error: "Server error" });
@@ -64,7 +65,9 @@ const acceptOrganizationInvite = async (req, res) => {
     }
 
     if (user.organization_id) {
-      return res.status(403).json({ error: "User already belongs to an organization" });
+      return res
+        .status(403)
+        .json({ error: "User already belongs to an organization" });
     }
 
     user.organization_id = organization_id;
@@ -80,9 +83,8 @@ const acceptOrganizationInvite = async (req, res) => {
   }
 };
 
-  
-  module.exports = {
-    createOrganization,
-    inviteUserToOrganization,
-    acceptOrganizationInvite,
-  }
+module.exports = {
+  createOrganization,
+  inviteUserToOrganization,
+  acceptOrganizationInvite,
+};

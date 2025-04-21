@@ -292,16 +292,26 @@ export default function Board({ board_id, user_id, user_role }) {
       <h2></h2>
       <div>
         <h3>Add New Column</h3>
-        <input
-          type="text"
-          placeholder="New Column Name"
-          value={newName}
-          onChange={(e) => setNewName(e.target.value)}
-        />
-        <button onClick={addColumn}>
-          <FaPlus />
-          Add Column
-        </button>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault(); // Prevent form submission
+            addColumn(); // Call your addColumn function
+          }}
+        >
+          <input
+            type="text"
+            placeholder="New Column Name"
+            value={newName}
+            onChange={(e) => {
+              e.preventDefault();
+              setNewName(e.target.value);
+            }}
+          />
+          <button type="submit">
+            <FaPlus />
+            Add Column
+          </button>
+        </form>
       </div>
       <div className="board">
         <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
