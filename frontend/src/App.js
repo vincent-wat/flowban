@@ -7,6 +7,7 @@ import KanbanBoard from "./Components/Kanban/KanbanBoard";
 import Layout from "./Components/General/Layout";
 import SignUpPage from "./Components/User/Sign_Up/SignUpPage";
 import Settings from "./Components/User/Profile/Settings";
+import UserOrganization from "./Components/User/Profile/UserOrganization";
 import Dashboard from "./Components/Kanban/Dashboard";
 import DashboardLayout from "./Components/Kanban/DashboardLayout"; // Import DashboardLayout
 import ForgotPassword from "./Components/User/Passwords/ForgotPassword";
@@ -35,6 +36,7 @@ function App() {
             <Route path="/kanban/:board_id" element={<KanbanBoard />} />
             <Route path="/signup" element={<SignUpPage />} />
             <Route path="/profile/settings" element={<Settings />} />
+            <Route path="/profile/organization" element={<UserOrganization />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/error" element={<ErrorPage />} />
