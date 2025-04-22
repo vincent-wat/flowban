@@ -5,7 +5,7 @@ import { Column } from "./Column";
 import axios from "../../../axios";
 import { use } from "react";
 import Modal from "./Modal";
-import { FaPlus } from "react-icons/fa";
+import { FaPlus, FaBars } from "react-icons/fa";
 import { io } from "socket.io-client";
 
 // Initialize Socket.IO
@@ -27,6 +27,11 @@ export default function Board({ board_id, user_id, user_role }) {
   const [updateBoard, setUpdateBoard] = useState(true);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [activeTask, setActiveTask] = useState(null);
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [isAddColumnOpen, setIsAddColumnOpen] = useState(false);
+  const [isShareKanbanOpen, setIsKanbanOpen] = useState(false);
+  const [invitePrivilege, setInvitePrivilege] = useState("");
+
   // url for columns and tasks
   const COLUMN_URL = "/api/columns";
   const TASK_URL = "/api/tasks";
@@ -249,6 +254,24 @@ export default function Board({ board_id, user_id, user_role }) {
     }
   };
 
+  const handleAddColumn = () => {
+    console.log("handleAddColumn clicked");
+    addColumn();
+    setIsAddColumnOpen(false);
+    //
+  };
+  const handleShareKanban = () => {
+    //
+  };
+  const handleDeleteKanban = () => {
+    //
+  };
+  const handleDropdownAction = (action) => {
+    //
+    switch (action) {
+    }
+  };
+
   // initial fetch of all data
   useEffect(() => {
     fetchAllData();
@@ -288,30 +311,29 @@ export default function Board({ board_id, user_id, user_role }) {
 
   const columnColors = ["#FF5733", "#33FF57", "#3357FF", "#FF33A1"];
   return (
-    <div>
-      <h2></h2>
+    <div className="main-div">
       <div>
-        <h3>Add New Column</h3>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault(); // Prevent form submission
-            addColumn(); // Call your addColumn function
-          }}
-        >
-          <input
-            type="text"
-            placeholder="New Column Name"
-            value={newName}
-            onChange={(e) => {
+        <nav className="tool-bar">
+          <button
+            onClick={(e) => {
               e.preventDefault();
-              setNewName(e.target.value);
+              e.stopPropagation();
+              setIsAddColumnOpen(true);
             }}
-          />
-          <button type="submit">
-            <FaPlus />
+            className="nav-button"
+          >
             Add Column
           </button>
-        </form>
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setIsKanbanOpen(true);
+            }}
+          >
+            Share Kanban
+          </button>
+        </nav>
       </div>
       <div className="board">
         <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
@@ -335,6 +357,44 @@ export default function Board({ board_id, user_id, user_role }) {
             );
           })}
         </DndContext>
+        <Modal
+          className="board-modal"
+          isOpen={isAddColumnOpen}
+          onClose={() => setIsAddColumnOpen(false)}
+        >
+          <input
+            type="text"
+            onChange={(e) => setNewName(e.target.value)}
+            placeholder="Column Name"
+          />
+          <button onClick={handleAddColumn}>Save</button>
+        </Modal>
+
+        <Modal
+          className="board-modal"
+          isOpen={isShareKanbanOpen}
+          onClose={() => setIsKanbanOpen(false)}
+        >
+          <div className="share-kanban">
+            <select
+              className="dropdown-menu-kanban"
+              onChange={(e) => handleDropdownAction(e.target.value)}
+            >
+              <option value="" disabled selected>
+                General Access
+              </option>
+              <option value="editor">Editor</option>
+              <option value="viewer">Viewer</option>
+            </select>
+            <input
+              type="text"
+              onChange={(e) => setNewName(e.target.value)}
+              placeholder="email"
+            ></input>
+
+            <button onClick={handleShareKanban}>Send Invite</button>
+          </div>
+        </Modal>
       </div>
     </div>
   );

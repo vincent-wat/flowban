@@ -35,11 +35,12 @@ export const Column = ({
   };
 
   return (
-    <div className="column" style={{ backgroundColor: color }}>
+    <div className="column">
       <h3 className="column-title">{column.name}</h3>
       <div ref={setNodeRef} className="task-list droppable-area">
         {tasks.map((task) => (
           <Task
+            className="task-card"
             task={task}
             key={task.id}
             id={task.id}

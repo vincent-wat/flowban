@@ -4,4 +4,45 @@
   justify-content: space-between;
   align-items: flex-start;
   padding: 20px;
+  overflow-x: auto;
+}
+
+.main-div input {
+  width: 100%;
+  padding: 10px 20px;
+  border: 1px solid #ccc;
+  border-radius: 50px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  font-size: 14px;
+  outline: none;
+  background-color: lightgray;
+  transition: box-shadow 0.3s ease; /* Smooth transition for focus effect */
+}
+
+.main-div input:focus {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Enhance shadow on focus */
+  border-color: #007bff; /* Change border color on focus */
+}
+.tool-bar button {
+  background-color: #007bff; /* Primary blue background */
+  color: white; /* White text color */
+  border: none; /* Remove default border */
+  padding: 10px 15px; /* Add padding for better spacing */
+  border-radius: 4px; /* Slightly rounded corners */
+  font-size: 14px; /* Adjust font size */
+  cursor: pointer; /* Change cursor to pointer on hover */
+  transition: background-color 0.3s ease, transform 0.2s ease; /* Smooth hover and click effects */
+}
+
+.tool-bar button:hover {
+  background-color: #0056b3; /* Darker blue on hover */
+}
+
+.tool-bar button:focus {
+  outline: none; /* Remove default focus outline */
+  box-shadow: 0 0 4px 2px rgba(0, 123, 255, 0.5); /* Add a focus ring */
+}
+
+.tool-bar button:active {
+  transform: scale(0.98); /* Slightly shrink button on click */
 }
