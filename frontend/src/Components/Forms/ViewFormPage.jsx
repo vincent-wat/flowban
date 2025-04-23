@@ -9,6 +9,21 @@ const ViewFormPage = () => {
   const pdfUrl = `https://localhost:3000/api/forms/templates/pdf/${templateId}`;
   const navigate = useNavigate();
 
+  function getUserIdFromToken() {
+    const token = localStorage.getItem("token");
+    if (!token) return null;
+  
+    const payloadBase64 = token.split('.')[1];
+    try {
+      const decodedPayload = JSON.parse(atob(payloadBase64));
+      return decodedPayload.id || null;
+    } catch (err) {
+      console.error("Failed to decode JWT:", err);
+      return null;
+    }
+  }
+  
+
   const handleSubmit = async () => {
     try {
       console.log("[handleSubmit] Fetching PDF from URL:", pdfUrl);
@@ -70,10 +85,15 @@ const ViewFormPage = () => {
       const pdfBlob = new Blob([pdfBytes], { type: "application/pdf" });
       const fileName = `form_${Date.now()}.pdf`;
 
+      const userId = getUserIdFromToken();
+        if (!userId) {
+          alert("User not logged in. Please log in again.");
+          return;
+        }
       const formData = new FormData();
       formData.append("file", pdfBlob, fileName); 
       formData.append("template_id", templateId);
-      formData.append("submitted_by", "19"); // fix for actual id later
+      formData.append("submitted_by", userId);
 
       // 8. Submit to your server
       console.log("[handleSubmit] Submitting form data to backend...");
