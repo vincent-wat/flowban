@@ -47,9 +47,16 @@ export const WorkflowBoard = () => {
 
   const fetchAllUsers = async () => {
     try {
-      const res = await fetch(`https://localhost:3000/api/users`);
+      const token = localStorage.getItem("token");
+
+      const res = await fetch(`https://localhost:3000/api/users`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
       const data = await res.json();
-  
+
       if (Array.isArray(data)) {
         setUsers(data);
       } else {
@@ -168,15 +175,41 @@ export const WorkflowBoard = () => {
     }
   };
 
-  const addSuggestedAssignment = () => {
-    if (!selectedStageId || !selectedUserId) return;
-    const newAssignment = {
-      stage_id: parseInt(selectedStageId),
-      assigned_user_id: parseInt(selectedUserId),
-    };
-    setSuggestedAssignments((prev) => [...prev, newAssignment]);
-    setSelectedStageId("");
-    setSelectedUserId("");
+  const addSuggestedAssignment = async () => {
+    if (!selectedStageId || !selectedUserId || !selectedFormId) return;
+
+    const token = localStorage.getItem("token");
+
+    try {
+      const response = await fetch("https://localhost:3000/api/formAssignment/suggest", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          form_instance_id: selectedFormId,
+          stage_id: parseInt(selectedStageId),
+          assigned_user_id: parseInt(selectedUserId),
+          role: "approver",
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Suggest failed: ${errorText}`);
+      }
+
+      const data = await response.json();
+      console.log("Suggested assignment saved:", data.assignment);
+
+      setSuggestedAssignments((prev) => [...prev, data.assignment]);
+      setSelectedStageId("");
+      setSelectedUserId("");
+    } catch (err) {
+      console.error("Error suggesting approver:", err);
+      alert("Error suggesting approver");
+    }
   };
 
   return (
@@ -219,7 +252,6 @@ export const WorkflowBoard = () => {
                           <button
                             onClick={() => {
                               const url = `https://localhost:3000/${form.pdf_file_path}`;
-                              console.log("Opening PDF at:", url);
                               window.open(url, "_blank");
                             }}
                             className="view-pdf-button"
@@ -250,7 +282,10 @@ export const WorkflowBoard = () => {
                               )}
                             </button>
                             <button
-                              onClick={() => setShowSuggestModal(true)}
+                              onClick={() => {
+                                setSelectedFormId(form.id);
+                                setShowSuggestModal(true);
+                              }}
                               className="suggest-button"
                             >
                               + Suggest Approver
@@ -306,13 +341,18 @@ export const WorkflowBoard = () => {
               {Array.isArray(users) &&
                 users.map((user) => (
                   <option key={user.id} value={user.id}>
-                    {user.firstName} {user.lastName}
+                    {user.first_name} {user.last_name}
                   </option>
                 ))}
             </select>
 
-
-            <button onClick={addSuggestedAssignment} className="confirm-button">
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                addSuggestedAssignment();
+              }}
+              className="confirm-button"
+            >
               + Add Assignment
             </button>
 
@@ -335,7 +375,6 @@ export const WorkflowBoard = () => {
           </div>
         </div>
       )}
-      
     </div>
   );
 };
