@@ -4,7 +4,7 @@ const formInstanceController = require('../Controllers/FormInstanceController');
 const { uploadUserForms } = require("../middleware/multerConfig");
 const authenticateToken = require('../middleware/authMiddleware');
 
-router.post("/instances", uploadUserForms, formInstanceController.createFormInstance);
+router.post("/instances", uploadUserForms,authenticateToken, formInstanceController.createFormInstance);
 router.get('/templates/:templateId/instances', formInstanceController.getAllFormInstancesofTemplate);
 router.get('/instances/:id', formInstanceController.getFormInstanceById);
 router.put('/instances/:id', formInstanceController.updateFormInstance);

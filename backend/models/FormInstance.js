@@ -43,6 +43,11 @@ module.exports = (sequelize, DataTypes) => {
           },
         },
       },
+      organization_id: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
+      
     },
     {
       tableName: "form_instances",

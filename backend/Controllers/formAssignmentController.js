@@ -4,12 +4,10 @@ const { FormAssignment, FormInstance, User, WorkflowStage } = require('../models
     const { form_instance_id, stage_id, assigned_user_id, role } = req.body;
   
     try {
-      // Validate required fields
       if (!form_instance_id || !stage_id || !assigned_user_id || !role) {
         return res.status(400).json({ error: "Missing required fields." });
       }
   
-      // Optional: prevent duplicates
       const existing = await FormAssignment.findOne({
         where: {
           form_instance_id,
@@ -22,7 +20,6 @@ const { FormAssignment, FormInstance, User, WorkflowStage } = require('../models
         return res.status(409).json({ error: "User is already assigned at this stage." });
       }
   
-      // Create new assignment
       const assignment = await FormAssignment.create({
         form_instance_id,
         stage_id,
