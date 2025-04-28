@@ -89,11 +89,58 @@ const acceptOrganizationInvite = async (req, res) => {
     console.error("Invite token error:", err);
     return res.status(400).json({ error: "Invalid or expired token" });
   }
+
 };
 
+const displayAllUsersInOrganization = async (req, res) => {
+  try {
+    // Get organization_id from the authenticated user
+    const organization_id = req.user.organization_id;
+    
+    if (!organization_id) {
+      return res.status(401).json({ error: "You don't belong to any organization" });
+    }
+
+    // Get all users in the organization
+    const users = await User.findAll({ 
+      where: { organization_id },
+      attributes: ['id', 'first_name', 'last_name', 'email'] // Only return safe fields
+    });
+    
+    if (!users || users.length === 0) {
+      return res.status(404).json({ error: "No users found in this organization" });
+    }
+    
+    res.status(200).json({
+      message: "Users in the organization",
+      users: users
+    });
+  } catch (err) {
+    console.error("Error fetching users:", err);
+    return res.status(500).json({ error: "Server error" });
+  }
+};
+
+const getOrganizationById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const organization = await Organization.findByPk(id);
+    if (!organization) {
+      return res.status(404).json({error: "Organization not found."});
+    }
+
+    res.status(200).json(organization);
+  } catch (error) {
+    console.error("Error fetching organization:", error);
+    res.status(500).json({error: "Server error"});
+  }
+};
   
   module.exports = {
     createOrganization,
     inviteUserToOrganization,
     acceptOrganizationInvite,
+    displayAllUsersInOrganization,
+    getOrganizationById
   }
