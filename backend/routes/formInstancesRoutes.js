@@ -7,9 +7,9 @@ const authenticateToken = require('../middleware/authMiddleware');
 router.post("/instances", uploadUserForms,authenticateToken, formInstanceController.createFormInstance);
 router.get('/templates/:templateId/instances', formInstanceController.getAllFormInstancesofTemplate);
 router.get('/instances/:id', formInstanceController.getFormInstanceById);
-router.put('/instances/:id', formInstanceController.updateFormInstance);
+router.put('/instances/:id', authenticateToken,formInstanceController.updateFormInstance);
 router.delete('/instances/:id', formInstanceController.deleteFormInstance);
 router.put("/instances/approve/:id", authenticateToken, formInstanceController.approveFormInstance);
-router.put("/instances/deny/:id", formInstanceController.denyFormInstance);
+router.put("/instances/deny/:id", authenticateToken,formInstanceController.denyFormInstance);
 
 module.exports = router;

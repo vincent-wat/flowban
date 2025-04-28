@@ -307,6 +307,7 @@ const denyFormInstance = async (req, res) => {
     const { id } = req.params;
     const { denial_reason } = req.body;
     const io = req.app.get("io");
+    const userId = req.user.id; 
 
     const formInstance = await FormInstance.findByPk(id);
     if (!formInstance) {
@@ -320,7 +321,41 @@ const denyFormInstance = async (req, res) => {
       return res.status(400).json({ message: 'A denial reason is required.' });
     }
 
-    // Reset form status and denial reason
+    const currentStageName = formInstance.status;
+    console.log(`Denying form at stage: ${currentStageName}`);
+
+    const currentStage = await WorkflowStage.findOne({
+      where: {
+        template_id: formInstance.template_id,
+        stage_name: currentStageName,
+      },
+    });
+
+    if (!currentStage) {
+      return res.status(400).json({ message: "Current workflow stage not found." });
+    }
+
+    const assignment = await FormAssignment.findOne({
+      where: {
+        form_instance_id: formInstance.id,
+        stage_id: currentStage.id,
+        assigned_user_id: userId,
+      },
+    });
+
+    if (!assignment) {
+      return res.status(403).json({ error: "You are not assigned to deny this form at this stage." });
+    }
+
+    if (!["approver", "final_approver", "admin"].includes(assignment.role)) {
+      return res.status(403).json({ error: "You do not have permission to deny this form." });
+    }
+
+    if (assignment.approval_status !== "pending") {
+      return res.status(400).json({ error: `This form is currently marked as '${assignment.approval_status}', and cannot be denied.` });
+    }
+
+
     formInstance.status = 'Initializing';
     formInstance.denial_reason = denial_reason;
     await formInstance.save();
@@ -350,13 +385,42 @@ const denyFormInstance = async (req, res) => {
         },
       }
     );
+
+    if (currentStageName === "Admin Approval") {
+      await FormAssignment.destroy({
+        where: {
+          form_instance_id: id,
+          approval_status: "suggested",
+        },
+      });
+      console.log(`Deleted suggested assignments for form ${id} after denial.`);
+    } else {
+      await FormAssignment.update(
+        {
+          approval_status: "pending",
+          approved_at: null,
+          comment: null,
+        },
+        {
+          where: {
+            form_instance_id: id,
+            approval_status: "pending",
+          },
+        }
+      );
+      console.log(`Reset pending assignments at stage ${currentStageName} for form ${id}.`);
+    }
+
     io.emit("formUpdated", { id, newStatus: initializingStage.stage_name });
 
     return res.status(200).json({ message: 'Form denied successfully and reassigned for re-approval.', formInstance });
   } catch (error) {
+    console.error("Error denying form:", error);
     return res.status(500).json({ message: error.message });
   }
 };
+
+
 
 
 

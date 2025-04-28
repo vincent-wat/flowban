@@ -45,6 +45,26 @@ export const WorkflowBoard = () => {
     }
   };
 
+  function getUserIdFromToken() {
+    const token = localStorage.getItem("token");
+    if (!token) return null;
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1])); 
+      return payload.id; 
+    } catch (error) {
+      console.error("Invalid token", error);
+      return null;
+    }
+  }
+  
+  const isUserAssignedToForm = (form) => {
+    const userId = getUserIdFromToken();
+    return form.assignedUsers?.some(
+      (user) => user.id === userId && user.approval_status === "pending"
+    );
+  };
+  
+
   const fetchAllUsers = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -152,28 +172,57 @@ export const WorkflowBoard = () => {
       alert("Please enter a denial reason.");
       return;
     }
+  
+    const token = localStorage.getItem("token");
+    const userId = getUserIdFromToken(); 
+  
+    const assignedUser = formInstances
+      .find(form => form.id === selectedFormId)
+      ?.assignedUsers
+      ?.find(user => user.id === userId && user.approval_status === "pending");
+  
+    if (!assignedUser) {
+      alert("You are not assigned to deny this form.");
+      return;
+    }
+  
     setLoadingForms((prev) => ({ ...prev, [selectedFormId]: true }));
+  
     try {
       const response = await fetch(
         `https://localhost:3000/api/formInstance/instances/deny/${selectedFormId}`,
         {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
           body: JSON.stringify({ denial_reason: denialReason }),
         }
       );
+  
+      const responseBody = await response.json();
+  
       if (!response.ok) {
-        throw new Error(`Failed to deny form ${selectedFormId}`);
+        if (response.status === 403) {
+          alert("You are not assigned to deny this form."); 
+        } else {
+          alert(`Failed to deny form: ${responseBody.message || "Unknown error"}`);
+        }
+        return;
       }
+  
       fetchFormInstances();
       closeModal();
+  
     } catch (error) {
       console.error("Error denying form:", error);
-      alert("Failed to deny the form.");
+      alert("Failed to deny the form. Please try again.");
     } finally {
       setLoadingForms((prev) => ({ ...prev, [selectedFormId]: false }));
     }
   };
+  
 
   const addSuggestedAssignment = async () => {
     if (!selectedStageId || !selectedUserId || !selectedFormId) return;
