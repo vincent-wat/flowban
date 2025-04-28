@@ -15,6 +15,8 @@ import ResetPassword from "./Components/User/Passwords/ResetPassword";
 import ErrorPage from "./Components/General/ErrorPage";
 import WorkflowBoard from "./Components/Forms/WorkflowBoardPage";
 import ViewFormPage from "./Components/Forms/ViewFormPage";
+import ProtectedRoute from './Components/Auth/ProtectedRoutes';
+
 function App() {
   const location = useLocation();
   const isDashboard = location.pathname === '/dashboard';
@@ -24,14 +26,23 @@ function App() {
       {isDashboard ? (
         <DashboardLayout>
           <Routes>
-            <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/" element={<Home />} />
+            <Route path ="/dashboard" element={
+              <ProtectedRoute>
+                <Dashboard/>
+              </ProtectedRoute>
+            } />
           </Routes>
         </DashboardLayout>
       ) : (
         <Layout>
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/profile" element={<Profile />} />
+            <Route path ="/profile" element={
+              <ProtectedRoute>
+                <Profile/>
+              </ProtectedRoute>
+            } />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/kanban/:board_id" element={<KanbanBoard />} />
             <Route path="/signup" element={<SignUpPage />} />

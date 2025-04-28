@@ -9,7 +9,7 @@ function jwtGenerator(user) {
     organization_id: user.organization_id || null
   };
 
-  return jwt.sign(payload, process.env.jwtSecret, { expiresIn: "1h" });
+  return jwt.sign(payload, process.env.jwtSecret, { expiresIn: "1hr" });
 }
 
 function jwtOrganizationGenerator(email, user) {
