@@ -54,19 +54,19 @@ export const Column = ({
           className="add-task"
           onClick={() => setIsAddTaskModalOpen(column.id)}
         >
-          <FaPlus /> Add Task
+          <FaPlus size="15" /> Add Task
         </button>
         <button
           className="edit-column"
           onClick={() => setIsEditModalOpen(true)}
         >
-          <FaEdit /> Edit Column
+          <FaEdit /> Edit
         </button>
         <button
           className="delete-column"
           onClick={() => deleteColumn(column.id)}
         >
-          <FaTrash /> Delete Column
+          <FaTrash /> Delete
         </button>
       </footer>
       <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)}>

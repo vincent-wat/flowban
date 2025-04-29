@@ -16,33 +16,33 @@
   font-size: 14px;
   outline: none;
   background-color: lightgray;
-  transition: box-shadow 0.3s ease; /* Smooth transition for focus effect */
+  transition: box-shadow 0.3s ease;
 }
 
 .main-div input:focus {
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Enhance shadow on focus */
-  border-color: #007bff; /* Change border color on focus */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  border-color: #007bff;
 }
 .tool-bar button {
-  background-color: #007bff; /* Primary blue background */
-  color: white; /* White text color */
-  border: none; /* Remove default border */
-  padding: 10px 15px; /* Add padding for better spacing */
-  border-radius: 4px; /* Slightly rounded corners */
-  font-size: 14px; /* Adjust font size */
-  cursor: pointer; /* Change cursor to pointer on hover */
-  transition: background-color 0.3s ease, transform 0.2s ease; /* Smooth hover and click effects */
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 .tool-bar button:hover {
-  background-color: #0056b3; /* Darker blue on hover */
+  background-color: #0056b3;
 }
 
 .tool-bar button:focus {
-  outline: none; /* Remove default focus outline */
-  box-shadow: 0 0 4px 2px rgba(0, 123, 255, 0.5); /* Add a focus ring */
+  outline: none;
+  box-shadow: 0 0 4px 2px rgba(0, 123, 255, 0.5);
 }
 
 .tool-bar button:active {
-  transform: scale(0.98); /* Slightly shrink button on click */
+  transform: scale(0.98);
 }

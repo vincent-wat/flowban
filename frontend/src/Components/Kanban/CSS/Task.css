@@ -3,15 +3,13 @@
   border: black;
   border-radius: 5px;
   box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
-  width: 100%;
-  padding: 30px;
+  padding: 10px;
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  gap: 20px;
   touch-action: none;
-  width: 380px;
-  height: 100px;
+
+  max-width: 100%;
 }
 .drag-handle {
   cursor: grab;
@@ -30,9 +28,12 @@
   cursor: grab;
 }
 .task-content {
+  flex-grow: 1;
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  justify-content: center;
+  max-width: 70%;
 }
 
 .task-title {
@@ -41,10 +42,52 @@
 
 .task-description {
   color: #666;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: unset;
 }
 
 .task-dragging {
   width: 50%;
   height: 50%;
   opacity: 0.8;
+}
+.actions {
+  display: flex;
+  padding: 10px;
+}
+.delete-task {
+  margin: 5px;
+  border: none;
+}
+
+.edit-task {
+  margin: 5px;
+  border: none;
+}
+
+.delete-task:hover {
+  cursor: pointer;
+
+  border-radius: 5px;
+}
+.edit-task:hover {
+  cursor: pointer;
+}
+.task-textarea {
+  width: 100%; /* Full width of the modal */
+  height: 100px; /* Initial height */
+  padding: 10px; /* Inner spacing */
+  font-size: 14px; /* Font size for the text */
+  border: 1px solid #ccc; /* Border styling */
+  border-radius: 4px; /* Rounded corners */
+  resize: vertical; /* Allow vertical resizing */
+  overflow-y: auto; /* Enable vertical scrolling */
+  box-sizing: border-box; /* Include padding in width/height */
+}
+
+.task-textarea:focus {
+  outline: none; /* Remove default focus outline */
+  border-color: #007bff; /* Highlight border on focus */
+  box-shadow: 0 0 4px rgba(0, 123, 255, 0.5); /* Subtle focus effect */
 }

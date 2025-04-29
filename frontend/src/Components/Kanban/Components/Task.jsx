@@ -4,7 +4,7 @@ import "../CSS/Task.css";
 import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import Modal from "./Modal";
-import { FaDotCircle } from "react-icons/fa";
+import { FaDotCircle, FaEdit, FaTrash } from "react-icons/fa";
 
 export const Task = ({ task, editTask, deleteTask }) => {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
@@ -38,7 +38,7 @@ export const Task = ({ task, editTask, deleteTask }) => {
         <p className="task-title">{task.title}</p>
         <p className="task-description">{task.description}</p>
       </div>
-      <footer>
+      <footer className="actions">
         <button
           className="edit-task"
           onClick={(e) => {
@@ -47,7 +47,7 @@ export const Task = ({ task, editTask, deleteTask }) => {
             setIsEditModalOpen(true);
           }}
         >
-          Edit
+          <FaEdit size="20">Edit</FaEdit>
         </button>
         <button
           className="delete-task"
@@ -57,7 +57,7 @@ export const Task = ({ task, editTask, deleteTask }) => {
             deleteTask(task.id);
           }}
         >
-          Delete
+          <FaTrash size="20">Delete</FaTrash>
         </button>
       </footer>
 
@@ -72,8 +72,9 @@ export const Task = ({ task, editTask, deleteTask }) => {
           onChange={(e) => setNewTitle(e.target.value)}
           placeholder="Task Title"
         />
-        <input
+        <textarea
           type="text"
+          className="task-textarea"
           value={newDescription}
           onChange={(e) => setNewDescription(e.target.value)}
           placeholder="Task Description "

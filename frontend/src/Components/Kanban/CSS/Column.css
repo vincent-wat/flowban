@@ -2,9 +2,7 @@
   flex: 1;
   margin: 0 10px;
   border-radius: 10px;
-
   border-width: 1px;
-
   padding: 10px;
   min-height: 300px;
   display: flex;
@@ -26,12 +24,15 @@
 
 .delete-column {
   cursor: pointer;
+  font-size: 15px;
 }
 .add-task {
   cursor: pointer;
+  font-size: 15px;
 }
 .edit-column {
   cursor: pointer;
+  font-size: 15px;
 }
 .column-title {
   background-color: white;
