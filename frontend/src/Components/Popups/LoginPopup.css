@@ -1,0 +1,96 @@
+.login-prompt-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+  
+  .login-prompt-modal {
+    background-color: white;
+    border-radius: 8px;
+    width: 400px;
+    max-width: 90%;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    animation: modal-appear 0.3s ease;
+  }
+  
+  @keyframes modal-appear {
+    from { transform: translateY(-20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  
+  .login-prompt-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid #eaeaea;
+  }
+  
+  .login-prompt-header h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    color: #333;
+  }
+  
+  .close-button {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #777;
+  }
+  
+  .close-button:hover {
+    color: #333;
+  }
+  
+  .login-prompt-body {
+    padding: 20px;
+    text-align: center;
+  }
+  
+  .login-prompt-body p {
+    margin-bottom: 20px;
+    color: #555;
+    font-size: 1rem;
+  }
+  
+  .login-prompt-actions {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+  }
+  
+  .login-button, .signup-button {
+    padding: 10px 20px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: background-color 0.2s;
+  }
+  
+  .login-button {
+    background-color: #C51D34;
+    color: white;
+  }
+  
+  .login-button:hover {
+    background-color: #a71a2c;
+  }
+  
+  .signup-button {
+    background-color: #f0f0f0;
+    color: #333;
+    border: 1px solid #ddd;
+  }
+  
+  .signup-button:hover {
+    background-color: #e0e0e0;
+  }

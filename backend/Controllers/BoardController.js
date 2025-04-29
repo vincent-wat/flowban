@@ -68,6 +68,59 @@ async function addBoard(req, res) {
   try {
     const { name, user_id } = req.body;
 
+    // Validate input
+    if (!name) {
+      return res.status(400).json({ error: "Board name is required" });
+    }
+
+    if (!user_id) {
+      return res.status(400).json({ error: "User ID is required" });
+    }
+
+    // Create the board with explicit values
+    const board = await Board.create({
+      name,
+      created_at: new Date(),
+      updated_at: new Date()
+    });
+
+    console.log("Board created:", board.toJSON());
+
+    // Add an entry to the user_boards table
+    await UserBoard.create({
+      user_id,
+      board_id: board.id,
+      permissions: "owner" // Default permission for the creator
+    });
+
+    console.log("UserBoard association created for user_id:", user_id, "board_id:", board.id);
+
+    res.status(201).json(board);
+  } catch (error) {
+    console.error("Error creating board:", error);
+    
+    if (error.name === "SequelizeValidationError") {
+      return res.status(400).json({
+        error: "Validation error",
+        details: error.errors.map(e => ({ field: e.path, message: e.message }))
+      });
+    }
+    
+    if (error.name === "SequelizeUniqueConstraintError") {
+      return res.status(409).json({
+        error: "Duplicate entry",
+        message: "A board with this name already exists"
+      });
+    }
+    
+    res.status(500).json({ error: "Board not created", message: error.message });
+  }
+}
+/*
+async function addBoard(req, res) {
+  try {
+    const { name, user_id } = req.body;
+
     // Create the board
     const board = await Board.create({
       name,
@@ -88,6 +141,7 @@ async function addBoard(req, res) {
     res.status(500).json({ error: "Board not created", message: error.message });
   }
 }
+  */
 
 module.exports = {
   getBoardbyID,
