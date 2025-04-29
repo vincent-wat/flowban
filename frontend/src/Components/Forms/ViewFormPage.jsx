@@ -6,6 +6,7 @@ import "./pdfViewer.css";
 
 const ViewFormPage = () => {
   const { templateId } = useParams();
+  
   const pdfUrl = `https://localhost:3000/api/forms/templates/pdf/${templateId}`;
   const navigate = useNavigate();
   
@@ -13,8 +14,20 @@ const ViewFormPage = () => {
   const handleSubmit = async () => {
     try {
       console.log("[handleSubmit] Fetching PDF from URL:", pdfUrl);
+      const token = localStorage.getItem("token");
   
-      const existingPdfBytes = await fetch(pdfUrl).then((res) => res.arrayBuffer());
+      const existingPdfBytes = await fetch(pdfUrl, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }).then((res) => {
+        if (!res.ok) {
+          throw new Error(`Failed to fetch PDF: ${res.status}`);
+        }
+        return res.arrayBuffer();
+      });
+  
       const pdfDoc = await PDFDocument.load(existingPdfBytes);
       const form = pdfDoc.getForm();
   
@@ -40,13 +53,11 @@ const ViewFormPage = () => {
       formData.append("file", pdfBlob, fileName);
       formData.append("template_id", templateId);
   
-      const token = localStorage.getItem("token");
-  
       console.log("[handleSubmit] Submitting form data to backend...");
       const response = await fetch("https://localhost:3000/api/formInstance/instances", {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${token}`, 
+          Authorization: `Bearer ${token}`,
         },
         body: formData,
       });
@@ -61,6 +72,7 @@ const ViewFormPage = () => {
       console.error("[handleSubmit] Error generating or submitting PDF:", error);
     }
   };
+  
   
 
   return (

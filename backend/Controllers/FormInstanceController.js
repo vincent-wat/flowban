@@ -98,14 +98,36 @@ async function getFormInstanceById(req, res) {
   }
 }
 
-
 async function getAllFormInstancesofTemplate(req, res) {
   try {
     const { templateId } = req.params;
+    const organizationId = req.user.organization_id;
+    console.log("req.user =", req.user);
+
+    //console.log("→ Filtering with template_id:", templateId, "organization_id:", organizationId);
 
     const formInstances = await FormInstance.findAll({
-      where: { template_id: templateId },
+      where: {
+        template_id: templateId,
+        organization_id: organizationId,
+      },
+      include: [
+        {
+          model: FormAssignment,
+          as: "assignedUsers",
+          include: [
+            {
+              model: User,
+              as: "assignedUser", // <-- use the alias defined in your association
+              attributes: ["id", "first_name", "last_name"],
+            },
+          ],
+        },
+      ]
+      
     });
+
+    console.log("→ Found formInstances:", formInstances);
 
     if (formInstances.length === 0) {
       return res.status(200).json({ message: "No form instances found", data: [] });
@@ -117,6 +139,7 @@ async function getAllFormInstancesofTemplate(req, res) {
     return res.status(500).json({ error: "Failed to fetch form instances" });
   }
 }
+
 
 
 async function updateFormInstance(req, res) {
