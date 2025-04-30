@@ -33,6 +33,17 @@ module.exports = {
         pdf_file_path: "/uploads/userForms/User3",
         denial_reason: "some reason",
       },
+      {
+        template_id: 3,
+        submitted_by: 5,
+        organization_id: 1,
+        status: "Completed",
+        created_at: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000), //15 days
+        updated_at: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000), 
+        pdf_file_path: "/uploads/userForms/User4",
+        denial_reason: "some reason",
+      }
+      
     ]);
   },
 
