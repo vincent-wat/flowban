@@ -36,4 +36,23 @@ async function sendOrganizationInviteEmail(email, token) {
   }
 }
 
-module.exports = sendOrganizationInviteEmail;
+async function sendKanbanInvite(email, token, role) {
+  try {
+    const inviteLink = `https://yourfrontend.com/kanban-invite?token=${token}`;
+
+    const mailOptions = {
+      from: process.env.GMAIL_USER,
+      to: email,
+      subject: "You are invited to join a KanBan board on Flowban",
+      html: `<p> You have been invited to join a Kanban board with the role of ${role}. Click below to accept the invite:<p>
+            <a href = "${inviteLink}"> Accept Invitation</a>`,
+    };
+
+    await transporter.sendMail(mailOptions);
+    console.log("Kanban invite email sent successfully to:", email);
+  } catch (error) {
+    console.log("Error sending the kanban invite email:", error);
+  }
+}
+
+module.exports = { sendOrganizationInviteEmail, sendKanbanInvite };
