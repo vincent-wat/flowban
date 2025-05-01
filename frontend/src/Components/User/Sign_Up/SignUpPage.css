@@ -1,15 +1,8 @@
-html, body {
-    margin: 0;
-    padding: 0;
-    height: 100%;
+
+.wrapper {
+    margin-top: 80px;
   }
   
-  body {
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    padding-top: 40px;
-  }
   
   .wrapper {
     width: 260px;
