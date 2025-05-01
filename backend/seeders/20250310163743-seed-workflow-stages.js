@@ -64,7 +64,7 @@ module.exports = {
         stage_order: 6,
       },
       {
-        template_id: 3,  
+        template_id: 2,  
         stage_name: "Initializing",
         stage_order: 1,
       },

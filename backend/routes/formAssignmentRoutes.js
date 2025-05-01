@@ -8,5 +8,6 @@ router.post('/', authenticate, formAssignment.assignUserToFormInstance);
 router.get('/form/:formInstanceId', authenticate, formAssignment.getAssignmentsByFormInstance);
 router.get('/my-assignments', authenticate, formAssignment.getAssignmentsByUser);
 router.put('/:assignmentId', authenticate, formAssignment.updateAssignmentStatus);
+router.post('/suggest', authenticate, formAssignment.suggestUserForFormStage);
 
 module.exports = router;

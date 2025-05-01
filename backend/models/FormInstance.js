@@ -43,6 +43,11 @@ module.exports = (sequelize, DataTypes) => {
           },
         },
       },
+      organization_id: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
+      
     },
     {
       tableName: "form_instances",
@@ -61,6 +66,12 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: "submitted_by",
       as: "submitter",
     });
+
+    FormInstance.hasMany(models.FormAssignment, {
+      as: 'assignedUsers',
+      foreignKey: 'form_instance_id',
+    });
+    
   };
 
   return FormInstance; 
