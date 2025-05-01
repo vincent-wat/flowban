@@ -7,6 +7,7 @@ import { use } from "react";
 import Modal from "./Modal";
 import { FaPlus, FaBars } from "react-icons/fa";
 import { io } from "socket.io-client";
+import { error } from "pdf-lib";
 
 // Initialize Socket.IO
 const socket = io("https://localhost:3000", {
@@ -32,10 +33,14 @@ export default function Board({ board_id, user_id, user_role }) {
   const [isShareKanbanOpen, setIsKanbanOpen] = useState(false);
   const [invitePrivilege, setInvitePrivilege] = useState("");
 
+  const [inviteEmail, setEmail] = useState("");
+  const [inviteRole, setRole] = useState("");
+
   // url for columns and tasks
   const COLUMN_URL = "/api/columns";
   const TASK_URL = "/api/tasks";
   const BOARD_URL = "/api/boards";
+  const USER_BOARD_URL = "api/userBoards";
 
   function checkUserRole() {
     if (user_role === "owner" || user_role === "editor") {
@@ -260,16 +265,33 @@ export default function Board({ board_id, user_id, user_role }) {
     setIsAddColumnOpen(false);
     //
   };
-  const handleShareKanban = () => {
-    //
+  const handleShareKanban = async () => {
+    console.log("Email:", inviteEmail, "Role:", inviteRole);
+    if (inviteEmail === "") return;
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new error("No authentication token found");
+      }
+      const response = await axios.post(
+        `${USER_BOARD_URL}/invite`,
+        { email: inviteEmail, board_id: { board_id }, role: inviteRole },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      console.log("Invite Sent!");
+      setEmail("");
+      setRole("");
+    } catch (error) {
+      console.log("Error inviting user:", error);
+    }
   };
   const handleDeleteKanban = () => {
     //
-  };
-  const handleDropdownAction = (action) => {
-    //
-    switch (action) {
-    }
   };
 
   // initial fetch of all data
@@ -378,7 +400,7 @@ export default function Board({ board_id, user_id, user_role }) {
           <div className="share-kanban">
             <select
               className="dropdown-menu-kanban"
-              onChange={(e) => handleDropdownAction(e.target.value)}
+              onChange={(e) => setRole(e.target.value)}
             >
               <option value="" disabled selected>
                 General Access
@@ -388,7 +410,8 @@ export default function Board({ board_id, user_id, user_role }) {
             </select>
             <input
               type="text"
-              onChange={(e) => setNewName(e.target.value)}
+              value={inviteEmail}
+              onChange={(e) => setEmail(e.target.value)}
               placeholder="email"
             ></input>
 

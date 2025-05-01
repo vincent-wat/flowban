@@ -1,5 +1,8 @@
-const { UserBoard, Board } = require("../models");
+const { UserBoard, Board, User } = require("../models");
+const { jwtKanbanGenerator } = require("../utils/jwtGenerator");
+const { sendKanbanInvite } = require("../middleware/sendEmail");
 const { deleteUser } = require("./UserController");
+const jwt = require("jsonwebtoken");
 
 async function getAllEntries(req, res) {
   try {
@@ -151,6 +154,71 @@ async function getUserRole(req, res) {
     return res.status(500).json({ error: "Error fetching user role" });
   }
 }
+
+// send invite link for kanban board
+async function inviteToKanban(req, res) {
+  console.log("invite to kanban called");
+  try {
+    const { email, board_id, role } = req.body;
+
+    const token = jwtKanbanGenerator(email, board_id, role);
+
+    await sendKanbanInvite(email, token, role);
+    console.log("token:", token);
+
+    res.status(200).json({ message: "Invitation sent successfully" });
+  } catch (error) {
+    console.log("Error inviting user to kanban board:", error.message);
+    res
+      .status(500)
+      .json({ error: "Failed to send invitation", details: error.message });
+  }
+}
+
+async function acceptKanbanInvite(req, res) {
+  console.log("Invite Accepted");
+  try {
+    console.log("accept invite called");
+    const { token } = req.body;
+
+    console.log("Received token:", token);
+
+    if (!token) {
+      return res.status(400).json({ error: "Token is required" });
+    }
+    console.log("About to decode token");
+    const decoded = jwt.verify(token, process.env.jwtSecret);
+
+    console.log("Decoded token:", decoded);
+    // get email and board_id from user
+    const { email, board_id, role } = decoded;
+    console.log("Email:", email, "Board_id", board_id, "Role", role);
+
+    // find user in database to add to board
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const user_id = user.id;
+    const permissions = role;
+
+    // add to database
+    const newUserBoard = await UserBoard.create({
+      user_id,
+      board_id,
+      permissions,
+    });
+
+    return res.status(201).json({
+      message: "User board created successfully",
+      board: newUserBoard,
+    });
+  } catch (error) {
+    console.error("Invite token error:", error);
+    return res.status(400).json({ error: "Invalid" });
+  }
+}
 module.exports = {
   createUserBoard,
   getUserBoardsByUserId,
@@ -160,4 +228,6 @@ module.exports = {
   deleteUserBoard,
   getAllBoardsForUser,
   getUserRole,
+  inviteToKanban,
+  acceptKanbanInvite,
 };
