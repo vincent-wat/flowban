@@ -1,81 +1,107 @@
-.settings-page {
-    display: flex;
-    position: relative;
-  }
-  
-  .sidebar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 200px;
-    height: 100vh;
-    background-color: #C51D34;
-    color: white;
-    padding-top: 20px;
-    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-    transform: translateX(-200px);
-    transition: transform 0.3s ease;
-  }
-  
-  .sidebar.open {
-    transform: translateX(0);
-  }
-  
-  .sidebar-toggle {
-    position: fixed;
-    top: 47px;
-    left: 0;
-    padding: 5px 10px;
-    font-size: 18px;
-    background-color: #900d1c;
-    color: white;
-    border: none;
-    cursor: pointer;
-    transition: left 0.3s ease;
-    z-index: 1000;
-  }
-  
-  .sidebar-toggle.open {
-    left: 200px; 
-  }
-  
-  .settings-container {
-    flex: 1;
-    margin-left: 0;
-    padding: 20px;
-    width: auto;
-    transition: margin-left 0.3s ease;
-    justify-content: center; 
-    align-items: center;
-    flex-direction: column; 
-  }
-  
-  .settings-container.sidebar-open {
-    margin-left: 200px;
-  }
-  
-  .settings-option {
-    margin-bottom: 15px;
-    font-size: 18px;
-  }
-  
-  .delete-button {
-    width: auto;
-    height: 45px;
-    background-color: #C51D34;
-    color: white;
-    border: none;
-    border-radius: 30px;
-    font-size: 18px;
-    font-weight: 700;
-    cursor: pointer;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    padding: 0 15px;
-    transition: background-color 0.3s ease, box-shadow 0.3s ease;
-  }
-  
-  .delete-button:hover {
-    background-color: #A11227;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  }
-  
+.organization-container {
+  padding: 20px;
+  transition: margin-left 0.3s;
+  width: calc(100% - 30px);
+}
+
+.organization-container.sidebar-open {
+  margin-left: 250px;
+  width: calc(100% - 250px - 30px);
+}
+
+h1, h2 {
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.invite-section, .members-section {
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 30px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.invite-form {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.invite-form input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.invite-form button {
+  padding: 10px 15px;
+  background-color: #C51D34;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.invite-form button:hover {
+  background-color: #a31a2c;
+}
+
+.invite-status {
+  padding: 10px;
+  border-radius: 4px;
+  margin-top: 10px;
+}
+
+.invite-status.success {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.invite-status.error {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.members-list table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.members-list th, .members-list td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.members-list th {
+  background-color: #f8f9fa;
+  font-weight: bold;
+}
+
+.action-button {
+  padding: 5px 10px;
+  background-color: #4a90e2;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.action-button:hover {
+  background-color: #357abf;
+}
+
+.error-message {
+  color: #721c24;
+  background-color: #f8d7da;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 15px;
+}

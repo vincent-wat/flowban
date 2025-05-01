@@ -4,12 +4,10 @@ const { FormAssignment, FormInstance, User, WorkflowStage } = require('../models
     const { form_instance_id, stage_id, assigned_user_id, role } = req.body;
   
     try {
-      // Validate required fields
       if (!form_instance_id || !stage_id || !assigned_user_id || !role) {
         return res.status(400).json({ error: "Missing required fields." });
       }
   
-      // Optional: prevent duplicates
       const existing = await FormAssignment.findOne({
         where: {
           form_instance_id,
@@ -22,7 +20,6 @@ const { FormAssignment, FormInstance, User, WorkflowStage } = require('../models
         return res.status(409).json({ error: "User is already assigned at this stage." });
       }
   
-      // Create new assignment
       const assignment = await FormAssignment.create({
         form_instance_id,
         stage_id,
@@ -136,6 +133,47 @@ const { FormAssignment, FormInstance, User, WorkflowStage } = require('../models
     }
   };
   
+  const suggestUserForFormStage = async (req, res) => {
+    const { form_instance_id, stage_id, assigned_user_id, role } = req.body;
+  
+    try {
+      if (!form_instance_id || !stage_id || !assigned_user_id || !role) {
+        return res.status(400).json({ error: "Missing required fields." });
+      }
+  
+      const existing = await FormAssignment.findOne({
+        where: {
+          form_instance_id,
+          stage_id,
+          assigned_user_id,
+          approval_status: 'suggested',
+        },
+      });
+  
+      if (existing) {
+        return res.status(409).json({ error: "This user has already been suggested for this stage." });
+      }
+  
+      const assignment = await FormAssignment.create({
+        form_instance_id,
+        stage_id,
+        assigned_user_id,
+        role,
+        approval_status: "suggested",
+        approved_at: null,
+        comment: null,
+      });
+  
+      return res.status(201).json({
+        message: "Suggested approver added.",
+        assignment,
+      });
+    } catch (err) {
+      console.error("Error suggesting user:", err);
+      res.status(500).json({ error: "Server Error", message: err.message });
+    }
+  };
+  
   
   
   module.exports = {
@@ -143,4 +181,5 @@ const { FormAssignment, FormInstance, User, WorkflowStage } = require('../models
     getAssignmentsByUser,
     updateAssignmentStatus,
     assignUserToFormInstance,
+    suggestUserForFormStage,
   }  

@@ -27,9 +27,17 @@ export const WorkflowBoard = () => {
 
   const fetchWorkflowData = async () => {
     try {
+      const token = localStorage.getItem("token");
+  
       const stagesResponse = await fetch(
-        `https://localhost:3000/api/workflowStages/template/${templateId}`
+        `https://localhost:3000/api/workflowStages/template/${templateId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
+  
       const stagesData = await stagesResponse.json();
       if (!Array.isArray(stagesData)) {
         console.error("Error: Stages data is not an array!", stagesData);
@@ -44,12 +52,49 @@ export const WorkflowBoard = () => {
       setLoading(false);
     }
   };
+  
 
+  function getUserIdFromToken() {
+    const token = localStorage.getItem("token");
+    if (!token) return null;
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1])); 
+      return payload.id; 
+    } catch (error) {
+      console.error("Invalid token", error);
+      return null;
+    }
+  }
+  
+  const isUserAssignedToForm = (form) => {
+    const userId = getUserIdFromToken();
+  
+    const isAssigned = form.assignedUsers?.some(
+      (assignment) =>
+        assignment.assignedUser?.id === userId &&
+        assignment.approval_status === "pending"
+    );
+  
+    const isSubmitter = form.submitted_by === userId;
+  
+    const isAdmin = localStorage.getItem("role") === "admin"; // adjust this if needed
+  
+    return isAssigned || isSubmitter || isAdmin;
+  };
+  
+  
   const fetchAllUsers = async () => {
     try {
-      const res = await fetch(`https://localhost:3000/api/users`);
+      const token = localStorage.getItem("token");
+
+      const res = await fetch(`https://localhost:3000/api/users`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
       const data = await res.json();
-  
+
       if (Array.isArray(data)) {
         setUsers(data);
       } else {
@@ -64,10 +109,23 @@ export const WorkflowBoard = () => {
 
   const fetchFormInstances = async () => {
     try {
+      const token = localStorage.getItem("token");
+      console.log("FORM INSTANCES:", formInstances);
+      formInstances.forEach(form => {
+      console.log(`Form ${form.id} assignedUsers:`, form.assignedUsers);
+      });
       const res = await fetch(
-        `https://localhost:3000/api/formInstance/templates/${templateId}/instances`
+        `https://localhost:3000/api/formInstance/templates/${templateId}/instances`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
+  
       const data = await res.json();
+  
       if (!Array.isArray(data)) {
         console.error("Error: form instances is not an array!", data);
         setFormInstances([]);
@@ -79,6 +137,7 @@ export const WorkflowBoard = () => {
       setFormInstances([]);
     }
   };
+  
 
   useEffect(() => {
     fetchWorkflowData();
@@ -104,7 +163,49 @@ export const WorkflowBoard = () => {
   const handleApprove = async (formId) => {
     setLoadingForms((prev) => ({ ...prev, [formId]: true }));
     try {
+
       const token = localStorage.getItem("token");
+      const userId = getUserIdFromToken();
+    
+      const form = formInstances.find((f) => f.id === formId);
+    
+      const isSubmitter = form?.submitted_by === userId;
+      const isAssigned = form?.assignedUsers?.some(
+        (a) => a.assignedUser?.id === userId && a.approval_status === "pending"
+      );
+    
+      const hasSuggestions = form?.assignedUsers?.some(
+        (a) => a.approval_status === "suggested"
+      );
+    
+      if (isSubmitter && !hasSuggestions) {
+        alert("You must suggest at least one approver before approving this form.");
+        return;
+      }
+    
+      if (!isAssigned && !isSubmitter) {
+        alert("You are not allowed to approve this form.");
+        return;
+      }
+
+      const requiredStages = stages.filter(
+        (stage) =>
+          !["Initializing", "Admin Approval", "Completed"].includes(stage.stage_name)
+      );
+      
+      // Make sure at least one suggested user exists for each required stage
+      const hasSuggestionsForAllStages = requiredStages.every((stage) =>
+        form.assignedUsers?.some(
+          (assignment) =>
+            assignment.stage_id === stage.id && assignment.approval_status === "suggested"
+        )
+      );
+      
+      if (isSubmitter && !hasSuggestionsForAllStages) {
+        alert("You must suggest at least one approver for each required stage before approving.");
+        return;
+      }
+      
       const response = await fetch(
         `https://localhost:3000/api/formInstance/instances/approve/${formId}`,
         {
@@ -145,38 +246,93 @@ export const WorkflowBoard = () => {
       alert("Please enter a denial reason.");
       return;
     }
+  
+    const token = localStorage.getItem("token");
+    const userId = getUserIdFromToken(); 
+  
+    const assignedUser = formInstances
+      .find(form => form.id === selectedFormId)
+      ?.assignedUsers
+      ?.find(user => user.id === userId && user.approval_status === "pending");
+  
+    if (!assignedUser) {
+      alert("You are not assigned to deny this form.");
+      return;
+    }
+  
     setLoadingForms((prev) => ({ ...prev, [selectedFormId]: true }));
+  
     try {
       const response = await fetch(
         `https://localhost:3000/api/formInstance/instances/deny/${selectedFormId}`,
         {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
           body: JSON.stringify({ denial_reason: denialReason }),
         }
       );
+  
+      const responseBody = await response.json();
+  
       if (!response.ok) {
-        throw new Error(`Failed to deny form ${selectedFormId}`);
+        if (response.status === 403) {
+          alert("You are not assigned to deny this form."); 
+        } else {
+          alert(`Failed to deny form: ${responseBody.message || "Unknown error"}`);
+        }
+        return;
       }
+  
       fetchFormInstances();
       closeModal();
+  
     } catch (error) {
       console.error("Error denying form:", error);
-      alert("Failed to deny the form.");
+      alert("Failed to deny the form. Please try again.");
     } finally {
       setLoadingForms((prev) => ({ ...prev, [selectedFormId]: false }));
     }
   };
+  
 
-  const addSuggestedAssignment = () => {
-    if (!selectedStageId || !selectedUserId) return;
-    const newAssignment = {
-      stage_id: parseInt(selectedStageId),
-      assigned_user_id: parseInt(selectedUserId),
-    };
-    setSuggestedAssignments((prev) => [...prev, newAssignment]);
-    setSelectedStageId("");
-    setSelectedUserId("");
+  const addSuggestedAssignment = async () => {
+    if (!selectedStageId || !selectedUserId || !selectedFormId) return;
+
+    const token = localStorage.getItem("token");
+
+    try {
+      const response = await fetch("https://localhost:3000/api/formAssignment/suggest", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          form_instance_id: selectedFormId,
+          stage_id: parseInt(selectedStageId),
+          assigned_user_id: parseInt(selectedUserId),
+          role: "approver",
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Suggest failed: ${errorText}`);
+      }
+
+      const data = await response.json();
+      console.log("Suggested assignment saved:", data.assignment);
+
+      await fetchFormInstances(); 
+      setSelectedStageId("");
+      setSelectedUserId("");
+    } catch (err) {
+      console.error("Error suggesting approver:", err);
+      alert("Error suggesting approver");
+    }
   };
 
   return (
@@ -212,6 +368,7 @@ export const WorkflowBoard = () => {
                   {Array.isArray(formInstances) &&
                     formInstances
                       .filter((form) => form.status === stage.stage_name)
+                      .filter((form) => isUserAssignedToForm(form)) // Only show forms assigned to current user
                       .map((form) => (
                         <div key={form.id} className="form-instance-card">
                           <p>Form {form.id}</p>
@@ -219,13 +376,14 @@ export const WorkflowBoard = () => {
                           <button
                             onClick={() => {
                               const url = `https://localhost:3000/${form.pdf_file_path}`;
-                              console.log("Opening PDF at:", url);
                               window.open(url, "_blank");
                             }}
                             className="view-pdf-button"
                           >
                             View PDF
                           </button>
+                          
+                          {/* Only show buttons if the user is assigned */}
                           <>
                             <button
                               onClick={() => handleApprove(form.id)}
@@ -238,6 +396,7 @@ export const WorkflowBoard = () => {
                                 "Approve"
                               )}
                             </button>
+                              
                             <button
                               onClick={() => openDenyModal(form.id)}
                               className="deny-button"
@@ -249,8 +408,12 @@ export const WorkflowBoard = () => {
                                 "Deny"
                               )}
                             </button>
+                              
                             <button
-                              onClick={() => setShowSuggestModal(true)}
+                              onClick={() => {
+                                setSelectedFormId(form.id);
+                                setShowSuggestModal(true);
+                              }}
                               className="suggest-button"
                             >
                               + Suggest Approver
@@ -258,7 +421,9 @@ export const WorkflowBoard = () => {
                           </>
                         </div>
                       ))}
-                  {formInstances?.filter((form) => form.status === stage.stage_name).length === 0 && (
+                  {formInstances
+                    .filter((form) => form.status === stage.stage_name)
+                    .filter((form) => isUserAssignedToForm(form)).length === 0 && (
                     <p>No forms in this stage.</p>
                   )}
                 </div>
@@ -306,13 +471,18 @@ export const WorkflowBoard = () => {
               {Array.isArray(users) &&
                 users.map((user) => (
                   <option key={user.id} value={user.id}>
-                    {user.firstName} {user.lastName}
+                    {user.first_name} {user.last_name}
                   </option>
                 ))}
             </select>
 
-
-            <button onClick={addSuggestedAssignment} className="confirm-button">
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                addSuggestedAssignment();
+              }}
+              className="confirm-button"
+            >
               + Add Assignment
             </button>
 
@@ -335,7 +505,6 @@ export const WorkflowBoard = () => {
           </div>
         </div>
       )}
-      
     </div>
   );
 };

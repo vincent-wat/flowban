@@ -26,28 +26,37 @@ const PdfViewer = ({ fileUrl }) => {
 
         const loadPdf = async () => {
             if (hasLoadedRef.current) {
-                console.log("loadPdf has already been called, skipping...");
-                return;
+              console.log("loadPdf has already been called, skipping...");
+              return;
             }
-            hasLoadedRef.current = true; // Mark as called
-
+            hasLoadedRef.current = true;
+          
             try {
-                const loadingTask = pdfjsLib.getDocument(fileUrl);
-                const pdf = await loadingTask.promise;
-
-                console.log(`Original PDF Page Count: ${pdf.numPages}`);
-                console.log("PDF Info:", pdf._pdfInfo);
-
-                for (let i = 1; i <= pdf.numPages; i++) {
-                    const page = await pdf.getPage(i);
-                    console.log(`Rendering page ${i}...`);
-                }
-
-                pdfViewer.setDocument(pdf);
+              const token = localStorage.getItem("token");
+          
+              const loadingTask = pdfjsLib.getDocument({
+                url: fileUrl,
+                httpHeaders: {
+                  Authorization: `Bearer ${token}`,
+                },
+              });
+          
+              const pdf = await loadingTask.promise;
+          
+              console.log(`Original PDF Page Count: ${pdf.numPages}`);
+              console.log("PDF Info:", pdf._pdfInfo);
+          
+              for (let i = 1; i <= pdf.numPages; i++) {
+                const page = await pdf.getPage(i);
+                console.log(`Rendering page ${i}...`);
+              }
+          
+              pdfViewer.setDocument(pdf);
             } catch (error) {
-                console.error("Error loading PDF:", error);
+              console.error("Error loading PDF:", error);
             }
-        };
+          };
+          
 
         loadPdf();
     }, [fileUrl]);

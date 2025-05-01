@@ -6,18 +6,20 @@ async function createAndUploadTemplate(req, res) {
     console.log("File received:", req.file);
     console.log("Request body:", req.body);
 
-    const { name, description, created_by, fields_metadata } = req.body;
+    const { name, description, fields_metadata } = req.body; 
 
     if (!req.file) {
       return res.status(400).json({ error: "Template file is required" });
     }
 
-    if (!name || !description || !created_by) {
+    if (!name || !description) {
       return res.status(400).json({
-        error: "Missing required fields (name, description, created_by)",
+        error: "Missing required fields (name, description)",
       });
     }
 
+    const created_by = req.user.id;
+    const created_by_organization = req.user.organization_id; 
     const pdf_file_path = `/uploads/templates/${req.file.filename}`;
     const metadata = fields_metadata ? JSON.stringify(fields_metadata) : null;
 
@@ -26,6 +28,7 @@ async function createAndUploadTemplate(req, res) {
       description,
       pdf_file_path,
       created_by,
+      created_by_organization, 
       fields_metadata: metadata,
     });
 
@@ -39,16 +42,23 @@ async function createAndUploadTemplate(req, res) {
   }
 }
 
-async function getAllFormTemplates(req, res) {
+
+const getTemplatesByOrganization = async (req, res) => {
   try {
-    const templates = await FormsTemplate.findAll();
+    const { organization_id } = req.user;
+
+
+    const templates = await FormsTemplate.findAll({
+      where: { created_by_organization: organization_id.toString() },
+    });
 
     return res.status(200).json(templates);
   } catch (error) {
-    console.error("Error fetching form templates:", error.message);
-    return res.status(500).json({ error: "Failed to fetch form templates" });
+    console.error("Error fetching templates by organization:", error);
+    return res.status(500).json({ error: "Failed to fetch templates." });
   }
-}
+};
+
 
 async function getFormTemplateById(req, res) {
   try {
@@ -171,7 +181,7 @@ async function getPdfById(req, res) {
 
 module.exports = {
   createAndUploadTemplate,
-  getAllFormTemplates,
+  getTemplatesByOrganization,
   getFormTemplateById,
   updateFormTemplate,
   deleteFormTemplate,

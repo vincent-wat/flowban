@@ -12,7 +12,7 @@ const { Op } = require("sequelize");
 // this can then be used to create more functions for database queries
 // use the queries file to shorthand the queries
 
-const getUsers = async (req, res) => {
+const getUsersFromOrg = async (req, res) => {
   try {
     const { organization_id } = req.user;
 
@@ -334,7 +334,7 @@ async function assignRoleToUser(userId, roleId) {
 
 
 module.exports = {
-  getUsers,
+  getUsersFromOrg,
   postUser,
   deleteUser,
   updateUserProfile,

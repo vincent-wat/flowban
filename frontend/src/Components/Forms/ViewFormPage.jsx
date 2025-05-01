@@ -6,82 +6,62 @@ import "./pdfViewer.css";
 
 const ViewFormPage = () => {
   const { templateId } = useParams();
+  
   const pdfUrl = `https://localhost:3000/api/forms/templates/pdf/${templateId}`;
   const navigate = useNavigate();
+  
 
   const handleSubmit = async () => {
     try {
       console.log("[handleSubmit] Fetching PDF from URL:", pdfUrl);
-
-      // 1. Fetch the PDF data
-      const existingPdfBytes = await fetch(pdfUrl).then((res) => res.arrayBuffer());
-
-      // 2. Load it into pdf-lib
+      const token = localStorage.getItem("token");
+  
+      const existingPdfBytes = await fetch(pdfUrl, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }).then((res) => {
+        if (!res.ok) {
+          throw new Error(`Failed to fetch PDF: ${res.status}`);
+        }
+        return res.arrayBuffer();
+      });
+  
       const pdfDoc = await PDFDocument.load(existingPdfBytes);
       const form = pdfDoc.getForm();
-      console.log("[handleSubmit] Loaded PDFDocument into pdf-lib. Form object:", form);
-
-      // 3. Log all fields in the PDF (AcroForm)
-      console.log("[handleSubmit] Available AcroForm Fields in PDF:");
+  
       form.getFields().forEach((field) => {
-        console.log(
-          `  Field Name: "${field.getName()}", Field Type: ${field.constructor.name}`
-        );
-      });
-
-      // 4. Gather all DOM inputs that pdf.js is rendering
-      const inputs = document.querySelectorAll(".pdfViewer input");
-      console.log("[handleSubmit] DOM Inputs found in .pdfViewer:", inputs);
-
-      // 5. For each DOM <input>, attempt to set the corresponding PDF field
-      inputs.forEach((input) => {
-        const fieldName = input.name;
-        const fieldValue = input.value;
-        console.log(`\n[handleSubmit] DOM input => name: "${fieldName}", value: "${fieldValue}"`);
-
-        try {
-          const field = form.getField(fieldName);
-
-          if (field) {
+        const inputs = document.querySelectorAll(".pdfViewer input");
+        inputs.forEach((input) => {
+          if (input.name === field.getName()) {
             const fieldType = field.constructor.name;
-            console.log(`  => Found PDF field "${fieldName}" [${fieldType}].`);
-
             if (fieldType === "PDFTextField") {
-              console.log(`  => Setting text for "${fieldName}" to: "${fieldValue}"`);
-              field.setText(fieldValue);
+              field.setText(input.value);
             } else if (fieldType === "PDFCheckBox") {
-              console.log(`  => Setting checkbox "${fieldName}" to: ${input.checked}`);
               input.checked ? field.check() : field.uncheck();
-            } else {
-              console.log(`  => Unhandled field type: ${fieldType}`);
             }
-          } else {
-            console.log(`  => No matching PDF field found for DOM input: "${fieldName}"`);
           }
-        } catch (error) {
-          console.error(`  => Error setting PDF field "${fieldName}":`, error);
-        }
+        });
       });
-
-      // 6. Save the updated PDF bytes
+  
       const pdfBytes = await pdfDoc.save();
-      console.log("[handleSubmit] PDF updated, saving bytes...");
-
       const pdfBlob = new Blob([pdfBytes], { type: "application/pdf" });
       const fileName = `form_${Date.now()}.pdf`;
-
+  
       const formData = new FormData();
-      formData.append("file", pdfBlob, fileName); 
+      formData.append("file", pdfBlob, fileName);
       formData.append("template_id", templateId);
-      formData.append("submitted_by", "19"); // fix for actual id later
-
-      // 8. Submit to your server
+  
       console.log("[handleSubmit] Submitting form data to backend...");
       const response = await fetch("https://localhost:3000/api/formInstance/instances", {
         method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
         body: formData,
       });
-
+  
       if (response.ok) {
         alert("Form submitted successfully!");
         navigate(`/workflowboard/${templateId}`);
@@ -92,6 +72,8 @@ const ViewFormPage = () => {
       console.error("[handleSubmit] Error generating or submitting PDF:", error);
     }
   };
+  
+  
 
   return (
     <div className="page-container">

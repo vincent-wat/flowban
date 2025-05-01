@@ -60,11 +60,20 @@ export const Dashboard = () => {
   // Fetch templates from the API.
   const fetchTemplates = async () => {
     try {
+      const token = localStorage.getItem("token");
+
       const response = await fetch(
-        "https://localhost:3000/api/forms/templates"
+        "https://localhost:3000/api/forms/templates",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
+
       if (!response.ok)
         throw new Error(`HTTP error! status: ${response.status}`);
+
       const data = await response.json();
       setTemplates(data);
     } catch (error) {

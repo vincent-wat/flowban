@@ -28,6 +28,10 @@ module.exports = (sequelize, DataTypes) => {
           key: "id",
         },
       },
+      created_by_organization: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },      
       fields_metadata: {
         type: DataTypes.JSONB,
         allowNull: true,

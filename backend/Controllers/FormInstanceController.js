@@ -1,4 +1,4 @@
-const { FormInstance, FormsTemplate, user, FormAssignment, WorkflowStage } = require("../models");
+const { FormInstance, FormsTemplate, User, FormAssignment, WorkflowStage, Role} = require("../models");
 const path = require("path"); 
 
 async function createFormInstance(req, res) {
@@ -7,7 +7,9 @@ async function createFormInstance(req, res) {
     console.log("Request Body:", req.body);
     console.log("Uploaded File:", req.file);
 
-    const { template_id, submitted_by, suggestedAssignments } = req.body;
+    const { template_id,suggestedAssignments } = req.body;
+    const organizationId = req.user.organization_id;
+    const submittedBy = req.user.id;
 
     if (!req.file) {
       return res.status(400).json({ error: "No file uploaded" });
@@ -22,8 +24,9 @@ async function createFormInstance(req, res) {
 
     const newFormInstance = await FormInstance.create({
       template_id,
-      submitted_by,
+      submitted_by: submittedBy,
       pdf_file_path: filePath,
+      organization_id: organizationId,
     });
 
     const initializingStage = await WorkflowStage.findOne({
@@ -37,7 +40,7 @@ async function createFormInstance(req, res) {
     await FormAssignment.create({
       form_instance_id: newFormInstance.id,
       stage_id: initializingStage.id,
-      assigned_user_id: submitted_by,
+      assigned_user_id: submittedBy,
       role: 'approver',
       approval_status: 'pending',
     });
@@ -95,14 +98,36 @@ async function getFormInstanceById(req, res) {
   }
 }
 
-
 async function getAllFormInstancesofTemplate(req, res) {
   try {
     const { templateId } = req.params;
+    const organizationId = req.user.organization_id;
+    console.log("req.user =", req.user);
+
+    //console.log("→ Filtering with template_id:", templateId, "organization_id:", organizationId);
 
     const formInstances = await FormInstance.findAll({
-      where: { template_id: templateId },
+      where: {
+        template_id: templateId,
+        organization_id: organizationId,
+      },
+      include: [
+        {
+          model: FormAssignment,
+          as: "assignedUsers",
+          include: [
+            {
+              model: User,
+              as: "assignedUser", // <-- use the alias defined in your association
+              attributes: ["id", "first_name", "last_name"],
+            },
+          ],
+        },
+      ]
+      
     });
+
+    console.log("→ Found formInstances:", formInstances);
 
     if (formInstances.length === 0) {
       return res.status(200).json({ message: "No form instances found", data: [] });
@@ -114,6 +139,7 @@ async function getAllFormInstancesofTemplate(req, res) {
     return res.status(500).json({ error: "Failed to fetch form instances" });
   }
 }
+
 
 
 async function updateFormInstance(req, res) {
@@ -173,7 +199,10 @@ const approveFormInstance = async (req, res) => {
   const io = req.app.get("io");
 
   try {
-    const formInstance = await FormInstance.findByPk(id);
+    const formInstance = await FormInstance.findByPk(id, {
+      attributes: ['id', 'template_id', 'submitted_by', 'pdf_file_path', 'status', 'organization_id']
+    });
+    
     if (!formInstance) {
       return res.status(404).json({ error: "Form instance not found" });
     }
@@ -191,7 +220,6 @@ const approveFormInstance = async (req, res) => {
       return res.status(400).json({ error: "Current stage not found in workflow stages" });
     }
 
-    //user assignment
     const assignment = await FormAssignment.findOne({
       where: {
         form_instance_id: formInstance.id,
@@ -204,21 +232,32 @@ const approveFormInstance = async (req, res) => {
       return res.status(403).json({ error: "You are not assigned to approve this form at this stage." });
     }
 
-    if (!["approver", "final_approver"].includes(assignment.role)) {
+    if (!["approver", "final_approver", "admin"].includes(assignment.role)) {
       return res.status(403).json({ error: "You do not have approval permissions for this form." });
     }
 
     if (assignment.approval_status !== "pending") {
       return res.status(400).json({ error: `This form is currently marked as '${assignment.approval_status}', and cannot be approved.` });
-    }    
+    }
 
-    // Update assignment
     assignment.approval_status = "approved";
     assignment.approved_at = new Date();
     assignment.comment = req.body.comment || null;
     await assignment.save();
 
-    // approvers at this stage are done
+    if (currentStageName === "Admin Approval") {
+      await FormAssignment.update(
+        { approval_status: "pending" },
+        {
+          where: {
+            form_instance_id: formInstance.id,
+            approval_status: "suggested"
+          }
+        }
+      );
+      console.log(`Converted all suggested assignments to pending for form ${formInstance.id}`);
+    }    
+
     const pendingAssignments = await FormAssignment.findAll({
       where: {
         form_instance_id: formInstance.id,
@@ -234,7 +273,6 @@ const approveFormInstance = async (req, res) => {
       });
     }
 
-    // next stage
     const nextStage = await WorkflowStage.findOne({
       where: {
         template_id: formInstance.template_id,
@@ -250,7 +288,37 @@ const approveFormInstance = async (req, res) => {
 
     io.emit("formUpdated", { id, newStatus: nextStage.stage_name });
 
+    if (nextStage.stage_name === "Admin Approval") {
+      const adminUser = await User.findOne({
+        include: [{
+          model: Role,
+          as: "roles",
+          where: { name: "admin" },
+          through: { attributes: [] },
+        }],
+        where: {
+          organization_id: formInstance.organization_id,
+        },
+      });
+
+      
+
+      if (!adminUser) {
+        console.error("Admin user not found for this organization. Skipping admin assignment.");
+      } else {
+        await FormAssignment.create({
+          form_instance_id: formInstance.id,
+          stage_id: nextStage.id,
+          assigned_user_id: adminUser.id,
+          role: "admin",
+          approval_status: "pending",
+        });
+        console.log(`Assigned Admin (User ID: ${adminUser.id}) to Admin Approval stage.`);
+      }
+    }
+
     return res.status(200).json({ message: `Form moved to ${nextStage.stage_name} stage.` });
+
   } catch (error) {
     console.error("Error approving form:", error);
     return res.status(500).json({ error: "Internal server error", details: error.message });
@@ -262,6 +330,7 @@ const denyFormInstance = async (req, res) => {
     const { id } = req.params;
     const { denial_reason } = req.body;
     const io = req.app.get("io");
+    const userId = req.user.id; 
 
     const formInstance = await FormInstance.findByPk(id);
     if (!formInstance) {
@@ -275,7 +344,41 @@ const denyFormInstance = async (req, res) => {
       return res.status(400).json({ message: 'A denial reason is required.' });
     }
 
-    // Reset form status and denial reason
+    const currentStageName = formInstance.status;
+    console.log(`Denying form at stage: ${currentStageName}`);
+
+    const currentStage = await WorkflowStage.findOne({
+      where: {
+        template_id: formInstance.template_id,
+        stage_name: currentStageName,
+      },
+    });
+
+    if (!currentStage) {
+      return res.status(400).json({ message: "Current workflow stage not found." });
+    }
+
+    const assignment = await FormAssignment.findOne({
+      where: {
+        form_instance_id: formInstance.id,
+        stage_id: currentStage.id,
+        assigned_user_id: userId,
+      },
+    });
+
+    if (!assignment) {
+      return res.status(403).json({ error: "You are not assigned to deny this form at this stage." });
+    }
+
+    if (!["approver", "final_approver", "admin"].includes(assignment.role)) {
+      return res.status(403).json({ error: "You do not have permission to deny this form." });
+    }
+
+    if (assignment.approval_status !== "pending") {
+      return res.status(400).json({ error: `This form is currently marked as '${assignment.approval_status}', and cannot be denied.` });
+    }
+
+
     formInstance.status = 'Initializing';
     formInstance.denial_reason = denial_reason;
     await formInstance.save();
@@ -305,13 +408,42 @@ const denyFormInstance = async (req, res) => {
         },
       }
     );
+
+    if (currentStageName === "Admin Approval") {
+      await FormAssignment.destroy({
+        where: {
+          form_instance_id: id,
+          approval_status: "suggested",
+        },
+      });
+      console.log(`Deleted suggested assignments for form ${id} after denial.`);
+    } else {
+      await FormAssignment.update(
+        {
+          approval_status: "pending",
+          approved_at: null,
+          comment: null,
+        },
+        {
+          where: {
+            form_instance_id: id,
+            approval_status: "pending",
+          },
+        }
+      );
+      console.log(`Reset pending assignments at stage ${currentStageName} for form ${id}.`);
+    }
+
     io.emit("formUpdated", { id, newStatus: initializingStage.stage_name });
 
     return res.status(200).json({ message: 'Form denied successfully and reassigned for re-approval.', formInstance });
   } catch (error) {
+    console.error("Error denying form:", error);
     return res.status(500).json({ message: error.message });
   }
 };
+
+
 
 
 
