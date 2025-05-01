@@ -4,7 +4,7 @@ import "../CSS/Task.css";
 import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import Modal from "./Modal";
-import { FaDotCircle, FaEdit, FaTrash } from "react-icons/fa";
+import { FaDotCircle, FaEdit, FaTrash, FaGripLines } from "react-icons/fa";
 
 export const Task = ({ task, editTask, deleteTask }) => {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
@@ -30,7 +30,7 @@ export const Task = ({ task, editTask, deleteTask }) => {
       <div className="drag-handle" {...listeners} {...attributes}>
         <span>
           {" "}
-          <FaDotCircle>Drag</FaDotCircle>{" "}
+          <FaGripLines>Drag</FaGripLines>{" "}
         </span>{" "}
         {/* Hand icon indicating the drag handle */}
       </div>

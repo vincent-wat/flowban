@@ -28,6 +28,7 @@ export const Column = ({
     setIsEditModalOpen(false);
   };
   const handleNewTask = () => {
+    console.log("Column ID: " + column.id);
     addTask(column.id, title, description);
     setTitle("");
     setDescription("");

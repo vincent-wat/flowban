@@ -7,9 +7,9 @@
   min-height: 300px;
   display: flex;
   flex-direction: column;
-  width: 400px;
-  height: 600px;
-  background-color: rgba(0, 0, 0, 0.1);
+  min-height: 300px;
+  box-sizing: border-box;
+  background-color: rgba(215, 195, 195, 0.1);
 }
 
 .task-list {
