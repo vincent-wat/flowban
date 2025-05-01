@@ -185,5 +185,49 @@
     cursor: pointer;
   }
   
+  .tab-toggle {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  
+  .tab-toggle button {
+    padding: 8px 16px;
+    border: none;
+    background-color: #eee;
+    cursor: pointer;
+    border-radius: 4px;
+    font-weight: bold;
+  }
+  
+  .tab-toggle button.active-tab {
+    background-color: #4285f4;
+    color: white;
+  }
+
+  .accordion {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .accordion-item {
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+    background-color: #fafafa;
+  }
+  
+  .accordion-item summary {
+    font-weight: bold;
+    cursor: pointer;
+  }
+  
+  .accordion-content {
+    margin-top: 10px;
+    padding-left: 10px;
+  }
+  
   
     

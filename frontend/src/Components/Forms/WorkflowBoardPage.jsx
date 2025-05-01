@@ -24,6 +24,11 @@ export const WorkflowBoard = () => {
   const [selectedStageId, setSelectedStageId] = useState("");
   const [selectedUserId, setSelectedUserId] = useState("");
   const [suggestedAssignments, setSuggestedAssignments] = useState([]);
+  const [activeTab, setActiveTab] = useState("workflow"); 
+  const [archivedForms, setArchivedForms] = useState([]);
+const [loadingArchived, setLoadingArchived] = useState(false);
+
+
 
   const fetchWorkflowData = async () => {
     try {
@@ -82,6 +87,35 @@ export const WorkflowBoard = () => {
     return isAssigned || isSubmitter || isAdmin;
   };
   
+  const fetchArchivedForms = async () => {
+    setLoadingArchived(true);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(
+        `https://localhost:3000/api/archivedForms/templates/${templateId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      const data = await res.json();
+  
+      if (Array.isArray(data)) {
+        setArchivedForms(data);
+      } else {
+        console.error("Archived data is not an array:", data);
+        setArchivedForms([]);
+      }
+    } catch (error) {
+      console.error("Error fetching archived forms:", error);
+      setArchivedForms([]);
+    } finally {
+      setLoadingArchived(false);
+    }
+  };
+  
   
   const fetchAllUsers = async () => {
     try {
@@ -138,7 +172,12 @@ export const WorkflowBoard = () => {
     }
   };
   
-
+  useEffect(() => {
+    if (activeTab === "archive") {
+      fetchArchivedForms();
+    }
+  }, [activeTab]);
+  
   useEffect(() => {
     fetchWorkflowData();
     fetchFormInstances();
@@ -178,10 +217,17 @@ export const WorkflowBoard = () => {
         (a) => a.approval_status === "suggested"
       );
     
-      if (isSubmitter && !hasSuggestions) {
+      const suggestionPhaseStages = ["Initializing", "Admin Approval"];
+
+      if (
+        isSubmitter &&
+        suggestionPhaseStages.includes(form.status) &&
+        !hasSuggestions
+      ) {
         alert("You must suggest at least one approver before approving this form.");
         return;
       }
+
     
       if (!isAssigned && !isSubmitter) {
         alert("You are not allowed to approve this form.");
@@ -193,7 +239,6 @@ export const WorkflowBoard = () => {
           !["Initializing", "Admin Approval", "Completed"].includes(stage.stage_name)
       );
       
-      // Make sure at least one suggested user exists for each required stage
       const hasSuggestionsForAllStages = requiredStages.every((stage) =>
         form.assignedUsers?.some(
           (assignment) =>
@@ -201,10 +246,16 @@ export const WorkflowBoard = () => {
         )
       );
       
-      if (isSubmitter && !hasSuggestionsForAllStages) {
+
+      if (
+        isSubmitter &&
+        suggestionPhaseStages.includes(form.status) &&
+        !hasSuggestionsForAllStages
+      ) {
         alert("You must suggest at least one approver for each required stage before approving.");
         return;
       }
+      
       
       const response = await fetch(
         `https://localhost:3000/api/formInstance/instances/approve/${formId}`,
@@ -359,7 +410,21 @@ export const WorkflowBoard = () => {
           <button onClick={createNewForm} className="create-form-button">
             Create New Form
           </button>
-
+          <div className="tab-toggle">
+            <button
+              className={activeTab === "workflow" ? "active-tab" : ""}
+              onClick={() => setActiveTab("workflow")}
+            >
+              Workflow
+            </button>
+            <button
+              className={activeTab === "archive" ? "active-tab" : ""}
+              onClick={() => setActiveTab("archive")}
+            >
+              Archive
+            </button>
+          </div>
+          {activeTab === "workflow" && (
           <div className="stages-container">
             {stages.map((stage) => (
               <div key={stage.id} className="stage-card">
@@ -382,42 +447,41 @@ export const WorkflowBoard = () => {
                           >
                             View PDF
                           </button>
-                          
-                          {/* Only show buttons if the user is assigned */}
+
                           <>
-                            <button
-                              onClick={() => handleApprove(form.id)}
-                              className="approve-button"
-                              disabled={loadingForms[form.id]}
-                            >
-                              {loadingForms[form.id] ? (
-                                <span className="spinner"></span>
-                              ) : (
-                                "Approve"
-                              )}
-                            </button>
+                          {form.status !== "Completed" && (
+                            <>
+                              <button
+                                onClick={() => handleApprove(form.id)}
+                                className="approve-button"
+                                disabled={loadingForms[form.id]}
+                              >
+                                {loadingForms[form.id] ? <span className="spinner"></span> : "Approve"}
+                              </button>
+                                                    
+                              <button
+                                onClick={() => openDenyModal(form.id)}
+                                className="deny-button"
+                                disabled={loadingForms[form.id]}
+                              >
+                                {loadingForms[form.id] ? <span className="spinner"></span> : "Deny"}
+                              </button>
+                            </>
+                          )}
+
                               
-                            <button
-                              onClick={() => openDenyModal(form.id)}
-                              className="deny-button"
-                              disabled={loadingForms[form.id]}
-                            >
-                              {loadingForms[form.id] ? (
-                                <span className="spinner"></span>
-                              ) : (
-                                "Deny"
-                              )}
-                            </button>
-                              
-                            <button
-                              onClick={() => {
-                                setSelectedFormId(form.id);
-                                setShowSuggestModal(true);
-                              }}
-                              className="suggest-button"
-                            >
-                              + Suggest Approver
-                            </button>
+                            {["Initializing", "Admin Approval"].includes(form.status) && (
+                              <button
+                                onClick={() => {
+                                  setSelectedFormId(form.id);
+                                  setShowSuggestModal(true);
+                                }}
+                                className="suggest-button"
+                              >
+                                + Suggest Approver
+                              </button>
+                            )}
+
                           </>
                         </div>
                       ))}
@@ -430,7 +494,42 @@ export const WorkflowBoard = () => {
               </div>
             ))}
           </div>
+          )}
         </>
+      )}
+
+      {activeTab === "archive" && (
+        <div className="archive-container">
+          <h2>Archived Forms</h2>
+          {loadingArchived ? (
+            <p>Loading archived forms...</p>
+          ) : archivedForms.length === 0 ? (
+            <p>No archived forms available.</p>
+          ) : (
+            <div className="accordion">
+              {archivedForms.map((form, index) => (
+                <details key={form.id} className="accordion-item">
+                  <summary>
+                    Form #{form.id} — Submitted by: {form.submitter?.email || "Unknown"}
+                  </summary>
+                  <div className="accordion-content">
+                    <p><strong>Created At:</strong> {new Date(form.created_at).toLocaleString()}</p>
+                    <p><strong>Archived At:</strong> {new Date(form.archived_at).toLocaleString()}</p>
+                    {form.denial_reason && (
+                      <p><strong>Denial Reason:</strong> {form.denial_reason}</p>
+                    )}
+                    <button
+                      className="view-pdf-button"
+                      onClick={() => window.open(`https://localhost:3000${form.pdf_file_path}`, "_blank")}
+                    >
+                      View PDF
+                    </button>
+                  </div>
+                </details>
+              ))}
+            </div>
+          )}
+        </div>
       )}
 
       {showModal && (

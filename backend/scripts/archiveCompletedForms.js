@@ -20,16 +20,6 @@ const archiveCompletedForms = async () => {
             [Op.lt]: twoWeeksAgo,
           },
         },
-        include: [
-          {
-            association: 'template',
-            attributes: ['name'],
-          },
-          {
-            association: 'submitter',
-            attributes: ['email'],
-          },
-        ],
         attributes: [
           'id',
           'template_id',
@@ -37,9 +27,11 @@ const archiveCompletedForms = async () => {
           'status',
           'pdf_file_path',
           'denial_reason',
-          'created_at',
+          'createdAt',   
+          'updatedAt',   
         ],
       });
+      
       
       
 
@@ -52,7 +44,7 @@ const archiveCompletedForms = async () => {
             status: form.status,
             pdf_file_path: form.pdf_file_path,
             denial_reason: form.denial_reason,
-            created_at: form.created_at,
+            created_at: form.getDataValue("createdAt"),
             archived_at: new Date(),
           });
           

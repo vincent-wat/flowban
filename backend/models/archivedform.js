@@ -48,6 +48,13 @@ module.exports = (sequelize, DataTypes) => {
       timestamps: false, 
     }
   );
+  ArchivedForm.associate = (models) => {
+    ArchivedForm.belongsTo(models.User, {
+      foreignKey: "submitted_by",
+      as: "submitter",
+    });
+  };
+  
 
   return ArchivedForm;
 };

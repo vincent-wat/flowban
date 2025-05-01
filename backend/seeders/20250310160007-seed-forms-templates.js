@@ -9,7 +9,7 @@ module.exports = {
         description: "Form used to report and resolve time conflicts.",
         pdf_file_path: "/uploads/templates/time_conflict_petition.pdf",
         created_by: 1, 
-        created_by_organization: 1, // ← ADDED
+        created_by_organization: 1, 
         fields_metadata: JSON.stringify({
           fields: ["conflict_reason", "conflict_date", "resolution_notes"],
         }),
@@ -22,7 +22,7 @@ module.exports = {
         description: "Form for requesting official leave.",
         pdf_file_path: "/uploads/templates/file-affidavit.pdf",
         created_by: 3,
-        created_by_organization: 2, // ← ADDED
+        created_by_organization: 2, 
         fields_metadata: JSON.stringify({
           fields: ["leave_type", "start_date", "end_date", "reason"],
         }),
@@ -31,11 +31,11 @@ module.exports = {
       },
       {
         id: 3,
-        name: "Expense Reimbursement Form",
+        name: "Change Catalog",
         description: "Form to request reimbursement for expenses.",
-        pdf_file_path: "/uploads/templates/expense_reimbursement.pdf",
+        pdf_file_path: "/uploads/templates/change-catalog-year.pdf",
         created_by: 5, 
-        created_by_organization: 1, // ← ADDED
+        created_by_organization: 1, 
         fields_metadata: JSON.stringify({
           fields: ["expense_type", "amount", "receipt_upload"],
         }),

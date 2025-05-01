@@ -13,6 +13,7 @@ const formAssignmentsRoutes = require("./routes/formAssignmentRoutes");
 const authRoutes = require("./routes/oAuthRoutes");
 const requestRoutes = require("./routes/requestRoutes");
 const organizationRoutes = require("./routes/organizationRoutes");
+const archivedFormsRoutes = require("./routes/archivedFormsRoutes");
 const startArchiveJob = require("./cron/archiveScheduler");
 const pool = require("./models/db");
 const cors = require("cors");
@@ -91,6 +92,7 @@ app.use("/api/workflowStages", workflowStagesRoutes);
 app.use("/api/formAssignment", formAssignmentsRoutes);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api/organizations', organizationRoutes);
+app.use("/api/archivedForms", archivedFormsRoutes); 
 
 // OAuth Routes
 app.use("/api/oauth", authRoutes);
