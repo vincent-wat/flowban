@@ -26,7 +26,11 @@ export const WorkflowBoard = () => {
   const [suggestedAssignments, setSuggestedAssignments] = useState([]);
   const [activeTab, setActiveTab] = useState("workflow"); 
   const [archivedForms, setArchivedForms] = useState([]);
-const [loadingArchived, setLoadingArchived] = useState(false);
+  const [loadingArchived, setLoadingArchived] = useState(false);
+  const [showStageModal, setShowStageModal] = useState(false);
+  const [newStageName, setNewStageName] = useState("");
+  const [newStageOrder, setNewStageOrder] = useState("");
+
 
 
 
@@ -71,6 +75,54 @@ const [loadingArchived, setLoadingArchived] = useState(false);
     }
   }
   
+  function getUserRoleFromToken() {
+    const token = localStorage.getItem("token");
+    if (!token) return null;
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return payload.role;
+    } catch {
+      return null;
+    }
+  }  
+
+  const handleCreateStage = async () => {
+    if (!newStageName || !newStageOrder) {
+      alert("Please provide both a stage name and order.");
+      return;
+    }
+  
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch("https://localhost:3000/api/workflowStages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          template_id: parseInt(templateId),
+          stage_name: newStageName,
+          stage_order: parseInt(newStageOrder),
+        }),
+      });
+  
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to create stage: ${errorText}`);
+      }
+  
+      await fetchWorkflowData();
+      setShowStageModal(false);
+      setNewStageName("");
+      setNewStageOrder("");
+    } catch (error) {
+      console.error("Error creating stage:", error);
+      alert("Failed to create stage: " + error.message);
+    }
+  };
+  
+
   const isUserAssignedToForm = (form) => {
     const userId = getUserIdFromToken();
   
@@ -82,7 +134,7 @@ const [loadingArchived, setLoadingArchived] = useState(false);
   
     const isSubmitter = form.submitted_by === userId;
   
-    const isAdmin = localStorage.getItem("role") === "admin"; // adjust this if needed
+    const isAdmin = localStorage.getItem("role") === "admin";
   
     return isAssigned || isSubmitter || isAdmin;
   };
@@ -394,22 +446,22 @@ const [loadingArchived, setLoadingArchived] = useState(false);
         <>
           <div className="top-bar">
             <h1>Workflow Board</h1>
-            <div className="view-toggle">
-              <label className="switch">
-                <input
-                  type="checkbox"
-                  checked={adminView}
-                  onChange={() => setAdminView(!adminView)}
-                />
-                <span className="slider round"></span>
-              </label>
-              <span className="view-label">{adminView ? "Admin View" : "User View"}</span>
-            </div>
           </div>
 
           <button onClick={createNewForm} className="create-form-button">
             Create New Form
           </button>
+          
+          {getUserRoleFromToken()?.toLowerCase() === "admin" && (
+            <button
+              className="create-form-button"
+              onClick={() => setShowStageModal(true)}
+            >
+              + Add Stage
+            </button>
+          )}
+
+
           <div className="tab-toggle">
             <button
               className={activeTab === "workflow" ? "active-tab" : ""}
@@ -604,6 +656,43 @@ const [loadingArchived, setLoadingArchived] = useState(false);
           </div>
         </div>
       )}
+
+      {showStageModal && (
+        <div className="modal">
+          <div className="modal-content">
+            <h3>Add New Workflow Stage</h3>
+      
+            <input
+              type="text"
+              placeholder="Stage Name"
+              value={newStageName}
+              onChange={(e) => setNewStageName(e.target.value)}
+            />
+
+            <select
+              value={newStageOrder}
+              onChange={(e) => setNewStageOrder(e.target.value)}
+            >
+              <option value="">Select Order</option>
+              {Array.from({ length: stages.length - 1 }, (_, i) => i + 2).map((order) => (
+                <option key={order} value={order}>
+                  Position {order}
+                </option>
+              ))}
+            </select>
+              
+            <div className="modal-buttons">
+              <button className="confirm-button" onClick={handleCreateStage}>
+                Create Stage
+              </button>
+              <button className="cancel-button" onClick={() => setShowStageModal(false)}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

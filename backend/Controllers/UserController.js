@@ -137,8 +137,17 @@ async function postUser(req, res) {
 async function loginUser(req, res) {
   const { email, password } = req.body;
   try {
-    // Find user by email using Sequelize
-    const user = await User.findOne({ where: { email } });
+    const user = await User.findOne({
+      where: { email },
+      include: [
+        {
+          model: Role,
+          as: "roles",
+          through: { attributes: [] },
+          attributes: ['name'],
+        },
+      ],
+    });
 
     if (!user) {
       return res.status(401).json({ message: "Invalid credentials" });
@@ -150,7 +159,17 @@ async function loginUser(req, res) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    const jwtToken = jwtGenerator(user);
+    const userRole = user.roles?.[0]?.name || "user";
+
+    const userWithRole = {
+      id: user.id,
+      organization_id: user.organization_id,
+      role: userRole,
+    };
+
+    const jwtToken = jwtGenerator(userWithRole);
+    console.log("User Roles:", user.roles?.map(r => r.name));
+
 
     console.log("User logged in");
     return res.status(200).json({
