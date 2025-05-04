@@ -2,6 +2,20 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
 import "./WorkflowBoardPage.css";
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  useSortable,
+  horizontalListSortingStrategy
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 const socket = io("https://localhost:3000", {
   transports: ["websocket", "polling"],
@@ -30,8 +44,37 @@ export const WorkflowBoard = () => {
   const [showStageModal, setShowStageModal] = useState(false);
   const [newStageName, setNewStageName] = useState("");
   const [newStageOrder, setNewStageOrder] = useState("");
+  
 
-
+  const SortableStage = ({ id, stage, draggable, children }) => {
+    const {
+      attributes,
+      listeners,
+      setNodeRef,
+      transform,
+      transition,
+    } = useSortable({ id });
+  
+    const style = {
+      transform: CSS.Transform.toString(transform),
+      transition,
+      opacity: draggable ? 1 : 0.5,
+      cursor: draggable ? "grab" : "not-allowed",
+    };
+  
+    return (
+      <div
+        ref={draggable ? setNodeRef : null}
+        {...(draggable ? listeners : {})}
+        {...(draggable ? attributes : {})}
+        className={`stage-card ${!draggable ? "locked-stage" : ""}`}
+        style={style}
+      >
+        <h3>{stage.stage_name}</h3>
+        {children}
+      </div>
+    );
+  };
 
 
   const fetchWorkflowData = async () => {
@@ -437,6 +480,10 @@ export const WorkflowBoard = () => {
       alert("Error suggesting approver");
     }
   };
+  console.log("Role (parsed):", getUserRoleFromToken()?.toLowerCase());
+
+  const sensors = useSensors(
+    useSensor(PointerSensor));
 
   return (
     <div className="workflow-board-container">
@@ -477,75 +524,88 @@ export const WorkflowBoard = () => {
             </button>
           </div>
           {activeTab === "workflow" && (
-          <div className="stages-container">
-            {stages.map((stage) => (
-              <div key={stage.id} className="stage-card">
-                <h3>{stage.stage_name}</h3>
-                <div className="form-instances-list">
-                  {Array.isArray(formInstances) &&
-                    formInstances
-                      .filter((form) => form.status === stage.stage_name)
-                      .filter((form) => isUserAssignedToForm(form)) // Only show forms assigned to current user
-                      .map((form) => (
-                        <div key={form.id} className="form-instance-card">
-                          <p>Form {form.id}</p>
-                          <p>Status: {form.status}</p>
-                          <button
-                            onClick={() => {
-                              const url = `https://localhost:3000/${form.pdf_file_path}`;
-                              window.open(url, "_blank");
-                            }}
-                            className="view-pdf-button"
-                          >
-                            View PDF
-                          </button>
-
-                          <>
-                          {form.status !== "Completed" && (
-                            <>
-                              <button
-                                onClick={() => handleApprove(form.id)}
-                                className="approve-button"
-                                disabled={loadingForms[form.id]}
-                              >
-                                {loadingForms[form.id] ? <span className="spinner"></span> : "Approve"}
-                              </button>
-                                                    
-                              <button
-                                onClick={() => openDenyModal(form.id)}
-                                className="deny-button"
-                                disabled={loadingForms[form.id]}
-                              >
-                                {loadingForms[form.id] ? <span className="spinner"></span> : "Deny"}
-                              </button>
-                            </>
-                          )}
-
-                              
-                            {["Initializing", "Admin Approval"].includes(form.status) && (
-                              <button
-                                onClick={() => {
-                                  setSelectedFormId(form.id);
-                                  setShowSuggestModal(true);
-                                }}
-                                className="suggest-button"
-                              >
-                                + Suggest Approver
-                              </button>
-                            )}
-
-                          </>
-                        </div>
-                      ))}
-                  {formInstances
-                    .filter((form) => form.status === stage.stage_name)
-                    .filter((form) => isUserAssignedToForm(form)).length === 0 && (
-                    <p>No forms in this stage.</p>
-                  )}
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={({ active, over }) => {
+                if (!over || active.id === over.id) return;
+                const oldIndex = stages.findIndex((s) => s.id.toString() === active.id);
+                const newIndex = stages.findIndex((s) => s.id.toString() === over.id);
+                setStages((stages) => arrayMove(stages, oldIndex, newIndex));
+              }}
+            >
+              <SortableContext
+                items={stages.map((s) => s.id.toString())}
+                strategy={horizontalListSortingStrategy}
+              >
+                <div className="stages-container">
+                  {stages.map((stage) => (
+                    <SortableStage key={stage.id}
+                    id={stage.id}
+                    stage={stage}
+                    draggable={
+                      getUserRoleFromToken()?.toLowerCase() === "admin" &&
+                      !["Initializing", "Completed"].includes(stage.stage_name)
+                    }>
+                      <div className="form-instances-list">
+                        {Array.isArray(formInstances) &&
+                          formInstances
+                            .filter((form) => form.status === stage.stage_name)
+                            .filter((form) => isUserAssignedToForm(form))
+                            .map((form) => (
+                              <div key={form.id} className="form-instance-card">
+                                <p>Form {form.id}</p>
+                                <p>Status: {form.status}</p>
+                                <button
+                                  onClick={() =>
+                                    window.open(`https://localhost:3000/${form.pdf_file_path}`, "_blank")
+                                  }
+                                  className="view-pdf-button"
+                                >
+                                  View PDF
+                                </button>
+                                {form.status !== "Completed" && (
+                                  <>
+                                    <button
+                                      onClick={() => handleApprove(form.id)}
+                                      className="approve-button"
+                                      disabled={loadingForms[form.id]}
+                                    >
+                                      {loadingForms[form.id] ? <span className="spinner"></span> : "Approve"}
+                                    </button>
+                                    <button
+                                      onClick={() => openDenyModal(form.id)}
+                                      className="deny-button"
+                                      disabled={loadingForms[form.id]}
+                                    >
+                                      {loadingForms[form.id] ? <span className="spinner"></span> : "Deny"}
+                                    </button>
+                                  </>
+                                )}
+                                {["Initializing", "Admin Approval"].includes(form.status) && (
+                                  <button
+                                    onClick={() => {
+                                      setSelectedFormId(form.id);
+                                      setShowSuggestModal(true);
+                                    }}
+                                    className="suggest-button"
+                                  >
+                                    + Suggest Approver
+                                  </button>
+                                )}
+                              </div>
+                            ))}
+                        {formInstances
+                          .filter((form) => form.status === stage.stage_name)
+                          .filter((form) => isUserAssignedToForm(form)).length === 0 && (
+                          <p>No forms in this stage.</p>
+                        )}
+                      </div>
+                    </SortableStage>
+                  ))}
                 </div>
-              </div>
-            ))}
-          </div>
+              </SortableContext>
+            </DndContext>
           )}
         </>
       )}
