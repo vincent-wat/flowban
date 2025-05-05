@@ -37,8 +37,35 @@ export const getUserFromToken = () => {
     }
 };
 
-/*
-export const isAuthenticated = () => {
-    return !!localStorage.getItem("token");
-};
-*/
+
+export const refreshTokenIfNeeded = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) return false;
+    
+    try {
+      const decoded = jwtDecode(token);
+      const currentTime = Date.now() / 1000;
+      
+      // If token is about to expire (less than 5 minutes left)
+      if (decoded.exp && decoded.exp - currentTime < 300) {
+        // Call refresh endpoint
+        const response = await fetch('https://localhost:3000/api/users/refresh-token', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          localStorage.setItem('token', data.jwtToken);
+          return true;
+        }
+      }
+      return true;
+    } catch (error) {
+      console.error("Error refreshing token:", error);
+      return false;
+    }
+  };

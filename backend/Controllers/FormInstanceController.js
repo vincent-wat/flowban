@@ -118,7 +118,7 @@ async function getAllFormInstancesofTemplate(req, res) {
           include: [
             {
               model: User,
-              as: "assignedUser", // <-- use the alias defined in your association
+              as: "assignedUser", 
               attributes: ["id", "first_name", "last_name"],
             },
           ],

@@ -5,6 +5,7 @@ function jwtGenerator(user) {
   const payload = {
     id: typeof user === "object" ? user.id : user,
     organization_id: user.organization_id || null,
+    role: user.role,
   };
 
   return jwt.sign(payload, process.env.jwtSecret, { expiresIn: "1hr" });

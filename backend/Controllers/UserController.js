@@ -2,6 +2,7 @@
 const bcrypt = require("bcrypt");
 const { User } = require("../models");
 const { Role } = require("../models");
+const { sequelize } = require("../models")
 const pool = require("../models/db");
 const queries = require("../models/queries");
 const { jwtGenerator, jwtGeneratorExpiry } = require("../utils/jwtGenerator");
@@ -83,6 +84,62 @@ async function getUserByResetToken(req, res) {
   }
 }
 
+async function getUserRoles(req, res) {
+  try {
+    const userId = req.user.id;
+    console.log('Getting roles for user ID:', userId);
+    
+    // Use the User model with the 'roles' association
+    const user = await User.findByPk(userId, {
+      include: [{
+        model: Role,
+        as: 'roles',
+        attributes: ['id', 'name', 'description']
+      }]
+    });
+    
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    // Format the roles for the response
+    const roles = user.roles.map(role => ({
+      id: role.id,
+      name: role.name,
+      description: role.description
+    }));
+    
+    console.log('Found roles:', roles);
+    return res.status(200).json({ roles });
+  } catch (error) {
+    console.error('Error in getUserRoles:', error);
+    return res.status(500).json({ error: 'Server error' });
+  }
+}
+
+async function refreshToken(req, res) {
+  try {
+    const userId = req.user.id;
+    
+    // Get the user from the database
+    const user = await User.findByPk(userId);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    
+    // Generate a new token with the user's current data
+    const jwtToken = jwtGenerator(user);
+    
+    return res.status(200).json({
+      message: "Token refreshed successfully",
+      jwtToken
+    });
+  } catch (error) {
+    console.error("Error refreshing token:", error);
+    return res.status(500).json({ error: "Server error" });
+  }
+}
+
 
 async function postUser(req, res) {
   console.log("Inserting a new user");
@@ -137,8 +194,17 @@ async function postUser(req, res) {
 async function loginUser(req, res) {
   const { email, password } = req.body;
   try {
-    // Find user by email using Sequelize
-    const user = await User.findOne({ where: { email } });
+    const user = await User.findOne({
+      where: { email },
+      include: [
+        {
+          model: Role,
+          as: "roles",
+          through: { attributes: [] },
+          attributes: ['name'],
+        },
+      ],
+    });
 
     if (!user) {
       return res.status(401).json({ message: "Invalid credentials" });
@@ -150,7 +216,17 @@ async function loginUser(req, res) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    const jwtToken = jwtGenerator(user);
+    const userRole = user.roles?.[0]?.name || "user";
+
+    const userWithRole = {
+      id: user.id,
+      organization_id: user.organization_id,
+      role: userRole,
+    };
+
+    const jwtToken = jwtGenerator(userWithRole);
+    console.log("User Roles:", user.roles?.map(r => r.name));
+
 
     console.log("User logged in");
     return res.status(200).json({
@@ -346,4 +422,6 @@ module.exports = {
   forgotPassword,
   resetPassword,
   assignRoleToUser,
+  getUserRoles,
+  refreshToken,
 };

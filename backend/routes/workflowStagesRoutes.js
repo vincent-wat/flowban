@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const workflowStagesController = require('../Controllers/workflowStagesController');
-router.post('/:',workflowStagesController.createWorkflowStage);
-router.put('/:id', workflowStagesController.updateWorkflowStage);
-router.get('/:id', workflowStagesController.getWorkflowStageById);
-router.get('/template/:templateId', workflowStagesController.getStagesByTemplateId);
-router.delete('/:id', workflowStagesController.deleteWorkflowStage);
+const authenticateToken = require('../middleware/authMiddleware');
+router.post('/',authenticateToken,workflowStagesController.createWorkflowStage);
+router.put('/:id',authenticateToken, workflowStagesController.updateWorkflowStage);
+router.get('/:id',authenticateToken, workflowStagesController.getWorkflowStageById);
+router.get('/template/:templateId',authenticateToken, workflowStagesController.getStagesByTemplateId);
+router.delete('/:id', authenticateToken, workflowStagesController.deleteWorkflowStage);
 module.exports = router;

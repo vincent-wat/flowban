@@ -1,47 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import "./SignUpPage.css";
-//import { FaUser } from "react-icons/fa";
 import { RiLockPasswordFill } from "react-icons/ri";
 import axios from "../../../axios";
 import useAuth from "../../../hooks/useAuth";
-import googleButton from "../../Assets/google_signin_buttons/web/1x/btn_google_signin_dark_pressed_web.png"
-
-function navigateToGoogleAuth(url) {
-  window.location.href = url;
-}
-
-async function auth() {
-  try {
-    const response = await fetch("https://localhost:3000/api/request", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      credentials: "include"
-    });
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-    
-    const data = await response.json();
-    console.log("Auth URL received:", data);
-    
-    // Store the state or any identifier in localStorage if needed for verification
-    localStorage.setItem("googleAuthPending", "true");
-    
-    navigateToGoogleAuth(data.url);
-  } catch (error) {
-    console.error("Error during auth request:", error);
-    alert("Failed to authenticate with Google. Please try again later.");
-  }
-}
-
+import googleButton from "../../Assets/google_signin_buttons/web/1x/btn_google_signin_dark_pressed_web.png";
 
 const SignUpPage = () => {
   useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -54,12 +22,60 @@ const SignUpPage = () => {
 
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
-
+  
+  // Password regex for validation
   const passwordRegex = /^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,}$/;
 
+  // Function to accept organization invitation
+  const acceptInvitation = async (inviteToken, authToken) => {
+    try {
+      console.log("Accepting invitation with token:", inviteToken);
+      setSubmitted(true);
+      
+      const response = await axios.post(
+        '/api/organizations/invite-accept',
+        { token: inviteToken },
+        { 
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
+          } 
+        }
+      );
+      
+      if (response.data && response.data.jwtToken) {
+        // Update the token with organization info
+        localStorage.setItem('token', response.data.jwtToken);
+        console.log('Organization invitation accepted, token updated');
+      }
+      
+      // Clear the pending invite token
+      sessionStorage.removeItem('pendingInviteToken');
+      sessionStorage.removeItem('googleAuthFromInvite');
+      
+      // Navigate to dashboard
+      navigate('/dashboard', { replace: true });
+    } catch (err) {
+      console.error('Error accepting invitation after signup:', err);
+      // Navigate to dashboard anyway
+      navigate('/dashboard', { replace: true });
+    }
+  };
+
+  // Handle Google authentication
   async function handleGoogleAuth() {
     try {
-      const response = await fetch("https://localhost:3000/api/request", {
+      // Check if there's a pending invite token
+      const pendingInviteToken = sessionStorage.getItem('pendingInviteToken');
+      
+      // If we're coming from an invite, mark it
+      if (pendingInviteToken) {
+        sessionStorage.setItem('googleAuthFromInvite', 'true');
+      }
+      
+      // Include redirect parameter if needed
+      const redirectParam = pendingInviteToken ? 'org-invite' : '';
+      const response = await fetch(`https://localhost:3000/api/request?redirect=${redirectParam}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -85,15 +101,26 @@ const SignUpPage = () => {
     }
   }
 
-  // Modified useEffect to handle Google auth redirect
+  // Handle token detection and organization invitations
   useEffect(() => {
-    console.log("useEffect running, checking for token");
-    console.log("Current URL:", window.location.href);
+    console.log("useEffect running, checking for token and email");
     
     const urlParams = new URLSearchParams(window.location.search);
     console.log("URL params:", Object.fromEntries(urlParams.entries()));
     
-    const token = urlParams.get("jwtToken"); // Match the parameter name from oAuthController
+    // Check for email from invitation link
+    const emailParam = urlParams.get("email");
+    if (emailParam) {
+      setFormData(prev => ({
+        ...prev,
+        email: emailParam
+      }));
+      console.log("Email from invitation set:", emailParam);
+    }
+    
+    // Check for JWT token from Google OAuth
+    const token = urlParams.get("jwtToken");
+    const redirectParam = urlParams.get("redirect");
     
     if (token) {
       console.log("Found JWT token in URL:", token);
@@ -105,16 +132,23 @@ const SignUpPage = () => {
       // Clear the googleAuthPending flag if it exists
       localStorage.removeItem("googleAuthPending");
       
-      // Use React Router's navigate for redirection
-      navigate("/dashboard", { replace: true });
-    } else {
-      console.log("No token found in URL");
+      // Check if there's a pending invitation and redirect param is 'org-invite'
+      const pendingInviteToken = sessionStorage.getItem('pendingInviteToken');
+      const fromInvite = sessionStorage.getItem('googleAuthFromInvite');
+      
+      if ((pendingInviteToken && redirectParam === 'org-invite') || 
+          (pendingInviteToken && fromInvite === 'true')) {
+        console.log("Detected pending invitation after Google auth");
+        // Accept the invitation after Google signup
+        acceptInvitation(pendingInviteToken, token);
+      } else {
+        // No invitation, proceed to dashboard
+        navigate("/dashboard", { replace: true });
+      }
     }
-  }, [navigate]);
+  }, [navigate, location.search]);
 
-  // base url for new users to be added
-  const USER_URL = "/api/users/register";
-
+  // Handle form input changes
   const handleChange = (e) => {
     const { name: fieldName, value } = e.target;
 
@@ -124,7 +158,6 @@ const SignUpPage = () => {
       [fieldName]: value,
     });
 
-    
     // Perform validation checks for passwords
     if (fieldName === "password" || fieldName === "confirmPassword") {
       if (fieldName === "password" && !passwordRegex.test(value)) {
@@ -143,13 +176,9 @@ const SignUpPage = () => {
         setError("");
       }
     }
-
-
-
   };
 
-
-
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -181,7 +210,7 @@ const SignUpPage = () => {
     }
   
     try {
-      const response = await axios.post(USER_URL, {
+      const response = await axios.post("/api/users/register", {
         email: formData.email,
         password: formData.password,
         phone_number: formData.phoneNumber,
@@ -190,11 +219,21 @@ const SignUpPage = () => {
         role_id: 1, 
       });
   
-      localStorage.setItem("token", response.data.jwtToken);
-      console.log("Request Submitted!");
+      const authToken = response.data.jwtToken;
+      localStorage.setItem("token", authToken);
+      console.log("Registration successful!");
       
       setSubmitted(true);
-      navigate("/dashboard");
+      
+      // Check if there's a pending invitation
+      const pendingInviteToken = sessionStorage.getItem('pendingInviteToken');
+      if (pendingInviteToken) {
+        console.log("Found pending invitation token, accepting invitation");
+        // Accept the invitation with the new auth token
+        acceptInvitation(pendingInviteToken, authToken);
+      } else {
+        navigate("/dashboard");
+      }
   
     } catch (e) {
       console.error("Error:", e.response?.data?.message || e.message);
@@ -202,7 +241,6 @@ const SignUpPage = () => {
     }
   };
   
-
   return (
     <div className="wrapper">
       <form onSubmit={handleSubmit}>
@@ -212,7 +250,6 @@ const SignUpPage = () => {
           <input
             type="text"
             name="firstName"
-            //autoComplete="off"
             placeholder="First Name"
             value={formData.firstName}
             onChange={handleChange}
@@ -223,7 +260,6 @@ const SignUpPage = () => {
           <input
             type="text"
             name="lastName"
-            //autoComplete="off"
             placeholder="Last Name"
             value={formData.lastName}
             onChange={handleChange}
@@ -274,26 +310,23 @@ const SignUpPage = () => {
           <RiLockPasswordFill className="icon" />
         </div>
         {error && <p style={{ color: "red" }}>{error}</p>}
-        {/* Should create some kind of way so sumbit button does not work without 
-          all fields written into or is valid*/}
         <button type="submit">Sign Up</button>
         {submitted && (
           <p style={{ color: "green" }}>Form submitted successfully!</p>
         )}
       </form>
-      <p>
-        Already registered? <br />
+      <p className="register-link">
+        Already registered?{" "}
         <span className="line">
-          {/* Need to add link to login page*/}
           <a href="/login" style={{ color: "white" }}>
-            Sign In
+            Login
           </a>
         </span>
       </p>
       <h3>
-      <button type="button" onClick={handleGoogleAuth}>
-        <img src={googleButton} alt="Sign in with Google" style={{ width: "200px", height: "50px" }} />
-      </button>
+        <button type="button" onClick={handleGoogleAuth}>
+          <img src={googleButton} alt="Sign in with Google" style={{ width: "200px", height: "50px" }} />
+        </button>
       </h3>
     </div>
   );

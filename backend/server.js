@@ -8,17 +8,18 @@ const columnRoutes = require("./routes/columnRoutes");
 const userBoardsRoutes = require("./routes/userBoardsRoutes");
 const formTemplateRoutes = require("./routes/formTemplateRoutes");
 const formInstanceRoutes = require("./routes/formInstancesRoutes");
-const userActionsLogs = require("./routes/userActionLogsRoutes");
-const workflowBoardRoutes = require("./routes/workflowBoardRoutes");
 const workflowStagesRoutes = require("./routes/workflowStagesRoutes");
 const formAssignmentsRoutes = require("./routes/formAssignmentRoutes");
 const authRoutes = require("./routes/oAuthRoutes");
 const requestRoutes = require("./routes/requestRoutes");
 const organizationRoutes = require("./routes/organizationRoutes");
+const archivedFormsRoutes = require("./routes/archivedFormsRoutes");
+const startArchiveJob = require("./cron/archiveScheduler");
 const pool = require("./models/db");
 const cors = require("cors");
 const path = require("path");
 const fs = require("fs");
+
 
 
 const https = require("https");
@@ -74,6 +75,8 @@ app.get("/", (req, res) => {
   res.send("Welcome to the Flowban API!");
 });
 
+startArchiveJob();
+
 // Kanban Routes
 app.use("/api/users", userRoutes);
 app.use("/api/boards", boardRoutes);
@@ -85,12 +88,11 @@ app.use("/api", userRoutes);
 //workflow routes
 app.use("/api/forms", formTemplateRoutes);
 app.use("/api/formInstance", formInstanceRoutes);
-app.use("/api/userActionsLogs", userActionsLogs);
-app.use("/api/workflowBoards", workflowBoardRoutes);
 app.use("/api/workflowStages", workflowStagesRoutes);
 app.use("/api/formAssignment", formAssignmentsRoutes);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api/organizations', organizationRoutes);
+app.use("/api/archivedForms", archivedFormsRoutes); 
 
 // OAuth Routes
 app.use("/api/oauth", authRoutes);

@@ -16,6 +16,7 @@ import ErrorPage from "./Components/General/ErrorPage";
 import WorkflowBoard from "./Components/Forms/WorkflowBoardPage";
 import ViewFormPage from "./Components/Forms/ViewFormPage";
 import ProtectedRoute from './Components/Auth/ProtectedRoutes';
+import OrganizationInvitePopup from './Components/Popups/OrganizationInvitePopup';
 
 function App() {
   const location = useLocation();
@@ -53,7 +54,7 @@ function App() {
             <Route path="/error" element={<ErrorPage />} />
             <Route path="/workflowBoard/:templateId" element={<WorkflowBoard />} />
             <Route path="/form/:templateId" element={<ViewFormPage />} />
-
+            <Route path="/org-invite" element={<OrganizationInvitePopup />} />
           </Routes>
         </Layout>
       )}

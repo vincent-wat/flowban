@@ -1,191 +1,213 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from 'react-router-dom';
 import './LoginPage.css';
-import { FaUser } from "react-icons/fa";
-import { RiLockPasswordFill } from "react-icons/ri";
-import axios from "../../../axios";
-import useAuth from "../../../hooks/useAuth";
-import googleButton from "../../Assets/google_signin_buttons/web/1x/btn_google_signin_dark_pressed_web.png"
-
-function navigateToGoogleAuth(url) {
-    window.location.href = url;
-}
-
-async function auth() {
-    try {
-      const response = await fetch("https://localhost:3000/api/request", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        credentials: "include"
-      });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      console.log("Auth URL received:", data);
-      
-      // Store the state or any identifier in localStorage if needed for verification
-      localStorage.setItem("googleAuthPending", "true");
-      
-      navigateToGoogleAuth(data.url);
-    } catch (error) {
-      console.error("Error during auth request:", error);
-      alert("Failed to authenticate with Google. Please try again later.");
-    }
-}
+import { FaUser, FaEye, FaEyeSlash } from 'react-icons/fa';
+import axios from '../../../axios';
+import useAuth from '../../../hooks/useAuth';
+import googleButton from '../../Assets/google_signin_buttons/web/1x/btn_google_signin_dark_pressed_web.png';
 
 const LoginPage = () => {
-    useAuth();
+  useAuth();
+  const [formData, setFormData] = useState({ email: '', password: '' });
+  const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
 
-    const [formData, setFormData] = useState({
-        email: "",
-        password: "",
-    });
+  // Toggle password visibility
+  const togglePasswordVisibility = () => {
+    setShowPassword(prev => !prev);
+  };
 
-    const [submitted, setSubmitted] = useState(false);
-    const [error, setError] = useState("");
-    const navigate = useNavigate();
-
-    async function handleGoogleAuth() {
-        try {
-          const response = await fetch("https://localhost:3000/api/request", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            credentials: "include"
-          });
-          
-          if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-          }
-          
-          const data = await response.json();
-          console.log("Auth URL received:", data);
-          
-          // Store the state or any identifier in localStorage if needed for verification
-          localStorage.setItem("googleAuthPending", "true");
-          
-          // Navigate to Google Auth
-          window.location.href = data.url;
-        } catch (error) {
-          console.error("Error during auth request:", error);
-          alert("Failed to authenticate with Google. Please try again later.");
-        }
-      }
-
-      // Modified useEffect to handle Google auth redirect
-    useEffect(() => {
-        console.log("useEffect running, checking for token");
-        console.log("Current URL:", window.location.href);
-        
-        const urlParams = new URLSearchParams(window.location.search);
-        console.log("URL params:", Object.fromEntries(urlParams.entries()));
-        
-        const token = urlParams.get("jwtToken"); // Match the parameter name from oAuthController
-        
-        if (token) {
-        console.log("Found JWT token in URL:", token);
-        
-        // Store the token in localStorage
-        localStorage.setItem("token", token);
-        console.log("Token stored in localStorage");
-        
-        // Clear the googleAuthPending flag if it exists
-        localStorage.removeItem("googleAuthPending");
-        
-        // Use React Router's navigate for redirection
-        navigate("/dashboard", { replace: true });
-        } else {
-        console.log("No token found in URL");
-        }
-    }, [navigate]);
+  // Handle redirect back from Google OAuth
+  useEffect(() => {
+    // Check for Google OAuth token in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('jwtToken');
+    
+    // Check for email parameter which may come from org invite link
+    const emailParam = urlParams.get('email');
+    if (emailParam) {
+      setFormData(prev => ({ ...prev, email: emailParam }));
+    }
+    
+    // Check for redirect parameter which indicates where the user came from
+    const redirectParam = urlParams.get('redirect');
+    
+    if (token) {
+      // Handle Google OAuth redirect
+      localStorage.setItem('token', token);
+      localStorage.removeItem('googleAuthPending');
       
+      // Check if we need to handle an org invite after Google login
+      const pendingInviteToken = sessionStorage.getItem('pendingInviteToken');
+      const fromInvite = sessionStorage.getItem('googleAuthFromInvite');
+      
+      if ((pendingInviteToken && redirectParam === 'org-invite') || 
+          (pendingInviteToken && fromInvite === 'true')) {
+        // Accept the invitation using the new token
+        acceptInvitation(pendingInviteToken, token);
+        // Clean up session storage
+        sessionStorage.removeItem('googleAuthFromInvite');
+      } else {
+        navigate('/dashboard', { replace: true });
+      }
+    }
+  }, [navigate]);
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-
-        // Update the form data state
-        setFormData({
-            ...formData,
-            [name]: value,
-        });
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setError(""); // Clear any previous error message
-        setSubmitted(false); // Reset submission state
-
-        try {
-            const response = await axios.post("/api/users/login", {
-                email: formData.email,
-                password: formData.password,
-            });
-            // Successful login
-            console.log(response.data);
-            localStorage.setItem("token", response.data.jwtToken);
-            setSubmitted(true); // Set submitted state to true only on successful login
-            navigate("/dashboard");
-        } catch (e) {
-            // Handle login failure
-            console.error(e.message);
-            setError("Invalid credentials. Please try again.");
+  const acceptInvitation = async (inviteToken, authToken) => {
+    try {
+      setSubmitted(true); // Show loading state
+      
+      const response = await axios.post(
+        '/api/organizations/invite-accept',
+        { token: inviteToken },
+        { 
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
+          } 
         }
-    };
+      );
+      
+      if (response.data && response.data.jwtToken) {
+        // Update the token with organization info
+        localStorage.setItem('token', response.data.jwtToken);
+        console.log('Organization invitation accepted, token updated');
+      }
+      
+      // Clear the pending invite token
+      sessionStorage.removeItem('pendingInviteToken');
+      
+      // Navigate to dashboard
+      navigate('/dashboard', { replace: true });
+    } catch (err) {
+      console.error('Error accepting invitation after login:', err);
+      setError('Failed to accept organization invitation. Please try again.');
+      setSubmitted(false);
+      navigate('/dashboard', { replace: true });
+    }
+  };
 
-    return (
-        <div className='wrapper'>
-            <form onSubmit={handleSubmit}>
-                <h1>Login</h1>
-                <div className="input-box">
-                    <input
-                        type="email"
-                        name="email"
-                        placeholder='Email'
-                        value={formData.email}
-                        onChange={handleChange}
-                        required
-                    />
-                    <FaUser className='icon' />
-                </div>
-                <div className="input-box">
-                    <input
-                        type="password"
-                        name="password"
-                        placeholder='Password'
-                        value={formData.password}
-                        onChange={handleChange}
-                        required
-                    />
-                    <RiLockPasswordFill className='icon' />
-                </div>
-                <div className="remember-forgot">
-                    <label><input type='checkbox' />Remember Me</label>
-                    <a href="/forgot-password">Forgot Password?</a>
-                </div>
-                <button type='submit'>Login</button>
-                {submitted && (
-                    <p style={{ color: "white" }}>Login successful! Redirecting...</p>
-                )}
-                {error && (
-                    <p style={{ color: "white", marginTop: "10px", marginBottom: "10px" }}>
-                        {error}
-                    </p>
-                )}
-                <button type="button" onClick={handleGoogleAuth}>
-                    <img src={googleButton} alt="Sign in with Google" style={{ width: "200px", height: "50px" }} />
-                </button>
-                <div className="register">
-                    <p>Don't have an account? <a href="/signup">Register</a></p>
-                </div>
-            </form>
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setSubmitted(false);
+    try {
+      const response = await axios.post('/api/users/login', {
+        email: formData.email,
+        password: formData.password,
+      });
+      
+      const authToken = response.data.jwtToken;
+      localStorage.setItem('token', authToken);
+      setSubmitted(true);
+      
+      // Check if there's a pending invitation
+      const pendingInviteToken = sessionStorage.getItem('pendingInviteToken');
+      if (pendingInviteToken) {
+        // Accept the invitation
+        acceptInvitation(pendingInviteToken, authToken);
+      } else {
+        navigate('/dashboard');
+      }
+    } catch (err) {
+      console.error(err);
+      setError('Invalid credentials. Please try again.');
+    }
+  };
+
+const handleGoogleAuth = async () => {
+  try {
+    // Get the invite token from session storage
+    const pendingInviteToken = sessionStorage.getItem('pendingInviteToken');
+    
+    // Store a flag indicating we're coming from an org invite
+    if (pendingInviteToken) {
+      sessionStorage.setItem('googleAuthFromInvite', 'true');
+    }
+    
+    // Make the request with the redirect parameter if we have a pending invite
+    const redirectParam = pendingInviteToken ? 'org-invite' : '';
+    const response = await fetch(`https://localhost:3000/api/request?redirect=${redirectParam}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+    });
+    
+    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+    
+    const data = await response.json();
+    localStorage.setItem('googleAuthPending', 'true');
+    window.location.href = data.url;
+  } catch (err) {
+    console.error(err);
+    alert('Failed to authenticate with Google. Please try again later.');
+  }
+};
+
+  return (
+    <div className="wrapper">
+      <form onSubmit={handleSubmit}>
+        <h1>Login</h1>
+        <div className="input-box">
+          <input
+            type="email"
+            name="email"
+            placeholder="Email"
+            value={formData.email}
+            onChange={handleChange}
+            required
+          />
+          <FaUser className="icon" />
         </div>
-    );
+        <div className="input-box">
+          <input
+            type={showPassword ? 'text' : 'password'}
+            name="password"
+            placeholder="Password"
+            value={formData.password}
+            onChange={handleChange}
+            required
+          />
+          <div className="icon toggle-password" onClick={togglePasswordVisibility}>
+            {showPassword ? <FaEyeSlash /> : <FaEye />}
+          </div>
+        </div>
+        <div className="remember-forgot">
+          <label>
+            <input type="checkbox" /> Remember Me
+          </label>
+          <a href="/forgot-password">Forgot Password?</a>
+        </div>
+        <button type="submit">Login</button>
+        {submitted && <p className="success-msg">Login successful! Redirecting...</p>}
+        {error && <p className="error-msg">{error}</p>}
+        <button
+          type="button"
+          onClick={handleGoogleAuth}
+          className="google-btn"
+        >
+          <img
+            src={googleButton}
+            alt="Sign in with Google"
+            className="google-img"
+          />
+        </button>
+        <div className="register">
+          <p>
+            Don't have an account? <a href="/signup">Register</a>
+          </p>
+        </div>
+      </form>
+    </div>
+  );
 };
 
 export default LoginPage;
