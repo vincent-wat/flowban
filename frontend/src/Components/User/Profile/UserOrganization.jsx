@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../Profile/Sidebar'; 
 import './UserOrganization.css';
-import axios from 'axios';
+import axios from '../../../axios';
 import { jwtDecode } from 'jwt-decode';
 
 function UserOrganization() {
@@ -12,6 +12,8 @@ function UserOrganization() {
   const [error, setError] = useState(null);
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteStatus, setInviteStatus] = useState(null);
+
+  
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
