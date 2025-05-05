@@ -1,5 +1,8 @@
 .kanban {
-  padding: 50px;
-  border-style: solid;
-  border-color: yellow;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 20px;
+  box-sizing: border-box;
 }

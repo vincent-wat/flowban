@@ -4,10 +4,11 @@
   border-radius: 10px;
   border-width: 1px;
   padding: 10px;
-  min-height: 300px;
+
   display: flex;
   flex-direction: column;
-  min-height: 300px;
+  min-height: 500px;
+  min-width: 400px;
   box-sizing: border-box;
   background-color: rgba(215, 195, 195, 0.1);
 }
