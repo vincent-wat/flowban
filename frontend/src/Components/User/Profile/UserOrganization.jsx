@@ -3,6 +3,7 @@ import Sidebar from '../Profile/Sidebar';
 import './UserOrganization.css';
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
+import { isUserAdmin } from '../../../utils/authHelpers';
 
 function UserOrganization() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -12,8 +13,8 @@ function UserOrganization() {
   const [error, setError] = useState(null);
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteStatus, setInviteStatus] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
-  // Keep the refreshToken function but make it more robust
   const refreshToken = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -39,22 +40,54 @@ function UserOrganization() {
     }
   };
 
+  const checkAdminStatus = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+  
+      // Direct API call to get roles
+      const response = await axios.get('https://localhost:3000/api/users/roles', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+  
+      console.log('Roles response:', response.data);
+      
+      // Check if user has admin role (id=2)
+      if (response.data && response.data.roles) {
+        const hasAdminRole = response.data.roles.some(role => 
+          role.id === 2 || role.name.toLowerCase() === 'admin'
+        );
+        setIsAdmin(hasAdminRole);
+        console.log('User is admin:', hasAdminRole);
+      } else {
+        setIsAdmin(false);
+      }
+    } catch (error) {
+      console.error('Error checking admin status:', error);
+      setIsAdmin(false);
+    }
+  };
+
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
+  
 
-  useEffect(() => {
-    const initializeData = async () => {
-      await refreshToken();
-      
-      await Promise.all([
-        fetchOrganizationUsers(),
-        fetchUserOrganizationInfo()
-      ]);
-    };
+useEffect(() => {
+  const initializeData = async () => {
+    await refreshToken();
+    await checkAdminStatus(); 
     
-    initializeData();
-  }, []);
+    await Promise.all([
+      fetchOrganizationUsers(),
+      fetchUserOrganizationInfo()
+    ]);
+  };
+  
+  initializeData();
+}, []);
 
 
   const fetchOrganizationUsers = async () => {
@@ -155,25 +188,27 @@ function UserOrganization() {
         <h1>Organization: {orgName || 'Not Available'}</h1>
         
         {/* Invite Users Section */}
-        <div className="invite-section">
-          <h2>Invite New Members</h2>
-          <form onSubmit={handleInviteUser} className="invite-form">
-            <input
-              type="email"
-              value={inviteEmail}
-              onChange={(e) => setInviteEmail(e.target.value)}
-              placeholder="Enter email address"
-              required
-            />
-            <button type="submit">Send Invite</button>
-          </form>
-          
-          {inviteStatus && (
-            <div className={`invite-status ${inviteStatus.success ? 'success' : 'error'}`}>
-              {inviteStatus.message}
-            </div>
-          )}
-        </div>
+        {isAdmin && (
+          <div className="invite-section">
+            <h2>Invite New Members</h2>
+            <form onSubmit={handleInviteUser} className="invite-form">
+              <input
+                type="email"
+                value={inviteEmail}
+                onChange={(e) => setInviteEmail(e.target.value)}
+                placeholder="Enter email address"
+                required
+              />
+              <button type="submit">Send Invite</button>
+            </form>
+            
+            {inviteStatus && (
+              <div className={`invite-status ${inviteStatus.success ? 'success' : 'error'}`}>
+                {inviteStatus.message}
+              </div>
+            )}
+          </div>
+        )}
         
         {/* Organization Members Section */}
         <div className="members-section">

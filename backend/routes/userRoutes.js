@@ -44,7 +44,8 @@ router.put("/me", authenticateToken, validateUpdateUser, controller.updateUserPr
 //get user information
 router.get('/me', authenticateToken, controller.getCurrentUserProfile);
 
-router.get('/roles/:id', authenticateToken, controller.getCurrentUserProfile);
+router.get('/roles', authenticateToken, controller.getUserRoles);
+router.post('/refresh-token', authenticateToken, controller.refreshToken);
 
 //Validate email domain
 router.get('/validate-domain', async (req, res) => {

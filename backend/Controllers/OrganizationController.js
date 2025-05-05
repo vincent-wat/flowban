@@ -33,10 +33,12 @@ const createOrganization = async (req, res) => {
 const inviteUserToOrganization = async (req, res) => {
   try {
     const { email } = req.body;
+    const userID = req.user.id;
     const orgID = req.user.organization_id;
     if(!orgID) {
         return res.status(401).json({ error: "Unauthorized: Organization ID not found" });
     }
+  
     const token = jwtOrganizationGenerator(email, { organization_id: orgID });
     
     await sendOrganizationInviteEmail(email, token);
