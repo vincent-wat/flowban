@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import './LoginPage.css';
 import { FaUser, FaEye, FaEyeSlash } from 'react-icons/fa';
 import axios from '../../../axios';
@@ -13,6 +13,7 @@ const LoginPage = () => {
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Toggle password visibility
   const togglePasswordVisibility = () => {
@@ -21,14 +22,73 @@ const LoginPage = () => {
 
   // Handle redirect back from Google OAuth
   useEffect(() => {
+    // Check for Google OAuth token in URL
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('jwtToken');
+    
+    // Check for email parameter which may come from org invite link
+    const emailParam = urlParams.get('email');
+    if (emailParam) {
+      setFormData(prev => ({ ...prev, email: emailParam }));
+    }
+    
+    // Check for redirect parameter which indicates where the user came from
+    const redirectParam = urlParams.get('redirect');
+    
     if (token) {
+      // Handle Google OAuth redirect
       localStorage.setItem('token', token);
       localStorage.removeItem('googleAuthPending');
-      navigate('/dashboard', { replace: true });
+      
+      // Check if we need to handle an org invite after Google login
+      const pendingInviteToken = sessionStorage.getItem('pendingInviteToken');
+      const fromInvite = sessionStorage.getItem('googleAuthFromInvite');
+      
+      if ((pendingInviteToken && redirectParam === 'org-invite') || 
+          (pendingInviteToken && fromInvite === 'true')) {
+        // Accept the invitation using the new token
+        acceptInvitation(pendingInviteToken, token);
+        // Clean up session storage
+        sessionStorage.removeItem('googleAuthFromInvite');
+      } else {
+        navigate('/dashboard', { replace: true });
+      }
     }
   }, [navigate]);
+
+  const acceptInvitation = async (inviteToken, authToken) => {
+    try {
+      setSubmitted(true); // Show loading state
+      
+      const response = await axios.post(
+        '/api/organizations/invite-accept',
+        { token: inviteToken },
+        { 
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
+          } 
+        }
+      );
+      
+      if (response.data && response.data.jwtToken) {
+        // Update the token with organization info
+        localStorage.setItem('token', response.data.jwtToken);
+        console.log('Organization invitation accepted, token updated');
+      }
+      
+      // Clear the pending invite token
+      sessionStorage.removeItem('pendingInviteToken');
+      
+      // Navigate to dashboard
+      navigate('/dashboard', { replace: true });
+    } catch (err) {
+      console.error('Error accepting invitation after login:', err);
+      setError('Failed to accept organization invitation. Please try again.');
+      setSubmitted(false);
+      navigate('/dashboard', { replace: true });
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -44,31 +104,53 @@ const LoginPage = () => {
         email: formData.email,
         password: formData.password,
       });
-      localStorage.setItem('token', response.data.jwtToken);
+      
+      const authToken = response.data.jwtToken;
+      localStorage.setItem('token', authToken);
       setSubmitted(true);
-      navigate('/dashboard');
+      
+      // Check if there's a pending invitation
+      const pendingInviteToken = sessionStorage.getItem('pendingInviteToken');
+      if (pendingInviteToken) {
+        // Accept the invitation
+        acceptInvitation(pendingInviteToken, authToken);
+      } else {
+        navigate('/dashboard');
+      }
     } catch (err) {
       console.error(err);
       setError('Invalid credentials. Please try again.');
     }
   };
 
-  const handleGoogleAuth = async () => {
-    try {
-      const response = await fetch('https://localhost:3000/api/request', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-      });
-      if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-      const data = await response.json();
-      localStorage.setItem('googleAuthPending', 'true');
-      window.location.href = data.url;
-    } catch (err) {
-      console.error(err);
-      alert('Failed to authenticate with Google. Please try again later.');
+const handleGoogleAuth = async () => {
+  try {
+    // Get the invite token from session storage
+    const pendingInviteToken = sessionStorage.getItem('pendingInviteToken');
+    
+    // Store a flag indicating we're coming from an org invite
+    if (pendingInviteToken) {
+      sessionStorage.setItem('googleAuthFromInvite', 'true');
     }
-  };
+    
+    // Make the request with the redirect parameter if we have a pending invite
+    const redirectParam = pendingInviteToken ? 'org-invite' : '';
+    const response = await fetch(`https://localhost:3000/api/request?redirect=${redirectParam}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+    });
+    
+    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+    
+    const data = await response.json();
+    localStorage.setItem('googleAuthPending', 'true');
+    window.location.href = data.url;
+  } catch (err) {
+    console.error(err);
+    alert('Failed to authenticate with Google. Please try again later.');
+  }
+};
 
   return (
     <div className="wrapper">

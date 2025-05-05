@@ -2,6 +2,7 @@
 const bcrypt = require("bcrypt");
 const { User } = require("../models");
 const { Role } = require("../models");
+const { sequelize } = require("../models")
 const pool = require("../models/db");
 const queries = require("../models/queries");
 const { jwtGenerator, jwtGeneratorExpiry } = require("../utils/jwtGenerator");
@@ -80,6 +81,62 @@ async function getUserByResetToken(req, res) {
   } catch (err) {
     console.error(err.message);
     res.status(500).json({ error: "Server error" });
+  }
+}
+
+async function getUserRoles(req, res) {
+  try {
+    const userId = req.user.id;
+    console.log('Getting roles for user ID:', userId);
+    
+    // Use the User model with the 'roles' association
+    const user = await User.findByPk(userId, {
+      include: [{
+        model: Role,
+        as: 'roles',
+        attributes: ['id', 'name', 'description']
+      }]
+    });
+    
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    // Format the roles for the response
+    const roles = user.roles.map(role => ({
+      id: role.id,
+      name: role.name,
+      description: role.description
+    }));
+    
+    console.log('Found roles:', roles);
+    return res.status(200).json({ roles });
+  } catch (error) {
+    console.error('Error in getUserRoles:', error);
+    return res.status(500).json({ error: 'Server error' });
+  }
+}
+
+async function refreshToken(req, res) {
+  try {
+    const userId = req.user.id;
+    
+    // Get the user from the database
+    const user = await User.findByPk(userId);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    
+    // Generate a new token with the user's current data
+    const jwtToken = jwtGenerator(user);
+    
+    return res.status(200).json({
+      message: "Token refreshed successfully",
+      jwtToken
+    });
+  } catch (error) {
+    console.error("Error refreshing token:", error);
+    return res.status(500).json({ error: "Server error" });
   }
 }
 
@@ -365,4 +422,6 @@ module.exports = {
   forgotPassword,
   resetPassword,
   assignRoleToUser,
+  getUserRoles,
+  refreshToken,
 };
