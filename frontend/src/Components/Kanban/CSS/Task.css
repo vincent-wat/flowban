@@ -54,6 +54,8 @@
 }
 .actions {
   display: flex;
+  flex-direction: column;
+  justify-content: center;
   padding: 10px;
 }
 .delete-task {
@@ -72,6 +74,9 @@
   border-radius: 5px;
 }
 .edit-task:hover {
+  cursor: pointer;
+}
+.assign-task:hover {
   cursor: pointer;
 }
 .task-textarea {

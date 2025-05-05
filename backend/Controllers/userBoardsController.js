@@ -90,7 +90,7 @@ async function updatePermissions(req, res) {
 async function deleteUserBoard(req, res) {
   try {
     const { user_id, board_id } = req.params;
-    const userBoard = await UserBoard.findOne({
+    const userBoard = await UserBoard.destroy({
       where: { user_id, board_id },
     });
 

@@ -6,6 +6,7 @@ const boardRoutes = require("./routes/boardRoutes");
 const taskRoutes = require("./routes/taskRoutes");
 const columnRoutes = require("./routes/columnRoutes");
 const userBoardsRoutes = require("./routes/userBoardsRoutes");
+const userTasksRoutes = require("./routes/userTasksRoutes");
 const formTemplateRoutes = require("./routes/formTemplateRoutes");
 const formInstanceRoutes = require("./routes/formInstancesRoutes");
 const workflowStagesRoutes = require("./routes/workflowStagesRoutes");
@@ -20,10 +21,9 @@ const cors = require("cors");
 const path = require("path");
 const fs = require("fs");
 
-
-
 const https = require("https");
 const { Server } = require("socket.io");
+const user = require("./models/user");
 
 const options = {
   key: fs.readFileSync("./certs/localhost.key"),
@@ -83,6 +83,7 @@ app.use("/api/boards", boardRoutes);
 app.use("/api/columns", columnRoutes);
 app.use("/api/tasks", taskRoutes);
 app.use("/api/userBoards", userBoardsRoutes);
+app.use("/api/userTasks", userTasksRoutes);
 app.use("/api", userRoutes);
 
 //workflow routes
@@ -90,9 +91,9 @@ app.use("/api/forms", formTemplateRoutes);
 app.use("/api/formInstance", formInstanceRoutes);
 app.use("/api/workflowStages", workflowStagesRoutes);
 app.use("/api/formAssignment", formAssignmentsRoutes);
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-app.use('/api/organizations', organizationRoutes);
-app.use("/api/archivedForms", archivedFormsRoutes); 
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use("/api/organizations", organizationRoutes);
+app.use("/api/archivedForms", archivedFormsRoutes);
 
 // OAuth Routes
 app.use("/api/oauth", authRoutes);

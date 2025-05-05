@@ -32,6 +32,8 @@ export default function Board({ board_id, user_id, user_role }) {
   const [isAddColumnOpen, setIsAddColumnOpen] = useState(false);
   const [isShareKanbanOpen, setIsKanbanOpen] = useState(false);
   const [invitePrivilege, setInvitePrivilege] = useState("");
+  const [organizationUsers, setOrganizationUsers] = useState([]);
+  const [filteredUsers, setFilteredUsers] = useState([]);
 
   const [inviteEmail, setEmail] = useState("");
   const [inviteRole, setRole] = useState("");
@@ -41,6 +43,7 @@ export default function Board({ board_id, user_id, user_role }) {
   const TASK_URL = "/api/tasks";
   const BOARD_URL = "/api/boards";
   const USER_BOARD_URL = "api/userBoards";
+  const USER_TASK_URL = "/api/userTasks";
 
   function checkUserRole() {
     if (user_role === "owner" || user_role === "editor") {
@@ -290,13 +293,66 @@ export default function Board({ board_id, user_id, user_role }) {
       console.log("Error inviting user:", error);
     }
   };
-  const handleDeleteKanban = () => {
-    //
+  // get all users in the organization so we can send invites and also
+  // assign tasks to users.
+  const fetchUsersInOrganization = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      console.log("Token: ", token);
+      if (!token) {
+        throw new error("No authentication token found");
+      }
+
+      const response = await axios.get("/api/organizations/users", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.data && response.data.users) {
+        setOrganizationUsers(response.data.users);
+      }
+      console.log("Users in organization:", response.data);
+    } catch (error) {
+      console.error("Error fetching users in organization:", error);
+    }
+  };
+
+  // function to handle autocomplete for the email.
+  const handleEmailChange = (e) => {
+    const input = e.target.value;
+    setEmail(input);
+    if (input.length > 0) {
+      const filteredUsers = organizationUsers.filter((user) =>
+        user.email.toLowerCase().includes(input.toLowerCase())
+      );
+      setFilteredUsers(filteredUsers);
+    } else {
+      setFilteredUsers([]);
+    }
+  };
+
+  // function to assign a task to a user
+  const assignTaskToUser = async (task_id, user_id) => {
+    if (!checkUserRole()) {
+      return;
+    }
+    // const newUserTask = {
+    //   user_id:
+    //   task_id:
+    // }
+    try {
+      await axios.post(USER_TASK_URL);
+      setUpdateBoard(true);
+    } catch (error) {
+      console.error("Error assigning task to user:", error);
+    }
   };
 
   // initial fetch of all data
   useEffect(() => {
     fetchAllData();
+    fetchUsersInOrganization();
   }, []);
 
   // useEffect for changes in columns and tasks with socket.io
@@ -374,6 +430,7 @@ export default function Board({ board_id, user_id, user_role }) {
                 editColumn={editColumn}
                 deleteTask={deleteTask}
                 editTask={editTask}
+                fetchUsersInOrganization={fetchUsersInOrganization}
                 color={columnColors[column.id % columnColors.length]}
               />
             );
@@ -411,9 +468,25 @@ export default function Board({ board_id, user_id, user_role }) {
             <input
               type="text"
               value={inviteEmail}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="email"
+              onChange={handleEmailChange}
+              placeholder="Enter Email"
             ></input>
+            {/* Display autocomplete suggestions */}
+            {filteredUsers.length > 0 && (
+              <ul className="autocomplete-list">
+                {filteredUsers.map((user) => (
+                  <li
+                    key={user.id}
+                    onClick={() => {
+                      setEmail(user.email); // Set the selected email
+                      setFilteredUsers([]); // Clear suggestions
+                    }}
+                  >
+                    {user.email}
+                  </li>
+                ))}
+              </ul>
+            )}
 
             <button onClick={handleShareKanban}>Send Invite</button>
           </div>

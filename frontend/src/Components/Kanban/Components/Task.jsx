@@ -4,9 +4,20 @@ import "../CSS/Task.css";
 import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import Modal from "./Modal";
-import { FaDotCircle, FaEdit, FaTrash, FaGripLines } from "react-icons/fa";
+import {
+  FaDotCircle,
+  FaEdit,
+  FaTrash,
+  FaGripLines,
+  FaUser,
+} from "react-icons/fa";
 
-export const Task = ({ task, editTask, deleteTask }) => {
+export const Task = ({
+  task,
+  editTask,
+  deleteTask,
+  fetchUsersInOrganization,
+}) => {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id: task.id,
   });
@@ -19,6 +30,8 @@ export const Task = ({ task, editTask, deleteTask }) => {
   const [newTitle, setNewTitle] = useState(task.title);
   const [newDescription, setNewDescription] = useState(task.description);
   const [newColumn, setNewColumn] = useState(task.column_id);
+
+  const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
 
   const handleEditTask = () => {
     editTask(task.id, newTitle, newDescription);
@@ -47,7 +60,7 @@ export const Task = ({ task, editTask, deleteTask }) => {
             setIsEditModalOpen(true);
           }}
         >
-          <FaEdit size="20">Edit</FaEdit>
+          <FaEdit size="15">Edit</FaEdit>
         </button>
         <button
           className="delete-task"
@@ -57,7 +70,17 @@ export const Task = ({ task, editTask, deleteTask }) => {
             deleteTask(task.id);
           }}
         >
-          <FaTrash size="20">Delete</FaTrash>
+          <FaTrash size="15">Delete</FaTrash>
+        </button>
+        <button
+          className="assign-task"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setIsAssignModalOpen(true);
+          }}
+        >
+          <FaUser size="15">Assign</FaUser>
         </button>
       </footer>
 
@@ -80,6 +103,16 @@ export const Task = ({ task, editTask, deleteTask }) => {
           placeholder="Task Description "
         />
         <button onClick={handleEditTask}>Save</button>
+      </Modal>
+
+      {/*modal for assign task to user*/}
+      <Modal
+        className="task-modal"
+        isOpen={isAssignModalOpen}
+        onClose={() => setIsAssignModalOpen(false)}
+      >
+        <input type="text" placeholder="Enter Email"></input>
+        <button>Assign</button>
       </Modal>
     </div>
   );
