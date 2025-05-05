@@ -53,18 +53,19 @@ export const WorkflowBoard = () => {
       setNodeRef,
       transform,
       transition,
-    } = useSortable({ id });
+      isDragging,
+    } = useSortable({ id: id.toString() }); 
   
     const style = {
       transform: CSS.Transform.toString(transform),
       transition,
-      opacity: draggable ? 1 : 0.5,
+      opacity: isDragging ? 0.5 : 1,
       cursor: draggable ? "grab" : "not-allowed",
     };
   
     return (
       <div
-        ref={draggable ? setNodeRef : null}
+        ref={setNodeRef} 
         {...(draggable ? listeners : {})}
         {...(draggable ? attributes : {})}
         className={`stage-card ${!draggable ? "locked-stage" : ""}`}
@@ -75,6 +76,7 @@ export const WorkflowBoard = () => {
       </div>
     );
   };
+  
 
 
   const fetchWorkflowData = async () => {
