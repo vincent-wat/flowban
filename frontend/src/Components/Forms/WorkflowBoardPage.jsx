@@ -377,6 +377,35 @@ export const WorkflowBoard = () => {
     }
   };
 
+  const handleDelete = async (formId) => {
+    const confirm = window.confirm("Are you sure you want to delete this form?");
+    if (!confirm) return;
+  
+    setLoadingForms((prev) => ({ ...prev, [formId]: true }));
+  
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`https://localhost:3000/api/formInstance/instances/${formId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+  
+      if (!res.ok) {
+        throw new Error("Failed to delete form");
+      }
+  
+      await fetchFormInstances();
+    } catch (err) {
+      console.error(err);
+      alert("Error deleting form");
+    } finally {
+      setLoadingForms((prev) => ({ ...prev, [formId]: false }));
+    }
+  };
+  
+
   const openDenyModal = (formId) => {
     setSelectedFormId(formId);
     setDenialReason("");
@@ -534,10 +563,31 @@ export const WorkflowBoard = () => {
               collisionDetection={closestCenter}
               onDragEnd={({ active, over }) => {
                 if (!over || active.id === over.id) return;
+              
                 const oldIndex = stages.findIndex((s) => s.id.toString() === active.id);
                 const newIndex = stages.findIndex((s) => s.id.toString() === over.id);
-                setStages((stages) => arrayMove(stages, oldIndex, newIndex));
+              
+                const reordered = arrayMove(stages, oldIndex, newIndex);
+                setStages(reordered);
+
+                const token = localStorage.getItem("token");
+                fetch("https://localhost:3000/api/workflowStages/reorder", {
+                  method: "PUT",
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                  },
+                  body: JSON.stringify({
+                    stages: reordered.map((stage, index) => ({
+                      id: stage.id,
+                      stage_order: index + 1, 
+                    })),
+                  }),
+                }).catch((err) => {
+                  console.error("Failed to update stage order:", err);
+                });
               }}
+              
             >
               <SortableContext
                 items={stages.map((s) => s.id.toString())}
@@ -559,8 +609,11 @@ export const WorkflowBoard = () => {
                             .filter((form) => isUserAssignedToForm(form))
                             .map((form) => (
                               <div key={form.id} className="form-instance-card">
-                                <p>Form {form.id}</p>
-                                <p>Status: {form.status}</p>
+                                <p>
+                                  Submitted by:{" "}
+                                  {form.submitter?.first_name} {form.submitter?.last_name || "Unknown"}
+                                </p>
+
                                 <button
                                   onClick={() =>
                                     window.open(`https://localhost:3000/${form.pdf_file_path}`, "_blank")
@@ -569,6 +622,7 @@ export const WorkflowBoard = () => {
                                 >
                                   View PDF
                                 </button>
+
                                 {form.status !== "Completed" && (
                                   <>
                                     <button
@@ -578,15 +632,27 @@ export const WorkflowBoard = () => {
                                     >
                                       {loadingForms[form.id] ? <span className="spinner"></span> : "Approve"}
                                     </button>
-                                    <button
-                                      onClick={() => openDenyModal(form.id)}
-                                      className="deny-button"
-                                      disabled={loadingForms[form.id]}
-                                    >
-                                      {loadingForms[form.id] ? <span className="spinner"></span> : "Deny"}
-                                    </button>
+
+                                    {form.status === "Initializing" ? (
+                                      <button
+                                        onClick={() => handleDelete(form.id)}
+                                        className="deny-button"
+                                        disabled={loadingForms[form.id]}
+                                      >
+                                        {loadingForms[form.id] ? <span className="spinner"></span> : "Delete"}
+                                      </button>
+                                    ) : (
+                                      <button
+                                        onClick={() => openDenyModal(form.id)}
+                                        className="deny-button"
+                                        disabled={loadingForms[form.id]}
+                                      >
+                                        {loadingForms[form.id] ? <span className="spinner"></span> : "Deny"}
+                                      </button>
+                                    )}
                                   </>
                                 )}
+
                                 {["Initializing", "Admin Approval"].includes(form.status) && (
                                   <button
                                     onClick={() => {
