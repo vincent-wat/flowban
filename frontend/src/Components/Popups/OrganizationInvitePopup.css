@@ -77,3 +77,60 @@
   .org-invite-card button:hover {
     background-color: #a31a2c;
   }
+
+.login-options {
+    text-align: center;
+    padding: 20px 0;
+  }
+  
+  .login-options h3 {
+    margin-bottom: 15px;
+    color: #333;
+  }
+  
+  .login-options p {
+    margin-bottom: 20px;
+    color: #555;
+  }
+  
+  .invite-email {
+    font-weight: bold;
+    color: #C51D34;
+    margin: 10px 0;
+    font-size: 1.1em;
+  }
+  
+  .auth-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 25px;
+  }
+  
+  .login-button, .signup-button {
+    padding: 12px 25px;
+    border: none;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .login-button {
+    background-color: #C51D34;
+    color: white;
+  }
+  
+  .signup-button {
+    background-color: #f0f0f0;
+    color: #333;
+    border: 1px solid #ddd;
+  }
+  
+  .login-button:hover {
+    background-color: #a31a2c;
+  }
+  
+  .signup-button:hover {
+    background-color: #e0e0e0;
+  }

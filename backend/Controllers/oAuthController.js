@@ -34,17 +34,19 @@ async function getUserData(access_token) {
 
 async function getData(req, res) {
     const code = req.query.code;
-
+    const redirectParam = req.query.state || req.query.redirect; // Get the redirect parameter from query or state
+    
     if (!code) {
         return res.status(400).json({ error: "No authorization code provided" });
     }
 
     try {
-        const redirectUrl = "https://localhost:3000/api/oauth"; // Ensure this matches your redirect URI
+        // This is your OAuth redirect URL
+        const oauthRedirectUrl = "https://localhost:3000/api/oauth"; // Renamed to avoid conflict
         const oAuth2Client = new OAuth2Client(
             process.env.CLIENT_ID,
             process.env.CLIENT_SECRET,
-            redirectUrl
+            oauthRedirectUrl
         );
 
         // Exchange the authorization code for tokens
@@ -82,8 +84,16 @@ async function getData(req, res) {
         // Generate a JWT token for the user
         const jwtToken = jwtGenerator(dbUser); // Pass the full user object to jwtGenerator
 
+        // Determine the redirect URL based on the presence of the redirect parameter
+        let frontendRedirectUrl = `https://localhost:3001/login?jwtToken=${jwtToken}`; // Changed variable name
+        
+        // If there's a redirect parameter for organization invite, add it to the URL
+        if (redirectParam === 'org-invite') {
+            frontendRedirectUrl = `https://localhost:3001/login?jwtToken=${jwtToken}&redirect=org-invite`;
+        }
+
         // Redirect to the frontend with the JWT token in the URL
-        res.redirect(`https://localhost:3001/signup?jwtToken=${jwtToken}`);
+        res.redirect(frontendRedirectUrl);
     } catch (err) {
         console.error("Error with signing in with Google:", err.message);
         res.redirect("https://localhost:3001/login?error=auth_failed");

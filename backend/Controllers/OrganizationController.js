@@ -81,15 +81,25 @@ const acceptOrganizationInvite = async (req, res) => {
     user.organization_id = organization_id;
     await user.save();
 
+    // Generate a new JWT token that includes the organization_id
+    const jwtToken = jwt.sign(
+      { 
+        id: user.id, 
+        organization_id 
+      }, 
+      process.env.jwtSecret, 
+      { expiresIn: "1h" }
+    );
+
     res.status(200).json({
       message: "You have successfully joined the organization",
       organization: org.name,
+      jwtToken: jwtToken // <-- This is the new token with the organization_id
     });
   } catch (err) {
     console.error("Invite token error:", err);
     return res.status(400).json({ error: "Invalid or expired token" });
   }
-
 };
 
 const displayAllUsersInOrganization = async (req, res) => {

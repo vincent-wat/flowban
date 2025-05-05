@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../Profile/Sidebar'; 
 import './UserOrganization.css';
-import axios from '../../../axios';
+import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 
 function UserOrganization() {
@@ -13,16 +13,49 @@ function UserOrganization() {
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteStatus, setInviteStatus] = useState(null);
 
-  
+  // Keep the refreshToken function but make it more robust
+  const refreshToken = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return false;
+      
+      console.log("Refreshing token to get latest organization data...");
+      
+      const response = await axios.post('https://localhost:3000/api/users/refresh-token', {}, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      
+      if (response.data && response.data.jwtToken) {
+        console.log("Token refreshed successfully");
+        localStorage.setItem('token', response.data.jwtToken);
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Error refreshing token:', error);
+      return false;
+    }
+  };
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
   useEffect(() => {
-    fetchOrganizationUsers();
-    fetchUserOrganizationInfo();
+    const initializeData = async () => {
+      await refreshToken();
+      
+      await Promise.all([
+        fetchOrganizationUsers(),
+        fetchUserOrganizationInfo()
+      ]);
+    };
+    
+    initializeData();
   }, []);
+
 
   const fetchOrganizationUsers = async () => {
     setLoading(true);
