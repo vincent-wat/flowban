@@ -494,19 +494,22 @@ export const WorkflowBoard = () => {
           <div className="top-bar">
             <h1>Workflow Board</h1>
           </div>
-
-          <button onClick={createNewForm} className="create-form-button">
-            Create New Form
-          </button>
-          
-          {getUserRoleFromToken()?.toLowerCase() === "admin" && (
-            <button
-              className="create-form-button"
-              onClick={() => setShowStageModal(true)}
-            >
-              + Add Stage
+        
+          <div className="action-buttons">
+            <button onClick={createNewForm} className="create-form-button">
+              Create New Form
             </button>
-          )}
+                
+            {getUserRoleFromToken()?.toLowerCase() === "admin" && (
+              <button
+                className="create-form-button"
+                onClick={() => setShowStageModal(true)}
+              >
+                + Add Stage
+              </button>
+            )}
+          </div>
+
 
 
           <div className="tab-toggle">
