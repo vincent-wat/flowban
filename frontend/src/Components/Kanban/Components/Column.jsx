@@ -14,7 +14,8 @@ export const Column = ({
   addTask,
   editTask,
   deleteTask,
-  fetchUsersInOrganization,
+  orgUsers,
+  assignTaskToUser,
 }) => {
   const { setNodeRef } = useDroppable({ id: column.id });
   const [newName, setNewName] = useState(column.name);
@@ -47,7 +48,8 @@ export const Column = ({
             id={task.id}
             editTask={editTask}
             deleteTask={deleteTask}
-            fetchUsersInOrganization={fetchUsersInOrganization}
+            orgUsers={orgUsers}
+            assignTaskToUser={assignTaskToUser}
           />
         ))}
       </div>

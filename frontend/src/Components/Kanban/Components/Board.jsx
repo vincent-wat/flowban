@@ -333,16 +333,18 @@ export default function Board({ board_id, user_id, user_role }) {
   };
 
   // function to assign a task to a user
-  const assignTaskToUser = async (task_id, user_id) => {
+  const assignTaskToUser = async (assign_task_id, assign_user_id) => {
     if (!checkUserRole()) {
       return;
     }
-    // const newUserTask = {
-    //   user_id:
-    //   task_id:
-    // }
+    const newUserTask = {
+      user_id: assign_user_id,
+      task_id: assign_task_id,
+    };
+
     try {
-      await axios.post(USER_TASK_URL);
+      await axios.post(USER_TASK_URL, newUserTask);
+      console.log("Task assigned to user:", assign_user_id);
       setUpdateBoard(true);
     } catch (error) {
       console.error("Error assigning task to user:", error);
@@ -430,7 +432,8 @@ export default function Board({ board_id, user_id, user_role }) {
                 editColumn={editColumn}
                 deleteTask={deleteTask}
                 editTask={editTask}
-                fetchUsersInOrganization={fetchUsersInOrganization}
+                orgUsers={organizationUsers}
+                assignTaskToUser={assignTaskToUser}
                 color={columnColors[column.id % columnColors.length]}
               />
             );

@@ -16,7 +16,8 @@ export const Task = ({
   task,
   editTask,
   deleteTask,
-  fetchUsersInOrganization,
+  orgUsers,
+  assignTaskToUser,
 }) => {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id: task.id,
@@ -32,12 +33,41 @@ export const Task = ({
   const [newColumn, setNewColumn] = useState(task.column_id);
 
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+  const [filteredUsers, setFilteredUsers] = useState([]);
+  const [email, setEmail] = useState("");
+  const [organizationUsers, setOrganizationUsers] = useState(orgUsers);
 
   const handleEditTask = () => {
     editTask(task.id, newTitle, newDescription);
     setIsEditModalOpen(false);
   };
 
+  const handleAssignTask = () => {
+    // get user id from email
+    const user = organizationUsers.find((user) => user.email === email);
+    if (user) {
+      assignTaskToUser(task.id, user.id);
+      setEmail("");
+      setFilteredUsers([]);
+      setIsAssignModalOpen(false);
+    } else {
+      alert("User not found");
+    }
+  };
+
+  //function to handle autocomplete for the email.
+  const handleEmailChange = (e) => {
+    const input = e.target.value;
+    setEmail(input);
+    if (input.length > 0) {
+      const filteredUsers = organizationUsers.filter((user) =>
+        user.email.toLowerCase().includes(input.toLowerCase())
+      );
+      setFilteredUsers(filteredUsers);
+    } else {
+      setFilteredUsers([]);
+    }
+  };
   return (
     <div style={style} ref={setNodeRef} className="task">
       <div className="drag-handle" {...listeners} {...attributes}>
@@ -111,7 +141,28 @@ export const Task = ({
         isOpen={isAssignModalOpen}
         onClose={() => setIsAssignModalOpen(false)}
       >
-        <input type="text" placeholder="Enter Email"></input>
+        <input
+          type="text"
+          value={email}
+          onChange={handleEmailChange}
+          placeholder="Enter Email"
+        ></input>
+        {/* Display autocomplete suggestions */}
+        {filteredUsers.length > 0 && (
+          <ul className="autocomplete-list">
+            {filteredUsers.map((user) => (
+              <li
+                key={user.id}
+                onClick={() => {
+                  setEmail(user.email); // Set the selected email
+                  setFilteredUsers([]); // Clear suggestions
+                }}
+              >
+                {user.email}
+              </li>
+            ))}
+          </ul>
+        )}
         <button>Assign</button>
       </Modal>
     </div>
