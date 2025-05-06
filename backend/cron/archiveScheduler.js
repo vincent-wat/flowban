@@ -5,7 +5,7 @@ const archiveCompletedForms = require("../scripts/archiveCompletedForms");
 const startArchiveJob = () => {
   //2:00 AM
   /*cron.schedule("0 2 * * *", async () => {
-    console.log("⏰ Running scheduled archive job...");
+    console.log("Running scheduled archive job...");
     await archiveCompletedForms();
   });*/
 

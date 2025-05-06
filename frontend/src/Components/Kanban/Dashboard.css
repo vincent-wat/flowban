@@ -107,6 +107,8 @@ input::placeholder {
   flex-direction: column;
   gap: 5px;
   align-items: center;
+  padding-right: 40px;
+  box-sizing: border-box;
 }
 
 .doc-button {
@@ -142,73 +144,87 @@ input::placeholder {
   flex-grow: 1;
 }
 
+/* allow the container to stop clipping the portal */
+.container {
+  overflow: visible !important;
+  max-height: none !important;
+}
+
 .modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background: rgba(0, 0, 0, 0.5) !important;
+  z-index: 9999 !important;
 }
 
 .modal {
-  background: white;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-  width: 300px;
-  max-width: 100%;
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  background-color: #fff !important;
+  padding: 16px !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+  width: 360px !important;
+  max-width: 90% !important;
+  max-height: 50vh !important;
+  overflow-y: auto !important;
+  display: flex !important;
+  flex-direction: column !important;
 }
 
 .modal h2 {
-  margin-bottom: 15px;
-  font-size: 20px;
-  color: #333;
+  margin: 0 0 16px !important;
+  font-size: 18px !important;
 }
 
-.modal input {
-  width: 100%;
-  padding: 10px;
-  margin-bottom: 15px;
-  font-size: 16px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+.modal input,
+.modal input[type="file"] {
+  width: 100% !important;
+  display: block !important;
+  margin: 0 0 16px !important;
+  padding: 8px 12px !important;
+  font-size: 14px !important;
+  border: 1px solid #ddd !important;
+  border-radius: 4px !important;
+  box-sizing: border-box !important;
 }
 
 .modal-buttons {
-  display: flex;
-  justify-content: space-between;
+  display: flex !important;
+  gap: 8px !important;
+  margin-top: 16px !important;
+  width: 100% !important;
 }
 
 .modal-buttons button {
-  padding: 10px 15px;
-  font-size: 16px;
-  cursor: pointer;
-  border: none;
-  border-radius: 4px;
-  transition: background-color 0.2s ease-in-out;
+  padding: 12px 0 !important;
+  font-size: 16px !important;
+  border: none !important;
+  border-radius: 4px !important;
+  cursor: pointer !important;
+  flex: 1 !important;
 }
 
-.modal-buttons button:hover {
-  opacity: 0.9;
+/* Primary (Create) button */
+.modal-buttons button:first-child {
+  background-color: #c51d34 !important;
+  color: #fff !important;
 }
 
-.modal-buttons button:first-of-type {
-  background-color: #c51d34;
-  color: white;
-}
-
-.modal-buttons button:last-of-type {
-  background-color: #ccc;
+/* Secondary (Cancel) button */
+.modal-buttons button:last-child {
+  background-color: #ccc !important;
+  color: #333 !important;
 }
 
 .btn-container {
   position: fixed;
-  top: 15%;
+  top: 45%;
   left: 20px;
   z-index: 10;
 }
@@ -233,4 +249,74 @@ input::placeholder {
 
 .fixed-plus-icon {
   margin-right: 8px;
+}
+
+.view-toggle {
+  position: fixed;
+  top: 60px;
+  right: 20px;
+  z-index: 1000;
+  cursor: pointer;
+}
+
+.toggle-slider {
+  display: flex;
+  align-items: center;
+  background-color: #c51d34;
+  border-radius: 25px;
+  padding: 8px 12px;
+  transition: background-color 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  color: white;
+}
+
+.toggle-slider.manager {
+  background-color: #a6192c;
+}
+
+.toggle-icon {
+  font-size: 20px;
+  margin-right: 10px;
+}
+
+.toggle-label {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+input[type="file"] {
+  margin-bottom: 12px;
+}
+
+/* Add these styles to your existing CSS file */
+
+.fixed-create-organization {
+  position: fixed;
+  bottom: 100px; /* Position above the create board button */
+  right: 30px;
+  background-color: #4a5568; /* Different color to distinguish from board button */
+  color: white;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+  z-index: 100;
+  font-size: 14px;
+  line-height: 1.2;
+  text-align: left;
+}
+
+.fixed-create-organization:hover {
+  background-color: #2d3748;
+  transform: translateY(-2px);
+}
+
+.fixed-org-icon {
+  font-size: 20px;
 }

@@ -87,32 +87,20 @@ async function getUserByResetToken(req, res) {
 async function getUserRoles(req, res) {
   try {
     const userId = req.user.id;
-    console.log('Getting roles for user ID:', userId);
     
-    // Use the User model with the 'roles' association
-    const user = await User.findByPk(userId, {
-      include: [{
-        model: Role,
-        as: 'roles',
-        attributes: ['id', 'name', 'description']
-      }]
+    // Use direct SQL query to get roles
+    const [roles] = await sequelize.query(`
+      SELECT r.id, r.name 
+      FROM roles r
+      JOIN user_roles ur ON r.id = ur.role_id
+      WHERE ur.user_id = ?
+    `, {
+      replacements: [userId]
     });
     
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-    
-    // Format the roles for the response
-    const roles = user.roles.map(role => ({
-      id: role.id,
-      name: role.name,
-      description: role.description
-    }));
-    
-    console.log('Found roles:', roles);
     return res.status(200).json({ roles });
   } catch (error) {
-    console.error('Error in getUserRoles:', error);
+    console.error('Error fetching user roles:', error);
     return res.status(500).json({ error: 'Server error' });
   }
 }

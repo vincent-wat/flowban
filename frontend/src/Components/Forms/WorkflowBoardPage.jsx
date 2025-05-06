@@ -7,21 +7,22 @@ import {
   closestCenter,
   PointerSensor,
   useSensor,
-  useSensors
+  useSensors,
 } from "@dnd-kit/core";
 import {
   arrayMove,
   SortableContext,
   useSortable,
-  horizontalListSortingStrategy
+  horizontalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { FaSearch } from "react-icons/fa";
 
 const socket = io("https://localhost:3000", {
   transports: ["websocket", "polling"],
 });
 
-export const WorkflowBoard = () => {
+const WorkflowBoard = () => {
   const { templateId } = useParams();
   const navigate = useNavigate();
 
@@ -33,39 +34,30 @@ export const WorkflowBoard = () => {
   const [showModal, setShowModal] = useState(false);
   const [selectedFormId, setSelectedFormId] = useState(null);
   const [denialReason, setDenialReason] = useState("");
-  const [adminView, setAdminView] = useState(false);
   const [showSuggestModal, setShowSuggestModal] = useState(false);
   const [selectedStageId, setSelectedStageId] = useState("");
   const [selectedUserId, setSelectedUserId] = useState("");
   const [suggestedAssignments, setSuggestedAssignments] = useState([]);
-  const [activeTab, setActiveTab] = useState("workflow"); 
+  const [activeTab, setActiveTab] = useState("workflow");
   const [archivedForms, setArchivedForms] = useState([]);
   const [loadingArchived, setLoadingArchived] = useState(false);
   const [showStageModal, setShowStageModal] = useState(false);
   const [newStageName, setNewStageName] = useState("");
   const [newStageOrder, setNewStageOrder] = useState("");
-  
+  const [archiveSearchTerm, setArchiveSearchTerm] = useState("");
 
   const SortableStage = ({ id, stage, draggable, children }) => {
-    const {
-      attributes,
-      listeners,
-      setNodeRef,
-      transform,
-      transition,
-      isDragging,
-    } = useSortable({ id: id.toString() }); 
-  
+    const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+      useSortable({ id: id.toString() });
     const style = {
       transform: CSS.Transform.toString(transform),
       transition,
       opacity: isDragging ? 0.5 : 1,
       cursor: draggable ? "grab" : "not-allowed",
     };
-  
     return (
       <div
-        ref={setNodeRef} 
+        ref={setNodeRef}
         {...(draggable ? listeners : {})}
         {...(draggable ? attributes : {})}
         className={`stage-card ${!draggable ? "locked-stage" : ""}`}
@@ -76,164 +68,52 @@ export const WorkflowBoard = () => {
       </div>
     );
   };
-  
 
+  const getUserIdFromToken = () => {
+    const token = localStorage.getItem("token");
+    if (!token) return null;
+    try {
+      return JSON.parse(atob(token.split(".")[1])).id;
+    } catch {
+      return null;
+    }
+  };
+
+  const getUserRoleFromToken = () => {
+    const token = localStorage.getItem("token");
+    if (!token) return null;
+    try {
+      return JSON.parse(atob(token.split(".")[1])).role;
+    } catch {
+      return null;
+    }
+  };
 
   const fetchWorkflowData = async () => {
     try {
       const token = localStorage.getItem("token");
-  
-      const stagesResponse = await fetch(
+      const res = await fetch(
         `https://localhost:3000/api/workflowStages/template/${templateId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-  
-      const stagesData = await stagesResponse.json();
-      if (!Array.isArray(stagesData)) {
-        console.error("Error: Stages data is not an array!", stagesData);
-        setStages([]);
-      } else {
-        setStages(stagesData);
-      }
-    } catch (error) {
-      console.error("Error fetching stages:", error);
+      const data = await res.json();
+      setStages(Array.isArray(data) ? data : []);
+    } catch {
       setStages([]);
     } finally {
       setLoading(false);
     }
   };
-  
 
-  function getUserIdFromToken() {
-    const token = localStorage.getItem("token");
-    if (!token) return null;
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1])); 
-      return payload.id; 
-    } catch (error) {
-      console.error("Invalid token", error);
-      return null;
-    }
-  }
-  
-  function getUserRoleFromToken() {
-    const token = localStorage.getItem("token");
-    if (!token) return null;
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      return payload.role;
-    } catch {
-      return null;
-    }
-  }  
-
-  const handleCreateStage = async () => {
-    if (!newStageName || !newStageOrder) {
-      alert("Please provide both a stage name and order.");
-      return;
-    }
-  
-    try {
-      const token = localStorage.getItem("token");
-      const response = await fetch("https://localhost:3000/api/workflowStages", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          template_id: parseInt(templateId),
-          stage_name: newStageName,
-          stage_order: parseInt(newStageOrder),
-        }),
-      });
-  
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Failed to create stage: ${errorText}`);
-      }
-  
-      await fetchWorkflowData();
-      setShowStageModal(false);
-      setNewStageName("");
-      setNewStageOrder("");
-    } catch (error) {
-      console.error("Error creating stage:", error);
-      alert("Failed to create stage: " + error.message);
-    }
-  };
-  
-
-  const isUserAssignedToForm = (form) => {
-    const userId = getUserIdFromToken();
-  
-    const isAssigned = form.assignedUsers?.some(
-      (assignment) =>
-        assignment.assignedUser?.id === userId &&
-        assignment.approval_status === "pending"
-    );
-  
-    const isSubmitter = form.submitted_by === userId;
-  
-    const isAdmin = localStorage.getItem("role") === "admin";
-  
-    return isAssigned || isSubmitter || isAdmin;
-  };
-  
-  const fetchArchivedForms = async () => {
-    setLoadingArchived(true);
-    try {
-      const token = localStorage.getItem("token");
-      const res = await fetch(
-        `https://localhost:3000/api/archivedForms/templates/${templateId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-  
-      const data = await res.json();
-  
-      if (Array.isArray(data)) {
-        setArchivedForms(data);
-      } else {
-        console.error("Archived data is not an array:", data);
-        setArchivedForms([]);
-      }
-    } catch (error) {
-      console.error("Error fetching archived forms:", error);
-      setArchivedForms([]);
-    } finally {
-      setLoadingArchived(false);
-    }
-  };
-  
-  
   const fetchAllUsers = async () => {
     try {
       const token = localStorage.getItem("token");
-
       const res = await fetch(`https://localhost:3000/api/users`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
-
       const data = await res.json();
-
-      if (Array.isArray(data)) {
-        setUsers(data);
-      } else {
-        console.error("User data is not an array:", data);
-        setUsers([]);
-      }
-    } catch (error) {
-      console.error("Error fetching users:", error);
+      setUsers(Array.isArray(data) ? data : []);
+    } catch {
       setUsers([]);
     }
   };
@@ -241,139 +121,69 @@ export const WorkflowBoard = () => {
   const fetchFormInstances = async () => {
     try {
       const token = localStorage.getItem("token");
-      console.log("FORM INSTANCES:", formInstances);
-      formInstances.forEach(form => {
-      console.log(`Form ${form.id} assignedUsers:`, form.assignedUsers);
-      });
       const res = await fetch(
         `https://localhost:3000/api/formInstance/templates/${templateId}/instances`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-  
       const data = await res.json();
-  
-      if (!Array.isArray(data)) {
-        console.error("Error: form instances is not an array!", data);
-        setFormInstances([]);
-      } else {
-        setFormInstances(data);
-      }
-    } catch (error) {
-      console.error("Error fetching form instances:", error);
+      setFormInstances(Array.isArray(data) ? data : []);
+    } catch {
       setFormInstances([]);
     }
   };
-  
-  useEffect(() => {
-    if (activeTab === "archive") {
-      fetchArchivedForms();
+
+  const fetchArchivedForms = async () => {
+    setLoadingArchived(true);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(
+        `https://localhost:3000/api/archivedForms/templates/${templateId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      const data = await res.json();
+      setArchivedForms(Array.isArray(data) ? data : []);
+    } catch {
+      setArchivedForms([]);
+    } finally {
+      setLoadingArchived(false);
     }
-  }, [activeTab]);
-  
-  useEffect(() => {
-    fetchWorkflowData();
-    fetchFormInstances();
-    fetchAllUsers();
-
-    const handleFormUpdate = ({ id, newStatus }) => {
-      console.log(`Received WebSocket update: Form ${id} -> ${newStatus}`);
-      fetchWorkflowData();
-      fetchFormInstances();
-    };
-
-    socket.on("formUpdated", handleFormUpdate);
-    return () => {
-      socket.off("formUpdated", handleFormUpdate);
-    };
-  }, [templateId]);
-
-  const createNewForm = () => {
-    navigate(`/form/${templateId}`);
   };
 
   const handleApprove = async (formId) => {
-    setLoadingForms((prev) => ({ ...prev, [formId]: true }));
+    setLoadingForms((p) => ({ ...p, [formId]: true }));
     try {
-
       const token = localStorage.getItem("token");
-      const userId = getUserIdFromToken();
-    
-      const form = formInstances.find((f) => f.id === formId);
-    
-      const isSubmitter = form?.submitted_by === userId;
-      const isAssigned = form?.assignedUsers?.some(
-        (a) => a.assignedUser?.id === userId && a.approval_status === "pending"
-      );
-    
-      const hasSuggestions = form?.assignedUsers?.some(
-        (a) => a.approval_status === "suggested"
-      );
-    
-      const suggestionPhaseStages = ["Initializing", "Admin Approval"];
-
-      if (
-        isSubmitter &&
-        suggestionPhaseStages.includes(form.status) &&
-        !hasSuggestions
-      ) {
-        alert("You must suggest at least one approver before approving this form.");
-        return;
-      }
-
-    
-      if (!isAssigned && !isSubmitter) {
-        alert("You are not allowed to approve this form.");
-        return;
-      }
-
-      const requiredStages = stages.filter(
-        (stage) =>
-          !["Initializing", "Admin Approval", "Completed"].includes(stage.stage_name)
-      );
-      
-      const hasSuggestionsForAllStages = requiredStages.every((stage) =>
-        form.assignedUsers?.some(
-          (assignment) =>
-            assignment.stage_id === stage.id && assignment.approval_status === "suggested"
-        )
-      );
-      
-
-      if (
-        isSubmitter &&
-        suggestionPhaseStages.includes(form.status) &&
-        !hasSuggestionsForAllStages
-      ) {
-        alert("You must suggest at least one approver for each required stage before approving.");
-        return;
-      }
-      
-      
-      const response = await fetch(
+      const res = await fetch(
         `https://localhost:3000/api/formInstance/instances/approve/${formId}`,
         {
           method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         }
       );
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Failed to approve form ${formId}: ${errorText}`);
-      }
-      fetchFormInstances();
-    } catch (error) {
-      console.error("Error approving form:", error.message);
-      alert("Error approving form: " + error.message);
+      if (!res.ok) throw new Error();
+      await fetchFormInstances();
+    } catch {
+      alert("Error approving form");
     } finally {
-      setLoadingForms((prev) => ({ ...prev, [formId]: false }));
+      setLoadingForms((p) => ({ ...p, [formId]: false }));
+    }
+  };
+
+  const handleDelete = async (formId) => {
+    if (!window.confirm("Delete this form?")) return;
+    setLoadingForms((p) => ({ ...p, [formId]: true }));
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(
+        `https://localhost:3000/api/formInstance/instances/${formId}`,
+        { method: "DELETE", headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (!res.ok) throw new Error();
+      await fetchFormInstances();
+    } catch {
+      alert("Error deleting form");
+    } finally {
+      setLoadingForms((p) => ({ ...p, [formId]: false }));
     }
   };
 
@@ -391,101 +201,94 @@ export const WorkflowBoard = () => {
 
   const confirmDeny = async () => {
     if (!denialReason.trim()) {
-      alert("Please enter a denial reason.");
+      alert("Enter a denial reason.");
       return;
     }
-  
-    const token = localStorage.getItem("token");
-    const userId = getUserIdFromToken(); 
-  
-    const assignedUser = formInstances
-      .find(form => form.id === selectedFormId)
-      ?.assignedUsers
-      ?.find(user => user.id === userId && user.approval_status === "pending");
-  
-    if (!assignedUser) {
-      alert("You are not assigned to deny this form.");
-      return;
-    }
-  
-    setLoadingForms((prev) => ({ ...prev, [selectedFormId]: true }));
-  
+    setLoadingForms((p) => ({ ...p, [selectedFormId]: true }));
     try {
-      const response = await fetch(
+      const token = localStorage.getItem("token");
+      await fetch(
         `https://localhost:3000/api/formInstance/instances/deny/${selectedFormId}`,
         {
           method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
           body: JSON.stringify({ denial_reason: denialReason }),
         }
       );
-  
-      const responseBody = await response.json();
-  
-      if (!response.ok) {
-        if (response.status === 403) {
-          alert("You are not assigned to deny this form."); 
-        } else {
-          alert(`Failed to deny form: ${responseBody.message || "Unknown error"}`);
-        }
-        return;
-      }
-  
-      fetchFormInstances();
+      await fetchFormInstances();
       closeModal();
-  
-    } catch (error) {
-      console.error("Error denying form:", error);
-      alert("Failed to deny the form. Please try again.");
+    } catch {
+      alert("Error denying form");
     } finally {
-      setLoadingForms((prev) => ({ ...prev, [selectedFormId]: false }));
+      setLoadingForms((p) => ({ ...p, [selectedFormId]: false }));
     }
   };
-  
 
   const addSuggestedAssignment = async () => {
     if (!selectedStageId || !selectedUserId || !selectedFormId) return;
-
-    const token = localStorage.getItem("token");
-
     try {
-      const response = await fetch("https://localhost:3000/api/formAssignment/suggest", {
+      const token = localStorage.getItem("token");
+      await fetch("https://localhost:3000/api/formAssignment/suggest", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({
           form_instance_id: selectedFormId,
-          stage_id: parseInt(selectedStageId),
-          assigned_user_id: parseInt(selectedUserId),
+          stage_id: Number(selectedStageId),
+          assigned_user_id: Number(selectedUserId),
           role: "approver",
         }),
       });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Suggest failed: ${errorText}`);
-      }
-
-      const data = await response.json();
-      console.log("Suggested assignment saved:", data.assignment);
-
-      await fetchFormInstances(); 
+      await fetchFormInstances();
       setSelectedStageId("");
       setSelectedUserId("");
-    } catch (err) {
-      console.error("Error suggesting approver:", err);
+    } catch {
       alert("Error suggesting approver");
     }
   };
-  console.log("Role (parsed):", getUserRoleFromToken()?.toLowerCase());
 
-  const sensors = useSensors(
-    useSensor(PointerSensor));
+  const handleCreateStage = async () => {
+    if (!newStageName || !newStageOrder) {
+      alert("Provide name & order.");
+      return;
+    }
+    try {
+      const token = localStorage.getItem("token");
+      await fetch("https://localhost:3000/api/workflowStages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          template_id: Number(templateId),
+          stage_name: newStageName,
+          stage_order: Number(newStageOrder),
+        }),
+      });
+      await fetchWorkflowData();
+      setShowStageModal(false);
+      setNewStageName("");
+      setNewStageOrder("");
+    } catch {
+      alert("Error creating stage");
+    }
+  };
+
+  useEffect(() => {
+    fetchWorkflowData();
+    fetchFormInstances();
+    fetchAllUsers();
+    socket.on("formUpdated", fetchFormInstances);
+    return () => void socket.off("formUpdated", fetchFormInstances);
+  }, [templateId]);
+
+  useEffect(() => {
+    if (activeTab === "archive") fetchArchivedForms();
+  }, [activeTab]);
+
+  const filteredArchivedForms = archivedForms.filter((form) => {
+    const name = `${form.submitter?.first_name || ""} ${form.submitter?.last_name || ""}`.toLowerCase();
+    return name.includes(archiveSearchTerm.toLowerCase());
+  });
+
+  const sensors = useSensors(useSensor(PointerSensor));
 
   return (
     <div className="workflow-board-container">
@@ -493,41 +296,34 @@ export const WorkflowBoard = () => {
         <p>Loading workflow board...</p>
       ) : (
         <>
+          {/* Top Bar */}
           <div className="top-bar">
             <h1>Workflow Board</h1>
           </div>
-        
+
+          {/* Action Buttons */}
           <div className="action-buttons">
-            <button onClick={createNewForm} className="create-form-button">
+            <button onClick={() => navigate(`/form/${templateId}`)} className="create-form-button">
               Create New Form
             </button>
-                
             {getUserRoleFromToken()?.toLowerCase() === "admin" && (
-              <button
-                className="create-form-button"
-                onClick={() => setShowStageModal(true)}
-              >
+              <button className="create-form-button" onClick={() => setShowStageModal(true)}>
                 + Add Stage
               </button>
             )}
           </div>
 
-
-
+          {/* Tab Toggle */}
           <div className="tab-toggle">
-            <button
-              className={activeTab === "workflow" ? "active-tab" : ""}
-              onClick={() => setActiveTab("workflow")}
-            >
+            <button className={activeTab === "workflow" ? "active-tab" : ""} onClick={() => setActiveTab("workflow")}>
               Workflow
             </button>
-            <button
-              className={activeTab === "archive" ? "active-tab" : ""}
-              onClick={() => setActiveTab("archive")}
-            >
+            <button className={activeTab === "archive" ? "active-tab" : ""} onClick={() => setActiveTab("archive")}>
               Archive
             </button>
           </div>
+
+          {/* Workflow View */}
           {activeTab === "workflow" && (
             <DndContext
               sensors={sensors}
@@ -536,73 +332,84 @@ export const WorkflowBoard = () => {
                 if (!over || active.id === over.id) return;
                 const oldIndex = stages.findIndex((s) => s.id.toString() === active.id);
                 const newIndex = stages.findIndex((s) => s.id.toString() === over.id);
-                setStages((stages) => arrayMove(stages, oldIndex, newIndex));
+                setStages((s) => arrayMove(s, oldIndex, newIndex));
               }}
             >
-              <SortableContext
-                items={stages.map((s) => s.id.toString())}
-                strategy={horizontalListSortingStrategy}
-              >
+              <SortableContext items={stages.map((s) => s.id.toString())} strategy={horizontalListSortingStrategy}>
                 <div className="stages-container">
                   {stages.map((stage) => (
-                    <SortableStage key={stage.id}
-                    id={stage.id}
-                    stage={stage}
-                    draggable={
-                      getUserRoleFromToken()?.toLowerCase() === "admin" &&
-                      !["Initializing", "Completed"].includes(stage.stage_name)
-                    }>
+                    <SortableStage
+                      key={stage.id}
+                      id={stage.id}
+                      stage={stage}
+                      draggable={
+                        getUserRoleFromToken()?.toLowerCase() === "admin" &&
+                        !["Initializing", "Completed"].includes(stage.stage_name)
+                      }
+                    >
                       <div className="form-instances-list">
-                        {Array.isArray(formInstances) &&
-                          formInstances
-                            .filter((form) => form.status === stage.stage_name)
-                            .filter((form) => isUserAssignedToForm(form))
-                            .map((form) => (
-                              <div key={form.id} className="form-instance-card">
-                                <p>Form {form.id}</p>
-                                <p>Status: {form.status}</p>
-                                <button
-                                  onClick={() =>
-                                    window.open(`https://localhost:3000/${form.pdf_file_path}`, "_blank")
-                                  }
-                                  className="view-pdf-button"
-                                >
-                                  View PDF
-                                </button>
-                                {form.status !== "Completed" && (
-                                  <>
-                                    <button
-                                      onClick={() => handleApprove(form.id)}
-                                      className="approve-button"
-                                      disabled={loadingForms[form.id]}
-                                    >
-                                      {loadingForms[form.id] ? <span className="spinner"></span> : "Approve"}
-                                    </button>
-                                    <button
-                                      onClick={() => openDenyModal(form.id)}
-                                      className="deny-button"
-                                      disabled={loadingForms[form.id]}
-                                    >
-                                      {loadingForms[form.id] ? <span className="spinner"></span> : "Deny"}
-                                    </button>
-                                  </>
-                                )}
-                                {["Initializing", "Admin Approval"].includes(form.status) && (
-                                  <button
-                                    onClick={() => {
-                                      setSelectedFormId(form.id);
-                                      setShowSuggestModal(true);
-                                    }}
-                                    className="suggest-button"
-                                  >
-                                    + Suggest Approver
-                                  </button>
-                                )}
-                              </div>
-                            ))}
                         {formInstances
                           .filter((form) => form.status === stage.stage_name)
-                          .filter((form) => isUserAssignedToForm(form)).length === 0 && (
+                          .filter((form) => {
+                            const uid = getUserIdFromToken();
+                            return (
+                              form.assignedUsers?.some(
+                                (a) => a.assignedUser?.id === uid && a.approval_status === "pending"
+                              ) ||
+                              form.submitted_by === uid ||
+                              getUserRoleFromToken()?.toLowerCase() === "admin"
+                            );
+                          })
+                          .map((form) => (
+                            <div key={form.id} className="form-instance-card">
+                              <p>Form #{form.id}</p>
+                              <p>Status: {form.status}</p>
+                              <button
+                                onClick={() => window.open(`https://localhost:3000/${form.pdf_file_path}`, "_blank")}
+                                className="view-pdf-button"
+                              >
+                                View PDF
+                              </button>
+                              {form.status === "Initializing" ? (
+                                <button
+                                  onClick={() => handleDelete(form.id)}
+                                  className="deny-button"
+                                  disabled={loadingForms[form.id]}
+                                >
+                                  {loadingForms[form.id] ? "..." : "Delete"}
+                                </button>
+                              ) : form.status !== "Completed" ? (
+                                <>
+                                  <button
+                                    onClick={() => handleApprove(form.id)}
+                                    className="approve-button"
+                                    disabled={loadingForms[form.id]}
+                                  >
+                                    {loadingForms[form.id] ? "..." : "Approve"}
+                                  </button>
+                                  <button
+                                    onClick={() => openDenyModal(form.id)}
+                                    className="deny-button"
+                                    disabled={loadingForms[form.id]}
+                                  >
+                                    {loadingForms[form.id] ? "..." : "Deny"}
+                                  </button>
+                                </>
+                              ) : null}
+                              {["Initializing", "Admin Approval"].includes(form.status) && (
+                                <button
+                                  onClick={() => {
+                                    setSelectedFormId(form.id);
+                                    setShowSuggestModal(true);
+                                  }}
+                                  className="suggest-button"
+                                >
+                                  + Suggest
+                                </button>
+                              )}
+                            </div>
+                          ))}
+                        {!formInstances.some((f) => f.status === stage.stage_name) && (
                           <p>No forms in this stage.</p>
                         )}
                       </div>
@@ -612,152 +419,156 @@ export const WorkflowBoard = () => {
               </SortableContext>
             </DndContext>
           )}
-        </>
-      )}
 
-      {activeTab === "archive" && (
-        <div className="archive-container">
-          <h2>Archived Forms</h2>
-          {loadingArchived ? (
-            <p>Loading archived forms...</p>
-          ) : archivedForms.length === 0 ? (
-            <p>No archived forms available.</p>
-          ) : (
-            <div className="accordion">
-              {archivedForms.map((form, index) => (
-                <details key={form.id} className="accordion-item">
-                  <summary>
-                    Form #{form.id} — Submitted by: {form.submitter?.email || "Unknown"}
-                  </summary>
-                  <div className="accordion-content">
-                    <p><strong>Created At:</strong> {new Date(form.created_at).toLocaleString()}</p>
-                    <p><strong>Archived At:</strong> {new Date(form.archived_at).toLocaleString()}</p>
-                    {form.denial_reason && (
-                      <p><strong>Denial Reason:</strong> {form.denial_reason}</p>
-                    )}
-                    <button
-                      className="view-pdf-button"
-                      onClick={() => window.open(`https://localhost:3000${form.pdf_file_path}`, "_blank")}
-                    >
-                      View PDF
-                    </button>
-                  </div>
-                </details>
-              ))}
+          {/* Archive View */}
+          {activeTab === "archive" && (
+            <div className="archive-container">
+              <div className="input-wrapper">
+                <FaSearch id="search-icon" />
+                <input
+                  placeholder="Search by submitter name"
+                  value={archiveSearchTerm}
+                  onChange={(e) => setArchiveSearchTerm(e.target.value)}
+                />
+              </div>
+              <h2>Archived Forms</h2>
+              {loadingArchived ? (
+                <p>Loading archived forms...</p>
+              ) : filteredArchivedForms.length === 0 ? (
+                <p>No archived forms match your search.</p>
+              ) : (
+                <div className="accordion">
+                  {filteredArchivedForms.map((form) => (
+                    <details key={form.id} className="accordion-item">
+                      <summary>
+                        Form #{form.id} — Submitted by:{" "}
+                        {form.submitter?.first_name} {form.submitter?.last_name}
+                      </summary>
+                      <div className="accordion-content">
+                        <p>
+                          <strong>Created At:</strong>{" "}
+                          {new Date(form.created_at).toLocaleString()}
+                        </p>
+                        <p>
+                          <strong>Archived At:</strong>{" "}
+                          {new Date(form.archived_at).toLocaleString()}
+                        </p>
+                        <button
+                          className="view-pdf-button"
+                          onClick={() =>
+                            window.open(
+                              `https://localhost:3000${form.pdf_file_path}`,
+                              "_blank"
+                            )
+                          }
+                        >
+                          View PDF
+                        </button>
+                      </div>
+                    </details>
+                  ))}
+                </div>
+              )}
             </div>
           )}
-        </div>
-      )}
 
-      {showModal && (
-        <div className="modal">
-          <div className="modal-content">
-            <h3>Deny Form</h3>
-            <p>Please provide a reason for denial:</p>
-            <textarea
-              value={denialReason}
-              onChange={(e) => setDenialReason(e.target.value)}
-              placeholder="Enter denial reason..."
-            />
-            <div className="modal-buttons">
-              <button onClick={confirmDeny} className="confirm-button">
-                Confirm Deny
-              </button>
-              <button onClick={closeModal} className="cancel-button">
-                Cancel
-              </button>
+          {/* Deny Modal */}
+          {showModal && (
+            <div className="modal">
+              <div className="modal-content">
+                <h3>Deny Form</h3>
+                <textarea
+                  value={denialReason}
+                  onChange={(e) => setDenialReason(e.target.value)}
+                  placeholder="Enter denial reason..."
+                />
+                <div className="modal-buttons">
+                  <button onClick={confirmDeny} className="confirm-button">
+                    Confirm Deny
+                  </button>
+                  <button onClick={closeModal} className="cancel-button">
+                    Cancel
+                  </button>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+          )}
 
-      {showSuggestModal && (
-        <div className="modal">
-          <div className="modal-content">
-            <h3>Suggest Approver</h3>
-            <select value={selectedStageId} onChange={(e) => setSelectedStageId(e.target.value)}>
-              <option value="">Select Stage</option>
-              {stages.map((stage) => (
-                <option key={stage.id} value={stage.id}>{stage.stage_name}</option>
-              ))}
-            </select>
-
-            <select value={selectedUserId} onChange={(e) => setSelectedUserId(e.target.value)}>
-              <option value="">Select User</option>
-              {Array.isArray(users) &&
-                users.map((user) => (
-                  <option key={user.id} value={user.id}>
-                    {user.first_name} {user.last_name}
-                  </option>
-                ))}
-            </select>
-
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                addSuggestedAssignment();
-              }}
-              className="confirm-button"
-            >
-              + Add Assignment
-            </button>
-
-            <div className="suggested-list">
-              <h4>Suggested Assignments</h4>
-              <ul>
-                {suggestedAssignments.map((a, idx) => (
-                  <li key={idx}>
-                    Stage ID: {a.stage_id}, User ID: {a.assigned_user_id}
-                  </li>
-                ))}
-              </ul>
+          {/* Suggest Modal */}
+          {showSuggestModal && (
+            <div className="modal">
+              <div className="modal-content">
+                <h3>Suggest Approver</h3>
+                <select value={selectedStageId} onChange={(e) => setSelectedStageId(e.target.value)}>
+                  <option value="">Select Stage</option>
+                  {stages.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.stage_name}
+                    </option>
+                  ))}
+                </select>
+                <select value={selectedUserId} onChange={(e) => setSelectedUserId(e.target.value)}>
+                  <option value="">Select User</option>
+                  {users.map((u) => (
+                    <option key={u.id} value={u.id}>
+                      {u.first_name} {u.last_name}
+                    </option>
+                  ))}
+                </select>
+                <button onClick={addSuggestedAssignment} className="confirm-button">
+                  + Add Assignment
+                </button>
+                <div className="suggested-list">
+                  <h4>Suggested Assignments</h4>
+                  <ul>
+                    {suggestedAssignments.map((a, i) => (
+                      <li key={i}>
+                        Stage {a.stage_id}, User {a.assigned_user_id}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="modal-buttons">
+                  <button onClick={() => setShowSuggestModal(false)} className="cancel-button">
+                    Done
+                  </button>
+                </div>
+              </div>
             </div>
+          )}
 
-            <div className="modal-buttons">
-              <button onClick={() => setShowSuggestModal(false)} className="cancel-button">
-                Done
-              </button>
+          {/* Add Stage Modal */}
+          {showStageModal && (
+            <div className="modal">
+              <div className="modal-content">
+                <h3>Add New Workflow Stage</h3>
+                <input
+                  type="text"
+                  placeholder="Stage Name"
+                  value={newStageName}
+                  onChange={(e) => setNewStageName(e.target.value)}
+                />
+                <select value={newStageOrder} onChange={(e) => setNewStageOrder(e.target.value)}>
+                  <option value="">Select Order</option>
+                  {Array.from({ length: stages.length }, (_, i) => i + 1).map((order) => (
+                    <option key={order} value={order}>
+                      Position {order}
+                    </option>
+                  ))}
+                </select>
+                <div className="modal-buttons">
+                  <button onClick={handleCreateStage} className="confirm-button">
+                    Create Stage
+                  </button>
+                  <button onClick={() => setShowStageModal(false)} className="cancel-button">
+                    Cancel
+                  </button>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
+          )}
+        </>
       )}
-
-      {showStageModal && (
-        <div className="modal">
-          <div className="modal-content">
-            <h3>Add New Workflow Stage</h3>
-      
-            <input
-              type="text"
-              placeholder="Stage Name"
-              value={newStageName}
-              onChange={(e) => setNewStageName(e.target.value)}
-            />
-
-            <select
-              value={newStageOrder}
-              onChange={(e) => setNewStageOrder(e.target.value)}
-            >
-              <option value="">Select Order</option>
-              {Array.from({ length: stages.length - 1 }, (_, i) => i + 2).map((order) => (
-                <option key={order} value={order}>
-                  Position {order}
-                </option>
-              ))}
-            </select>
-              
-            <div className="modal-buttons">
-              <button className="confirm-button" onClick={handleCreateStage}>
-                Create Stage
-              </button>
-              <button className="cancel-button" onClick={() => setShowStageModal(false)}>
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
     </div>
   );
 };

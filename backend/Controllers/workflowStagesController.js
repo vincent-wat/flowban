@@ -53,6 +53,31 @@ const updateWorkflowStage = async (req, res) => {
   }
 };
 
+const reorderWorkflowStages = async (req, res) => {
+  try {
+    const { stages } = req.body;
+
+    if (!Array.isArray(stages)) {
+      return res.status(400).json({ error: "Invalid stages format" });
+    }
+
+    const updatePromises = stages.map(({ id, stage_order }) =>
+      WorkflowStage.update(
+        { stage_order },
+        { where: { id } }
+      )
+    );
+
+    await Promise.all(updatePromises);
+
+    return res.status(200).json({ message: "Workflow stages reordered successfully" });
+  } catch (error) {
+    console.error("Error reordering workflow stages:", error);
+    return res.status(500).json({ error: "Failed to reorder stages" });
+  }
+};
+
+
 const getStagesByTemplateId = async (req, res) => {
   try {
     const { templateId } = req.params;
@@ -114,4 +139,5 @@ module.exports = {
   getWorkflowStageById,
   updateWorkflowStage,
   deleteWorkflowStage,
+  reorderWorkflowStages,
 };

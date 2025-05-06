@@ -1,14 +1,20 @@
-const { Organization, User } = require("../models");
+const { Organization, User, UserRole, sequelize } = require("../models");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const generateInviteToken = require("../utils/inviteToken");
 const sendOrganizationInviteEmail = require("../middleware/sendEmail");
 const { jwtOrganizationGenerator } = require("../utils/jwtGenerator");
-
 const createOrganization = async (req, res) => {
   try {
-    const { name, userId } = req.body;
+    const { name } = req.body;
+    const userId = req.user.id;
 
+    // Validate required fields
+    if (!name) {
+      return res.status(400).json({ error: "Organization name is required" });
+    }
+
+    // Check if organization name already exists
     const existing = await Organization.findOne({ where: { name } });
     if (existing) {
       return res
@@ -16,18 +22,56 @@ const createOrganization = async (req, res) => {
         .json({ message: "Organization name already exists" });
     }
 
-    const org = await Organization.create({ name });
+    // Use a transaction to ensure all operations complete or roll back
+    const result = await sequelize.transaction(async (t) => {
+      // Create the organization
+      const org = await Organization.create({ name }, { transaction: t });
 
-    if (userId) {
-      await User.update({ organization_id: org.id }, { where: { id: userId } });
-    }
+      // Update the user with the organization ID
+      await User.update(
+        { organization_id: org.id },
+        {
+          where: { id: userId },
+          transaction: t,
+        }
+      );
 
-    res
-      .status(201)
-      .json({ message: "Organization created", organization: org });
+      // Create UserRole record directly with SQL to bypass model issues
+      await sequelize.query(
+        `
+        INSERT INTO user_roles (user_id, role_id, assigned_at, created_at, updated_at) 
+        VALUES (:userId, 2, NOW(), NOW(), NOW())
+      `,
+        {
+          replacements: { userId },
+          type: sequelize.QueryTypes.INSERT,
+          transaction: t,
+        }
+      );
+
+      return org;
+    });
+
+    // Generate a new JWT token for the user that includes their organization ID
+    const user = await User.findByPk(userId);
+    const token = jwt.sign(
+      {
+        id: user.id,
+        email: user.email,
+        organization_id: user.organization_id,
+      },
+      process.env.jwtSecret,
+      { expiresIn: "24hr" }
+    );
+
+    res.status(201).json({
+      message: "Organization created and admin role assigned",
+      organization: result,
+      jwtToken: token,
+    });
   } catch (error) {
     console.error("Error creating organization:", error);
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({ error: "Server error", details: error.message });
   }
 };
 
@@ -41,7 +85,7 @@ const inviteUserToOrganization = async (req, res) => {
         .status(401)
         .json({ error: "Unauthorized: Organization ID not found" });
     }
-  
+
     const token = jwtOrganizationGenerator(email, { organization_id: orgID });
 
     await sendOrganizationInviteEmail(email, token);
@@ -91,18 +135,18 @@ const acceptOrganizationInvite = async (req, res) => {
 
     // Generate a new JWT token that includes the organization_id
     const jwtToken = jwt.sign(
-      { 
-        id: user.id, 
-        organization_id 
-      }, 
-      process.env.jwtSecret, 
+      {
+        id: user.id,
+        organization_id,
+      },
+      process.env.jwtSecret,
       { expiresIn: "1h" }
     );
 
     res.status(200).json({
       message: "You have successfully joined the organization",
       organization: org.name,
-      jwtToken: jwtToken // <-- This is the new token with the organization_id
+      jwtToken: jwtToken, // <-- This is the new token with the organization_id
     });
   } catch (err) {
     console.error("Invite token error:", err);

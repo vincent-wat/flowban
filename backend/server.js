@@ -42,6 +42,8 @@ const io = new Server(server, {
   },
 });
 
+
+
 //Load SSL certificate and key from the certs folder
 
 // Attach io to app so it can be used in controllers

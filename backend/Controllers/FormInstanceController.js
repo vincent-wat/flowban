@@ -123,9 +123,14 @@ async function getAllFormInstancesofTemplate(req, res) {
             },
           ],
         },
+        {
+          model: User,
+          as: "submitter", 
+          attributes: ["id", "first_name", "last_name", "email"]
+        }
       ]
-      
     });
+    
 
     console.log("→ Found formInstances:", formInstances);
 
