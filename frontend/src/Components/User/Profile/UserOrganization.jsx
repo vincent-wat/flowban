@@ -318,6 +318,7 @@ function UserOrganization() {
                         <tr>
                           <th>Name</th>
                           <th>Email</th>
+                          <th>Role</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -325,6 +326,7 @@ function UserOrganization() {
                           <tr key={user.id}>
                             <td>{`${user.first_name} ${user.last_name}`}</td>
                             <td>{user.email}</td>
+                            <td>{user.role}</td>
                           </tr>
                         ))}
                       </tbody>
