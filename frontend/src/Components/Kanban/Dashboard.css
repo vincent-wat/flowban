@@ -293,3 +293,36 @@
     margin-bottom: 12px;
   }
   
+  /* Add these styles to your existing CSS file */
+
+.fixed-create-organization {
+  position: fixed;
+  bottom: 100px;  /* Position above the create board button */
+  right: 30px;
+  background-color: #4a5568;  /* Different color to distinguish from board button */
+  color: white;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+  z-index: 100;
+  font-size: 14px;
+  line-height: 1.2;
+  text-align: left;
+}
+
+.fixed-create-organization:hover {
+  background-color: #2d3748;
+  transform: translateY(-2px);
+}
+
+.fixed-org-icon {
+  font-size: 20px;
+}
+

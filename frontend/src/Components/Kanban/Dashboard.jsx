@@ -5,6 +5,7 @@ import {
   FaEllipsisV,
   FaPlus,
   FaUser,
+  FaBuilding,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
@@ -22,6 +23,7 @@ export const Dashboard = () => {
   const [isManagerView, setIsManagerView] = useState(false);
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
   const [pdfFile, setPdfFile] = useState(null);
+  const [hasOrganization, setHasOrganization] = useState(true); 
 
   const navigate = useNavigate();
 
@@ -35,7 +37,13 @@ export const Dashboard = () => {
     try {
       const decodedToken = jwtDecode(token);
       setUser_id(decodedToken.id);
+      
+      // Check if user has an organization
+      const userHasOrg = !!decodedToken.organization_id;
+      setHasOrganization(userHasOrg);
+      
       console.log("Decoded user ID:", decodedToken.id);
+      console.log("User has organization:", userHasOrg);
     } catch (error) {
       console.error("Error decoding token:", error);
     }
@@ -143,7 +151,19 @@ export const Dashboard = () => {
     Create New <br />
     Kanban Board
   </span>
-</button>
+  </button>
+      {!hasOrganization && (
+          <button
+            className="fixed-create-organization"
+            onClick={() => navigate('/profile/organization')}
+          >
+            <FaBuilding className="fixed-org-icon" />
+            <span>
+              Create an <br />
+              Organization
+            </span>
+          </button>
+        )}
 
       </div>
 
