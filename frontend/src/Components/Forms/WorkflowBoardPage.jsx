@@ -318,9 +318,9 @@ export const WorkflowBoard = () => {
 
       if (
         isSubmitter &&
-        suggestionPhaseStages.includes(form.status) &&
-        !hasSuggestions
-      ) {
+        form.status === "Initializing" &&
+        !hasSuggestionsForAllStages
+      ){
         alert("You must suggest at least one approver before approving this form.");
         return;
       }
