@@ -163,7 +163,7 @@ export const Task = ({
             ))}
           </ul>
         )}
-        <button>Assign</button>
+        <button onClick={handleAssignTask}>Assign</button>
       </Modal>
     </div>
   );
