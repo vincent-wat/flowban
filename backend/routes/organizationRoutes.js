@@ -4,7 +4,7 @@ const Controller = require('../Controllers/OrganizationController.js');
 const authenticateToken = require('../middleware/authMiddleware');
 const isAdmin = require('../middleware/adminMiddleware');
 
-router.post('/create', authenticateToken, isAdmin, Controller.createOrganization);
+router.post('/create', authenticateToken, Controller.createOrganization);
 router.post('/invite', authenticateToken, isAdmin, Controller.inviteUserToOrganization);
 router.post('/invite-accept', Controller.acceptOrganizationInvite);
 

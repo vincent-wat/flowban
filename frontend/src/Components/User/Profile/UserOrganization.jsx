@@ -14,6 +14,9 @@ function UserOrganization() {
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteStatus, setInviteStatus] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [hasOrganization, setHasOrganization] = useState(false);
+  const [newOrgName, setNewOrgName] = useState('');
+  const [createOrgStatus, setCreateOrgStatus] = useState(null);
 
   const refreshToken = async () => {
     try {
@@ -73,21 +76,45 @@ function UserOrganization() {
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
-  
 
-useEffect(() => {
-  const initializeData = async () => {
-    await refreshToken();
-    await checkAdminStatus(); 
-    
-    await Promise.all([
-      fetchOrganizationUsers(),
-      fetchUserOrganizationInfo()
-    ]);
+  const checkOrganizationStatus = () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return false;
+      
+      const decoded = jwtDecode(token);
+      console.log('Decoded token:', decoded);
+      
+      // Check if organization_id exists in the token
+      const hasOrg = !!decoded.organization_id;
+      setHasOrganization(hasOrg);
+      return hasOrg;
+    } catch (error) {
+      console.error('Error checking organization status:', error);
+      setHasOrganization(false);
+      return false;
+    }
   };
   
-  initializeData();
-}, []);
+
+  useEffect(() => {
+    const initializeData = async () => {
+      await refreshToken();
+      const hasOrg = checkOrganizationStatus();
+      
+      if (hasOrg) {
+        await checkAdminStatus();
+        await Promise.all([
+          fetchOrganizationUsers(),
+          fetchUserOrganizationInfo()
+        ]);
+      } else {
+        setLoading(false);
+      }
+    };
+    
+    initializeData();
+  }, []);
 
 
   const fetchOrganizationUsers = async () => {
@@ -177,6 +204,67 @@ useEffect(() => {
     }
   };
 
+  const handleCreateOrganization = async (e) => {
+    e.preventDefault();
+    setCreateOrgStatus(null);
+    
+    if (!newOrgName) return;
+    
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+      
+      // Get current user ID from token
+      const decoded = jwtDecode(token);
+      const userId = decoded.id;
+      
+      const response = await axios.post('https://localhost:3000/api/organizations/create', 
+        { 
+          name: newOrgName,
+          userId: userId 
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      
+      // Update local token with new organization_id
+      await refreshToken();
+      
+      setCreateOrgStatus({ 
+        success: true, 
+        message: 'Organization created successfully!' 
+      });
+      
+      // Reset form and update state to show organization view
+      setNewOrgName('');
+      setHasOrganization(true);
+      
+      // Fetch organization data
+      await Promise.all([
+        fetchOrganizationUsers(),
+        fetchUserOrganizationInfo()
+      ]);
+      
+      // User automatically becomes admin when creating an organization
+      setIsAdmin(true);
+      
+    } catch (err) {
+      console.error('Error creating organization:', err);
+      setCreateOrgStatus({ 
+        success: false, 
+        message: err.response?.data?.error || 'Failed to create organization'
+      });
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="organization-page">
       <Sidebar isOpen={isSidebarOpen} />
@@ -185,63 +273,93 @@ useEffect(() => {
       </button>
 
       <div className={`organization-container ${isSidebarOpen ? 'sidebar-open' : ''}`}>
-        <h1>Organization: {orgName || 'Not Available'}</h1>
-        
-        {/* Invite Users Section */}
-        {isAdmin && (
-          <div className="invite-section">
-            <h2>Invite New Members</h2>
-            <form onSubmit={handleInviteUser} className="invite-form">
+        {hasOrganization ? (
+          // User is part of an organization - show organization details
+          <>
+            <h1>Organization: {orgName || 'Not Available'}</h1>
+            
+            {/* Invite Users Section - Only visible to admins */}
+            {isAdmin && (
+              <div className="invite-section">
+                <h2>Invite New Members</h2>
+                <form onSubmit={handleInviteUser} className="invite-form">
+                  <input
+                    type="email"
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
+                    placeholder="Enter email address"
+                    required
+                  />
+                  <button type="submit">Send Invite</button>
+                </form>
+                
+                {inviteStatus && (
+                  <div className={`invite-status ${inviteStatus.success ? 'success' : 'error'}`}>
+                    {inviteStatus.message}
+                  </div>
+                )}
+              </div>
+            )}
+            
+            {/* Organization Members Section */}
+            <div className="members-section">
+              <h2>Organization Members</h2>
+              
+              {loading && <p>Loading users...</p>}
+              {error && <p className="error-message">{error}</p>}
+              
+              {!loading && !error && (
+                <div className="members-list">
+                  {users.length === 0 ? (
+                    <p>No members found in your organization.</p>
+                  ) : (
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>Name</th>
+                          <th>Email</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {users.map(user => (
+                          <tr key={user.id}>
+                            <td>{`${user.first_name} ${user.last_name}`}</td>
+                            <td>{user.email}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
+              )}
+            </div>
+          </>
+        ) : (
+          // User is not part of an organization - show create form
+          <div className="create-org-section">
+            <h1>Create Organization</h1>
+            <p>You are not currently part of any organization. Create one to collaborate with your team.</p>
+            
+            <form onSubmit={handleCreateOrganization} className="create-org-form">
               <input
-                type="email"
-                value={inviteEmail}
-                onChange={(e) => setInviteEmail(e.target.value)}
-                placeholder="Enter email address"
+                type="text"
+                value={newOrgName}
+                onChange={(e) => setNewOrgName(e.target.value)}
+                placeholder="Enter organization name"
                 required
               />
-              <button type="submit">Send Invite</button>
+              <button type="submit" disabled={loading}>
+                {loading ? 'Creating...' : 'Create Organization'}
+              </button>
             </form>
             
-            {inviteStatus && (
-              <div className={`invite-status ${inviteStatus.success ? 'success' : 'error'}`}>
-                {inviteStatus.message}
+            {createOrgStatus && (
+              <div className={`status-message ${createOrgStatus.success ? 'success' : 'error'}`}>
+                {createOrgStatus.message}
               </div>
             )}
           </div>
         )}
-        
-        {/* Organization Members Section */}
-        <div className="members-section">
-          <h2>Organization Members</h2>
-          
-          {loading && <p>Loading users...</p>}
-          {error && <p className="error-message">{error}</p>}
-          
-          {!loading && !error && (
-            <div className="members-list">
-              {users.length === 0 ? (
-                <p>No members found in your organization.</p>
-              ) : (
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Name</th>
-                      <th>Email</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {users.map(user => (
-                      <tr key={user.id}>
-                        <td>{`${user.first_name} ${user.last_name}`}</td>
-                        <td>{user.email}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
-            </div>
-          )}
-        </div>
       </div>
     </div>
   );
