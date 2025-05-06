@@ -14,7 +14,8 @@ export const Column = ({
   addTask,
   editTask,
   deleteTask,
-  color,
+  orgUsers,
+  assignTaskToUser,
 }) => {
   const { setNodeRef } = useDroppable({ id: column.id });
   const [newName, setNewName] = useState(column.name);
@@ -28,6 +29,7 @@ export const Column = ({
     setIsEditModalOpen(false);
   };
   const handleNewTask = () => {
+    console.log("Column ID: " + column.id);
     addTask(column.id, title, description);
     setTitle("");
     setDescription("");
@@ -35,16 +37,19 @@ export const Column = ({
   };
 
   return (
-    <div className="column" style={{ backgroundColor: color }}>
+    <div className="column">
       <h3 className="column-title">{column.name}</h3>
       <div ref={setNodeRef} className="task-list droppable-area">
         {tasks.map((task) => (
           <Task
+            className="task-card"
             task={task}
             key={task.id}
             id={task.id}
             editTask={editTask}
             deleteTask={deleteTask}
+            orgUsers={orgUsers}
+            assignTaskToUser={assignTaskToUser}
           />
         ))}
       </div>
@@ -53,19 +58,19 @@ export const Column = ({
           className="add-task"
           onClick={() => setIsAddTaskModalOpen(column.id)}
         >
-          <FaPlus /> Add Task
+          <FaPlus size="15" /> Add Task
         </button>
         <button
           className="edit-column"
           onClick={() => setIsEditModalOpen(true)}
         >
-          <FaEdit /> Edit Column
+          <FaEdit /> Edit
         </button>
         <button
           className="delete-column"
           onClick={() => deleteColumn(column.id)}
         >
-          <FaTrash /> Delete Column
+          <FaTrash /> Delete
         </button>
       </footer>
       <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)}>

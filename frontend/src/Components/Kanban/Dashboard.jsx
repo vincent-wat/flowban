@@ -11,7 +11,6 @@ import { useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import "./Dashboard.css";
 
-
 export const Dashboard = () => {
   const [boards, setBoards] = useState([]);
   const [templates, setTemplates] = useState([]);
@@ -23,10 +22,12 @@ export const Dashboard = () => {
   const [isManagerView, setIsManagerView] = useState(false);
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
   const [pdfFile, setPdfFile] = useState(null);
-  const [hasOrganization, setHasOrganization] = useState(true); 
+  const [hasOrganization, setHasOrganization] = useState(true);
 
   const navigate = useNavigate();
 
+  // get the user_id from the local storage to only
+  // show the boards that the user has access to
   // Decode token and set the user ID.
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -37,11 +38,11 @@ export const Dashboard = () => {
     try {
       const decodedToken = jwtDecode(token);
       setUser_id(decodedToken.id);
-      
+
       // Check if user has an organization
       const userHasOrg = !!decodedToken.organization_id;
       setHasOrganization(userHasOrg);
-      
+
       console.log("Decoded user ID:", decodedToken.id);
       console.log("User has organization:", userHasOrg);
     } catch (error) {
@@ -67,17 +68,20 @@ export const Dashboard = () => {
   // Fetch templates from the API.
   const fetchTemplates = async () => {
     try {
-      const token = localStorage.getItem("token"); 
-  
-      const response = await fetch("https://localhost:3000/api/forms/templates", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-  
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(
+        "https://localhost:3000/api/forms/templates",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
       if (!response.ok)
         throw new Error(`HTTP error! status: ${response.status}`);
-  
+
       const data = await response.json();
       setTemplates(data);
     } catch (error) {
@@ -108,20 +112,20 @@ export const Dashboard = () => {
         console.error("No token found. Please log in.");
         return;
       }
-  
+
       const decodedToken = jwtDecode(token);
       const user_id = decodedToken.id;
-  
+
       const response = await fetch("https://localhost:3000/api/boards", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: newBoardName, user_id }),
       });
-  
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-  
+
       const newBoard = await response.json();
       setBoards((prevBoards) => [newBoard, ...prevBoards]);
       setIsModalOpen(false);
@@ -131,10 +135,18 @@ export const Dashboard = () => {
     }
   };
 
+  const handleOpenModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setNewBoardName("");
+  };
+
   const handleBoardClick = (boardId) => {
     navigate(`/kanban/${boardId}`);
   };
-
   const handleTemplateClick = (templateId) => {
     navigate(`/workflowBoard/${templateId}`);
   };
@@ -142,20 +154,20 @@ export const Dashboard = () => {
   return (
     <>
       <div className="btn-container">
-      <button
-  className="fixed-create-board"
-  onClick={() => setIsModalOpen(true)}
->
-  <FaPlus className="fixed-plus-icon" />
-  <span>
-    Create New <br />
-    Kanban Board
-  </span>
-  </button>
-      {!hasOrganization && (
+        <button
+          className="fixed-create-board"
+          onClick={() => setIsModalOpen(true)}
+        >
+          <FaPlus className="fixed-plus-icon" />
+          <span>
+            Create New <br />
+            Kanban Board
+          </span>
+        </button>
+        {!hasOrganization && (
           <button
             className="fixed-create-organization"
-            onClick={() => navigate('/profile/organization')}
+            onClick={() => navigate("/profile/organization")}
           >
             <FaBuilding className="fixed-org-icon" />
             <span>
@@ -164,7 +176,6 @@ export const Dashboard = () => {
             </span>
           </button>
         )}
-
       </div>
 
       <div
@@ -256,7 +267,12 @@ export const Dashboard = () => {
                 <button
                   onClick={async () => {
                     try {
-                      if (!newBoardName || !description || !pdfFile || !user_id) {
+                      if (
+                        !newBoardName ||
+                        !description ||
+                        !pdfFile ||
+                        !user_id
+                      ) {
                         alert(
                           "Please fill out all fields and wait for user ID to load."
                         );
@@ -315,17 +331,24 @@ export const Dashboard = () => {
                       }
 
                       const newBoard = await boardRes.json();
-                      setBoards((prevBoards) => [newBoard.board, ...prevBoards]);
+                      setBoards((prevBoards) => [
+                        newBoard.board,
+                        ...prevBoards,
+                      ]);
                       setIsTemplateModalOpen(false);
                       setNewBoardName("");
                       setDescription("");
                       setPdfFile(null);
                     } catch (error) {
                       console.error("Error during workflow creation:", error);
-                      alert("Something went wrong — check console for details.");
+                      alert(
+                        "Something went wrong — check console for details."
+                      );
                     }
                   }}
-                  disabled={!newBoardName || !description || !pdfFile || !user_id}
+                  disabled={
+                    !newBoardName || !description || !pdfFile || !user_id
+                  }
                 >
                   Create
                 </button>

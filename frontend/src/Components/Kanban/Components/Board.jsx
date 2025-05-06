@@ -5,8 +5,9 @@ import { Column } from "./Column";
 import axios from "../../../axios";
 import { use } from "react";
 import Modal from "./Modal";
-import { FaPlus } from "react-icons/fa";
+import { FaPlus, FaBars } from "react-icons/fa";
 import { io } from "socket.io-client";
+import { error } from "pdf-lib";
 
 // Initialize Socket.IO
 const socket = io("https://localhost:3000", {
@@ -27,10 +28,22 @@ export default function Board({ board_id, user_id, user_role }) {
   const [updateBoard, setUpdateBoard] = useState(true);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [activeTask, setActiveTask] = useState(null);
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [isAddColumnOpen, setIsAddColumnOpen] = useState(false);
+  const [isShareKanbanOpen, setIsKanbanOpen] = useState(false);
+  const [invitePrivilege, setInvitePrivilege] = useState("");
+  const [organizationUsers, setOrganizationUsers] = useState([]);
+  const [filteredUsers, setFilteredUsers] = useState([]);
+
+  const [inviteEmail, setEmail] = useState("");
+  const [inviteRole, setRole] = useState("");
+
   // url for columns and tasks
   const COLUMN_URL = "/api/columns";
   const TASK_URL = "/api/tasks";
   const BOARD_URL = "/api/boards";
+  const USER_BOARD_URL = "api/userBoards";
+  const USER_TASK_URL = "/api/userTasks";
 
   function checkUserRole() {
     if (user_role === "owner" || user_role === "editor") {
@@ -249,9 +262,99 @@ export default function Board({ board_id, user_id, user_role }) {
     }
   };
 
+  const handleAddColumn = () => {
+    console.log("handleAddColumn clicked");
+    addColumn();
+    setIsAddColumnOpen(false);
+    //
+  };
+  const handleShareKanban = async () => {
+    console.log("Email:", inviteEmail, "Role:", inviteRole);
+    if (inviteEmail === "") return;
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new error("No authentication token found");
+      }
+      const response = await axios.post(
+        `${USER_BOARD_URL}/invite`,
+        { email: inviteEmail, board_id: { board_id }, role: inviteRole },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      console.log("Invite Sent!");
+      setEmail("");
+      setRole("");
+    } catch (error) {
+      console.log("Error inviting user:", error);
+    }
+  };
+  // get all users in the organization so we can send invites and also
+  // assign tasks to users.
+  const fetchUsersInOrganization = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      console.log("Token: ", token);
+      if (!token) {
+        throw new error("No authentication token found");
+      }
+
+      const response = await axios.get("/api/organizations/users", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.data && response.data.users) {
+        setOrganizationUsers(response.data.users);
+      }
+      console.log("Users in organization:", response.data);
+    } catch (error) {
+      console.error("Error fetching users in organization:", error);
+    }
+  };
+
+  // function to handle autocomplete for the email.
+  const handleEmailChange = (e) => {
+    const input = e.target.value;
+    setEmail(input);
+    if (input.length > 0) {
+      const filteredUsers = organizationUsers.filter((user) =>
+        user.email.toLowerCase().includes(input.toLowerCase())
+      );
+      setFilteredUsers(filteredUsers);
+    } else {
+      setFilteredUsers([]);
+    }
+  };
+
+  // function to assign a task to a user
+  const assignTaskToUser = async (assign_task_id, assign_user_id) => {
+    if (!checkUserRole()) {
+      return;
+    }
+    const newUserTask = {
+      user_id: assign_user_id,
+      task_id: assign_task_id,
+    };
+
+    try {
+      await axios.post(USER_TASK_URL, newUserTask);
+      console.log("Task assigned to user:", assign_user_id);
+      setUpdateBoard(true);
+    } catch (error) {
+      console.error("Error assigning task to user:", error);
+    }
+  };
+
   // initial fetch of all data
   useEffect(() => {
     fetchAllData();
+    fetchUsersInOrganization();
   }, []);
 
   // useEffect for changes in columns and tasks with socket.io
@@ -288,20 +391,29 @@ export default function Board({ board_id, user_id, user_role }) {
 
   const columnColors = ["#FF5733", "#33FF57", "#3357FF", "#FF33A1"];
   return (
-    <div>
-      <h2></h2>
+    <div className="main-div">
       <div>
-        <h3>Add New Column</h3>
-        <input
-          type="text"
-          placeholder="New Column Name"
-          value={newName}
-          onChange={(e) => setNewName(e.target.value)}
-        />
-        <button onClick={addColumn}>
-          <FaPlus />
-          Add Column
-        </button>
+        <nav className="tool-bar">
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setIsAddColumnOpen(true);
+            }}
+            className="nav-button"
+          >
+            Add Column
+          </button>
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setIsKanbanOpen(true);
+            }}
+          >
+            Share Kanban
+          </button>
+        </nav>
       </div>
       <div className="board">
         <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
@@ -320,11 +432,68 @@ export default function Board({ board_id, user_id, user_role }) {
                 editColumn={editColumn}
                 deleteTask={deleteTask}
                 editTask={editTask}
+                orgUsers={organizationUsers}
+                assignTaskToUser={assignTaskToUser}
                 color={columnColors[column.id % columnColors.length]}
               />
             );
           })}
         </DndContext>
+        <Modal
+          className="board-modal"
+          isOpen={isAddColumnOpen}
+          onClose={() => setIsAddColumnOpen(false)}
+        >
+          <input
+            type="text"
+            onChange={(e) => setNewName(e.target.value)}
+            placeholder="Column Name"
+          />
+          <button onClick={handleAddColumn}>Save</button>
+        </Modal>
+
+        <Modal
+          className="board-modal"
+          isOpen={isShareKanbanOpen}
+          onClose={() => setIsKanbanOpen(false)}
+        >
+          <div className="share-kanban">
+            <select
+              className="dropdown-menu-kanban"
+              onChange={(e) => setRole(e.target.value)}
+            >
+              <option value="" disabled selected>
+                General Access
+              </option>
+              <option value="editor">Editor</option>
+              <option value="viewer">Viewer</option>
+            </select>
+            <input
+              type="text"
+              value={inviteEmail}
+              onChange={handleEmailChange}
+              placeholder="Enter Email"
+            ></input>
+            {/* Display autocomplete suggestions */}
+            {filteredUsers.length > 0 && (
+              <ul className="autocomplete-list">
+                {filteredUsers.map((user) => (
+                  <li
+                    key={user.id}
+                    onClick={() => {
+                      setEmail(user.email); // Set the selected email
+                      setFilteredUsers([]); // Clear suggestions
+                    }}
+                  >
+                    {user.email}
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            <button onClick={handleShareKanban}>Send Invite</button>
+          </div>
+        </Modal>
       </div>
     </div>
   );

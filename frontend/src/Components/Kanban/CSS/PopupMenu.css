@@ -1,0 +1,30 @@
+.popup-menu {
+  top: 20px;
+  right: -250px; /* Adjust to position it to the side of the board */
+  width: 200px;
+  background-color: white;
+  border: 1px solid #ccc;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  padding: 10px;
+  z-index: 1000;
+}
+
+.popup-menu ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.popup-menu li {
+  padding: 8px 0;
+  cursor: pointer;
+}
+
+.popup-menu .close-btn {
+  background: none;
+  border: none;
+  color: red;
+  cursor: pointer;
+  font-size: 16px;
+  margin-bottom: 10px;
+}

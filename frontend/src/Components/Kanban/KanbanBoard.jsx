@@ -42,6 +42,10 @@ const KanbanBoard = () => {
     fetchUserRole();
   }, []);
 
-  return <Board board_id={board_id} user_id={user_id} user_role={user_role} />;
+  return (
+    <div className="kanban">
+      <Board board_id={board_id} user_id={user_id} user_role={user_role} />
+    </div>
+  );
 };
 export default KanbanBoard;

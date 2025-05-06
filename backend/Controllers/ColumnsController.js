@@ -8,12 +8,10 @@ async function getAllColumns(req, res) {
     const columns = await Column.findAll();
     res.json(columns);
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        error: "Cannot get all Columns for board",
-        message: error.message,
-      });
+    res.status(500).json({
+      error: "Cannot get all Columns for board",
+      message: error.message,
+    });
   }
 }
 // get an individual column
@@ -41,12 +39,10 @@ async function getAllColumnsForBoard(req, res) {
     //io.emit("getAllColumnsForBoard", columns);
     res.json(columns);
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        error: "Cannot get all Columns for board",
-        message: error.message,
-      });
+    res.status(500).json({
+      error: "Cannot get all Columns for board",
+      message: error.message,
+    });
   }
 }
 // add a column
@@ -58,8 +54,10 @@ async function addColumn(req, res) {
       created_at: new Date(),
       updated_at: new Date(),
     });
+
     res.json(column);
   } catch (error) {
+    console.error("Error creating column:", error);
     res.status(500).json({ error: "Column not created" });
   }
 }
