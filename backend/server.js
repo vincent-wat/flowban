@@ -21,7 +21,11 @@ const cors = require("cors");
 const path = require("path");
 const fs = require("fs");
 
-const https = require("https");
+const dns = require("dns");
+dns.setDefaultResultOrder("ipv4first");
+
+const http = require("http");
+
 const { Server } = require("socket.io");
 const user = require("./models/user");
 
@@ -31,7 +35,7 @@ const options = {
 };
 
 const app = express();
-const server = https.createServer(options, app);
+const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
@@ -62,7 +66,7 @@ io.on("connection", (socket) => {
   });
 });
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(
@@ -114,7 +118,7 @@ app.post("/signuptest", (req, res) => {
 
 // Ensure Upload Directories Exist
 const ensureUploadsDirectory = () => {
-  const userFormsDir = path.join(__dirname, "../uploads/userForms");
+  const userFormsDir = path.join(__dirname, "/uploads/userForms");
   if (!fs.existsSync(userFormsDir)) {
     fs.mkdirSync(userFormsDir, { recursive: true });
     console.log("Created directory:", userFormsDir);
@@ -123,7 +127,7 @@ const ensureUploadsDirectory = () => {
 ensureUploadsDirectory();
 
 const ensureTemplateDirectory = () => {
-  const templateDir = path.join(__dirname, "../uploads/templates");
+  const templateDir = path.join(__dirname, "/uploads/templates");
   if (!fs.existsSync(templateDir)) {
     fs.mkdirSync(templateDir, { recursive: true });
     console.log("Created Directory:", templateDir);

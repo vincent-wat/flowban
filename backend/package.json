@@ -4,7 +4,7 @@
   "main": "server.js",
   "scripts": {
     "test": "test",
-    "start": "node server.js", 
+    "start": "node server.js",
     "migrate": "npx sequelize-cli db:migrate",
     "migrate:undo": "npx sequelize-cli db:migrate:undo",
     "migrate:undo_all": "npx sequelize-cli db:migrate:undo:all",
@@ -16,6 +16,8 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@supabase/supabase-js": "^2.49.4",
+    "sequelize-cli": "^6.6.2",
     "axios": "^1.7.7",
     "bcrypt": "^5.1.1",
     "cors": "^2.8.5",
@@ -50,7 +52,6 @@
   },
   "devDependencies": {
     "jest": "^29.7.0",
-    "sequelize-cli": "^6.6.2",
     "supertest": "^7.0.0"
   }
 }

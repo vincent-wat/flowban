@@ -8,17 +8,21 @@ const ensureDirectoryExists = (directory) => {
   }
 };
 
+ensureDirectoryExists(path.join(__dirname, "uploads/userForms"));
+ensureDirectoryExists(path.join(__dirname, "uploads/templates"));
+
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     let uploadPath;
 
     if (req.uploadType === "userForms") {
-      uploadPath = path.join(__dirname, "../uploads/userForms");
+      uploadPath = path.join(__dirname, "uploads/userForms");
     } else {
-      uploadPath = path.join(__dirname, "../uploads/templates");
+      uploadPath = path.join(__dirname, "uploads/templates");
     }
 
-    ensureDirectoryExists(uploadPath);
+    ensureDirectoryExists(uploadPath); 
     cb(null, uploadPath);
   },
   filename: (req, file, cb) => {
@@ -27,7 +31,6 @@ const storage = multer.diskStorage({
   },
 });
 
-// File filter (only PDFs allowed)
 const fileFilter = (req, file, cb) => {
   if (file.mimetype === "application/pdf") {
     cb(null, true);
@@ -37,12 +40,12 @@ const fileFilter = (req, file, cb) => {
 };
 
 const uploadUserForms = (req, res, next) => {
-  req.uploadType = "userForms"; 
-  multer({ storage, fileFilter }).single("file")(req, res, next); 
+  req.uploadType = "userForms";
+  multer({ storage, fileFilter }).single("file")(req, res, next);
 };
 
 const uploadTemplates = (req, res, next) => {
-  req.uploadType = "templates"; 
+  req.uploadType = "templates";
   multer({ storage, fileFilter }).single("file")(req, res, next);
 };
 
