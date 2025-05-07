@@ -237,7 +237,7 @@ const approveFormInstance = async (req, res) => {
       return res.status(403).json({ error: "You are not assigned to approve this form at this stage." });
     }
 
-    if (!["approver", "final_approver", "admin"].includes(assignment.role)) {
+    if (!["approver", "final_approver", "admin", "owner"].includes(assignment.role)) {
       return res.status(403).json({ error: "You do not have approval permissions for this form." });
     }
 

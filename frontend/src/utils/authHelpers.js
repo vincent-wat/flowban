@@ -18,7 +18,12 @@ export const isUserAdmin = async () => {
     if (!response.data || !response.data.roles) return false;
     
     // Check if any role has name 'admin'
-    return response.data.roles.some(role => role.name.toLowerCase() === 'admin');
+    return response.data.roles.some(role => 
+      role.name.toLowerCase() === 'admin' || 
+      role.name.toLowerCase() === 'owner' ||
+      role.id === 2 ||
+      role.id === 3
+    );
   } catch (error) {
     console.error('Error checking admin status:', error);
     return false;

@@ -395,6 +395,64 @@ async function assignRoleToUser(userId, roleId) {
   }
 }
 
+async function changeUserRole(req, res) {
+  try {
+    const { userId, roleId } = req.body;
+
+    // Check if requester is owner (role_id = 3)
+    const [requesterRoles] = await sequelize.query(`
+      SELECT r.id, r.name 
+      FROM roles r
+      JOIN user_roles ur ON r.id = ur.role_id
+      WHERE ur.user_id = ?
+    `, {
+      replacements: [req.user.id]
+    });
+    
+    const isOwner = requesterRoles.some(role => role.id === 3 || role.name.toLowerCase() === 'owner');
+    
+    if (!isOwner) {
+      return res.status(403).json({ error: 'Only organization owners can change user roles' });
+    }
+    
+    await sequelize.transaction(async (t) => {
+      // Check if a role already exists for this user
+      const [existingRoles] = await sequelize.query(`
+        SELECT id FROM user_roles WHERE user_id = ?
+      `, {
+        replacements: [userId],
+        transaction: t
+      });
+      
+      if (existingRoles.length > 0) {
+        // Update existing role instead of delete+insert
+        await sequelize.query(`
+          UPDATE user_roles 
+          SET role_id = ?, updated_at = NOW() 
+          WHERE user_id = ?
+        `, {
+          replacements: [roleId, userId],
+          transaction: t
+        });
+      } else {
+        // Insert only if no role exists
+        await sequelize.query(`
+          INSERT INTO user_roles (user_id, role_id, assigned_at, created_at, updated_at) 
+          VALUES (?, ?, NOW(), NOW(), NOW())
+        `, {
+          replacements: [userId, roleId],
+          transaction: t
+        });
+      }
+    });
+    
+    return res.status(200).json({ message: 'User role updated successfully' });
+  } catch (error) {
+    console.error('Error changing user role:', error);
+    return res.status(500).json({ error: 'Server error' });
+  }
+}
+
 
 
 module.exports = {
@@ -412,4 +470,5 @@ module.exports = {
   assignRoleToUser,
   getUserRoles,
   refreshToken,
+  changeUserRole,
 };

@@ -67,5 +67,8 @@ router.get('/validate-domain', async (req, res) => {
   }
 });
 
+//Change role
+router.post('/role', authenticateToken, controller.changeUserRole);
+
 
 module.exports = router;
