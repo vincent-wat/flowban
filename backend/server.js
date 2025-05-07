@@ -71,7 +71,11 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 app.use(
   cors({
-    origin: ["http://localhost:3001", "https://localhost:3001"],
+    origin: [
+      "http://localhost:3001",               
+      "https://localhost:3001",                   
+      "https://flowban-frontend.vercel.app"        
+    ],
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true,
   })

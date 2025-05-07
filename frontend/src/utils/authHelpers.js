@@ -9,7 +9,7 @@ export const isUserAdmin = async () => {
     const token = localStorage.getItem('token');
     if (!token) return false;
     
-    const response = await axios.get('https://localhost:3000/api/users/roles', {
+    const response = await axios.get('baseURL/api/users/roles', {
       headers: {
         Authorization: `Bearer ${token}`
       }

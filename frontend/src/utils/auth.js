@@ -49,7 +49,7 @@ export const refreshTokenIfNeeded = async () => {
       // If token is about to expire (less than 5 minutes left)
       if (decoded.exp && decoded.exp - currentTime < 300) {
         // Call refresh endpoint
-        const response = await fetch('https://localhost:3000/api/users/refresh-token', {
+        const response = await fetch('baseURL/api/users/refresh-token', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
