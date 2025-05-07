@@ -32,5 +32,12 @@ module.exports = {
 
   async down(queryInterface, Sequelize) {
     await queryInterface.bulkDelete('user_roles', null, {});
+    
+    // Reset the sequence for the table
+    if (queryInterface.sequelize.options.dialect === 'postgres') {
+      await queryInterface.sequelize.query(`
+        ALTER SEQUENCE user_roles_id_seq RESTART WITH 1;
+      `);
+    }
   }
 };

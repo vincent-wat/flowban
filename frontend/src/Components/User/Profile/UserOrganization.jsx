@@ -14,9 +14,11 @@ function UserOrganization() {
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteStatus, setInviteStatus] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isOwner, setIsOwner] = useState(false);
   const [hasOrganization, setHasOrganization] = useState(false);
   const [newOrgName, setNewOrgName] = useState('');
   const [createOrgStatus, setCreateOrgStatus] = useState(null);
+  const [actionLoading, setActionLoading] = useState({});
 
   const refreshToken = async () => {
     try {
@@ -63,19 +65,71 @@ function UserOrganization() {
           role.id === 2 || role.name.toLowerCase() === 'admin' ||
           role.id === 3 || role.name.toLowerCase() === 'owner'
         );
+        const hasOwnerRole = response.data.roles.some(role => 
+          role.id === 3 || role.name.toLowerCase() === 'owner'
+        );
+        
+        setIsOwner(hasOwnerRole);
         setIsAdmin(hasAdminRole);
         console.log('User is admin:', hasAdminRole);
+        console.log('User is owner:', hasOwnerRole);
       } else {
         setIsAdmin(false);
+        setIsOwner(false);
       }
     } catch (error) {
       console.error('Error checking admin status:', error);
       setIsAdmin(false);
+      setIsOwner(false);
     }
   };
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
+  };
+
+  const handleRoleChange = async (userId, newRoleId, currentRole) => {
+    // Set loading state for this specific user
+    setActionLoading(prev => ({ ...prev, [userId]: true }));
+    
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+      
+      // Call API to update user's role
+      await axios.post('https://localhost:3000/api/users/role', 
+        { 
+          userId, 
+          roleId: newRoleId 
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      
+      // Update local state to reflect the change without needing a full refetch
+      setUsers(prevUsers => prevUsers.map(user => {
+        if (user.id === userId) {
+          return {
+            ...user,
+            role: newRoleId === 2 ? 'admin' : 'user'
+          };
+        }
+        return user;
+      }));
+      
+      console.log(`User ${userId} role changed from ${currentRole} to ${newRoleId === 2 ? 'admin' : 'user'}`);
+    } catch (error) {
+      console.error('Error changing user role:', error);
+    } finally {
+      // Clear loading state for this user
+      setActionLoading(prev => ({ ...prev, [userId]: false }));
+    }
   };
 
   const checkOrganizationStatus = () => {
@@ -320,6 +374,7 @@ function UserOrganization() {
                           <th>Name</th>
                           <th>Email</th>
                           <th>Role</th>
+                          {isOwner && <th>Actions</th>} {/* Only show actions column for owners */}
                         </tr>
                       </thead>
                       <tbody>
@@ -328,6 +383,27 @@ function UserOrganization() {
                             <td>{`${user.first_name} ${user.last_name}`}</td>
                             <td>{user.email}</td>
                             <td>{user.role}</td>
+                            {isOwner && (
+                              <td>
+                                {user.role?.toLowerCase() !== 'owner' && (
+                                  <button 
+                                    className="role-action-button"
+                                    onClick={() => handleRoleChange(
+                                      user.id, 
+                                      user.role?.toLowerCase() === 'admin' ? 1 : 2, // Toggle between admin (2) and user (1)
+                                      user.role
+                                    )}
+                                    disabled={actionLoading[user.id]}
+                                  >
+                                    {actionLoading[user.id] ? 'Processing...' : 
+                                      user.role?.toLowerCase() === 'admin' ? 'Demote to User' : 'Promote to Admin'}
+                                  </button>
+                                )}
+                                {user.role?.toLowerCase() === 'owner' && (
+                                  <span className="owner-label">Owner</span>
+                                )}
+                              </td>
+                            )}
                           </tr>
                         ))}
                       </tbody>
