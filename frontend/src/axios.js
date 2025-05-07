@@ -1,6 +1,10 @@
 import axios from "axios";
 
-// base url for the database port to use axios libray
+const baseURL =
+  process.env.REACT_APP_API_BASE_URL || "http://localhost:3000";
+
 export default axios.create({
-  baseURL: "https://localhost:3000",
+  baseURL,
+  withCredentials: true 
 });
+
