@@ -12,6 +12,7 @@ module.exports = (sequelize, DataTypes) => {
           model: "users",
           key: "id",
         },
+        onDelete: "CASCADE",
       },
       task_id: {
         primaryKey: true,
@@ -21,6 +22,7 @@ module.exports = (sequelize, DataTypes) => {
           model: "task",
           key: "id",
         },
+        onDelete: "CASCADE",
       },
       created_at: {
         allowNull: false,
@@ -40,9 +42,13 @@ module.exports = (sequelize, DataTypes) => {
   UserTask.associate = (models) => {
     UserTask.belongsTo(models.User, {
       foreignKey: "user_id",
+      onDelete: "CASCADE",
     });
+  };
+  UserTask.associate = (models) => {
     UserTask.belongsTo(models.Task, {
       foreignKey: "task_id",
+      onDelete: "CASCADE",
     });
   };
   return UserTask;

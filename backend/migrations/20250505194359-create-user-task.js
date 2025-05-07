@@ -11,6 +11,7 @@ module.exports = {
           model: "users",
           key: "id",
         },
+        onDelete: "CASCADE",
       },
       task_id: {
         primaryKey: true,
@@ -20,6 +21,7 @@ module.exports = {
           model: "task",
           key: "id",
         },
+        onDelete: "CASCADE",
       },
       created_at: {
         allowNull: false,

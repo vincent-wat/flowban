@@ -21,7 +21,7 @@ async function sendOrganizationInviteEmail(email, token) {
     const inviteLink = `https://localhost:3001/org-invite?token=${token}`;
 
     const mailOptions = {
-      from: process.env.EMAIL || 'workflowban@gmail.com',
+      from: process.env.EMAIL || "workflowban@gmail.com",
       to: email,
       subject: "You're invited to join an organization on Flowban",
       html: `
@@ -46,10 +46,10 @@ async function sendOrganizationInviteEmail(email, token) {
 
 async function sendKanbanInvite(email, token, role) {
   try {
-    const inviteLink = `https://yourfrontend.com/kanban-invite?token=${token}`;
+    const inviteLink = `https://localhost:3001/kanban-invite?token=${token}`;
 
     const mailOptions = {
-      from: process.env.GMAIL_USER,
+      from: process.env.EMAIL || "workflowban@gmail.com",
       to: email,
       subject: "You are invited to join a KanBan board on Flowban",
       html: `<p> You have been invited to join a Kanban board with the role of ${role}. Click below to accept the invite:<p>
@@ -63,4 +63,28 @@ async function sendKanbanInvite(email, token, role) {
   }
 }
 
-module.exports = { sendOrganizationInviteEmail, sendKanbanInvite };
+async function sendAssignedTaskEmail(email, task) {
+  console.log("Sending assigned task email to:", email);
+  console.log("Task details:", task);
+  try {
+    const mailOptions = {
+      from: process.env.EMAIL || "workflowban@gmail.com",
+      to: email,
+      subject: "You have been assigned a new task on Flowban",
+      html: `<p>You have been assigned a new task on Flowban:</p>
+            <p><strong>Title:</strong> ${task.title}</p>
+            <p><strong>Description:</strong> ${task.description}</p>`,
+    };
+    await transporter.sendMail(mailOptions);
+    console.log("Assigned task email sent successfully to:", email);
+  } catch (error) {
+    console.error("Error sending assigned task email:", error);
+    throw new Error("Failed to send assigned task email");
+  }
+}
+
+module.exports = {
+  sendOrganizationInviteEmail,
+  sendKanbanInvite,
+  sendAssignedTaskEmail,
+};

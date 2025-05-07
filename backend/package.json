@@ -4,7 +4,11 @@
   "main": "server.js",
   "scripts": {
     "test": "test",
+<<<<<<< HEAD
     "start": "node server.js", 
+=======
+    "start": "nodemon server.js",
+>>>>>>> 56e707e1cb67ba4ba8b758321183f58c3ce545fd
     "migrate": "npx sequelize-cli db:migrate",
     "migrate:undo": "npx sequelize-cli db:migrate:undo",
     "migrate:undo_all": "npx sequelize-cli db:migrate:undo:all",
