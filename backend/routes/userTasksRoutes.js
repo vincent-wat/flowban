@@ -8,5 +8,6 @@ router.get("/:user_id/:task_id", Controller.getUserTask); // get specific user t
 router.delete("/:task_id", Controller.deleteUserTask); // delete specific user task
 router.get("/tasks/all/:user_id", Controller.getUserTasksByUserId); // get all tasks for user
 router.post("/notification", Controller.taskNotification); // send email notification for assigned task
+router.get("/assigned/user/:task_id", Controller.getAssignedUser); // get assigned user for task
 
 module.exports = router;

@@ -94,6 +94,24 @@ async function taskNotification(req, res) {
   }
 }
 
+async function getAssignedUser(req, res) {
+  try {
+    const { task_id } = req.params;
+    // check if task_id is in the database
+    const assignedUser = await UserTasks.findOne({
+      where: { task_id: task_id },
+    });
+
+    if (!assignedUser) {
+      return res.status(404).json({ error: "Assigned user not found" });
+    }
+    return res.status(200).json(assignedUser);
+  } catch (error) {
+    console.error("Error fetching assigned user:", error);
+    return res.status(500).json({ error: "Error fetching assigned user" });
+  }
+}
+
 module.exports = {
   getAllEntries,
   createUserTask,
@@ -101,4 +119,5 @@ module.exports = {
   deleteUserTask,
   getUserTasksByUserId,
   taskNotification,
+  getAssignedUser,
 };

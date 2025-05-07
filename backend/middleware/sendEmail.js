@@ -75,7 +75,7 @@ async function sendAssignedTaskEmail(email, task) {
             <p><strong>Title:</strong> ${task.title}</p>
             <p><strong>Description:</strong> ${task.description}</p>`,
     };
-    await sendMail(mailOptions);
+    await transporter.sendMail(mailOptions);
     console.log("Assigned task email sent successfully to:", email);
   } catch (error) {
     console.error("Error sending assigned task email:", error);

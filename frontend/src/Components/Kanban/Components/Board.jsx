@@ -226,7 +226,6 @@ export default function Board({ board_id, user_id, user_role }) {
     console.log("Delete Task ID: ", task_id);
     try {
       await axios.delete(`${TASK_URL}/id/${task_id}`);
-      await axios.delete(`${USER_TASK_URL}/${task_id}`);
       setUpdateBoard(true);
     } catch (error) {
       console.error("Error deleting task:", error);

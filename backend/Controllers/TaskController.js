@@ -72,6 +72,7 @@ async function deleteTask(req, res) {
     }
   } catch (error) {
     res.status(500).json({ error: "Task not deleted" });
+    console.error("Error deleting task:", error);
   }
 }
 
