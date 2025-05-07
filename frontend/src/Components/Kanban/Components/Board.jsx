@@ -223,8 +223,10 @@ export default function Board({ board_id, user_id, user_role }) {
     if (!checkUserRole()) {
       return;
     }
+    console.log("Delete Task ID: ", task_id);
     try {
       await axios.delete(`${TASK_URL}/id/${task_id}`);
+      await axios.delete(`${USER_TASK_URL}/${task_id}`);
       setUpdateBoard(true);
     } catch (error) {
       console.error("Error deleting task:", error);
@@ -348,6 +350,21 @@ export default function Board({ board_id, user_id, user_role }) {
       setUpdateBoard(true);
     } catch (error) {
       console.error("Error assigning task to user:", error);
+    }
+    // get email of user from organizationUsers
+    const user = organizationUsers.find((user) => user.id === assign_user_id);
+    if (user) {
+      const email = user.email;
+      console.log("User email:", email);
+      const task = tasks.find((task) => task.id === assign_task_id);
+      console.log("Task:", task);
+      //send email notification to user
+      await axios.post(`${USER_TASK_URL}/notification`, {
+        email: email,
+        task: tasks.find((task) => task.id === assign_task_id),
+      });
+    } else {
+      console.error("User not found in organizationUsers");
     }
   };
 

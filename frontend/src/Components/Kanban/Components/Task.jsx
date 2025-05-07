@@ -45,6 +45,7 @@ export const Task = ({
   const handleAssignTask = () => {
     // get user id from email
     const user = organizationUsers.find((user) => user.email === email);
+    // check if user exists
     if (user) {
       assignTaskToUser(task.id, user.id);
       setEmail("");

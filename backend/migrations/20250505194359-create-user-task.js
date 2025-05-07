@@ -20,6 +20,7 @@ module.exports = {
           model: "task",
           key: "id",
         },
+        onDelete: "CASCADE",
       },
       created_at: {
         allowNull: false,

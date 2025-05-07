@@ -1,5 +1,7 @@
 "use strict";
 
+const { on } = require("nodemailer/lib/xoauth2");
+
 module.exports = (sequelize, DataTypes) => {
   const UserTask = sequelize.define(
     "UserTasks",
@@ -43,6 +45,7 @@ module.exports = (sequelize, DataTypes) => {
     });
     UserTask.belongsTo(models.Task, {
       foreignKey: "task_id",
+      onDelete: "CASCADE",
     });
   };
   return UserTask;
