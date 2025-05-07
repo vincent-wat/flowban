@@ -60,7 +60,8 @@ function UserOrganization() {
       // Check if user has admin role (id=2)
       if (response.data && response.data.roles) {
         const hasAdminRole = response.data.roles.some(role => 
-          role.id === 2 || role.name.toLowerCase() === 'admin'
+          role.id === 2 || role.name.toLowerCase() === 'admin' ||
+          role.id === 3 || role.name.toLowerCase() === 'owner'
         );
         setIsAdmin(hasAdminRole);
         console.log('User is admin:', hasAdminRole);

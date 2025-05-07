@@ -40,7 +40,7 @@ const createOrganization = async (req, res) => {
       await sequelize.query(
         `
         INSERT INTO user_roles (user_id, role_id, assigned_at, created_at, updated_at) 
-        VALUES (:userId, 2, NOW(), NOW(), NOW())
+        VALUES (:userId, 3, NOW(), NOW(), NOW())
       `,
         {
           replacements: { userId },
