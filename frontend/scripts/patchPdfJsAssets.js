@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const assets = ["altText_add.svg", "altText_clear.svg"];
+const assets = ["altText_add.svg", "altText_done.svg"];
 
 const fromDir = path.resolve(__dirname, "../public");
 const toDir = path.resolve(__dirname, "../node_modules/pdfjs-dist/legacy/web/images");
