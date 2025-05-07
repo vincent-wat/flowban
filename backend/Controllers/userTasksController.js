@@ -1,4 +1,5 @@
 const { UserTasks, Task, User } = require("../models");
+const { sendAssignedTaskEmail } = require("../middleware/sendEmail");
 
 async function getAllEntries(req, res) {
   try {
@@ -50,9 +51,9 @@ async function getUserTask(req, res) {
 
 async function deleteUserTask(req, res) {
   try {
-    const { user_id, task_id } = req.params;
+    const { task_id } = req.params;
     const deletedUserTask = await UserTasks.destroy({
-      where: { user_id, task_id },
+      where: { task_id },
     });
 
     if (!deletedUserTask) {
@@ -79,10 +80,44 @@ async function getUserTasksByUserId(req, res) {
   }
 }
 
+async function taskNotification(req, res) {
+  try {
+    const { email, task } = req.body;
+    console.log("Email:", email);
+    console.log("Task:", task);
+
+    await sendAssignedTaskEmail(email, task);
+    return res.status(200).json({ message: "Email sent successfully" });
+  } catch (error) {
+    console.error("Error sending assigned task email:", error);
+    return res.status(500).json({ error: "Error sending email" });
+  }
+}
+
+async function getAssignedUser(req, res) {
+  try {
+    const { task_id } = req.params;
+    // check if task_id is in the database
+    const assignedUser = await UserTasks.findOne({
+      where: { task_id: task_id },
+    });
+
+    if (!assignedUser) {
+      return res.status(404).json({ error: "Assigned user not found" });
+    }
+    return res.status(200).json(assignedUser);
+  } catch (error) {
+    console.error("Error fetching assigned user:", error);
+    return res.status(500).json({ error: "Error fetching assigned user" });
+  }
+}
+
 module.exports = {
   getAllEntries,
   createUserTask,
   getUserTask,
   deleteUserTask,
   getUserTasksByUserId,
+  taskNotification,
+  getAssignedUser,
 };

@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "../CSS/Task.css";
+import axios from "../../../axios";
 
 import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
@@ -11,6 +12,7 @@ import {
   FaGripLines,
   FaUser,
 } from "react-icons/fa";
+import { use } from "react";
 
 export const Task = ({
   task,
@@ -37,6 +39,11 @@ export const Task = ({
   const [email, setEmail] = useState("");
   const [organizationUsers, setOrganizationUsers] = useState(orgUsers);
 
+  const [assignedUser, setAssignedUser] = useState(null);
+  const [hoverOverUser, setHoverOverUser] = useState(false);
+
+  // check if the task is assigend to a user or not.
+
   const handleEditTask = () => {
     editTask(task.id, newTitle, newDescription);
     setIsEditModalOpen(false);
@@ -45,8 +52,10 @@ export const Task = ({
   const handleAssignTask = () => {
     // get user id from email
     const user = organizationUsers.find((user) => user.email === email);
+    // check if user exists
     if (user) {
       assignTaskToUser(task.id, user.id);
+      setAssignedUser(user);
       setEmail("");
       setFilteredUsers([]);
       setIsAssignModalOpen(false);
@@ -68,6 +77,26 @@ export const Task = ({
       setFilteredUsers([]);
     }
   };
+
+  useEffect(() => {
+    const fetchAssignedUser = async () => {
+      try {
+        const response = await axios.get(
+          `/api/userTasks/assigned/user/${task.id}`
+        );
+        console.log("Assigned User Response:", response.data);
+        const userId = orgUsers.find(
+          (user) => user.id === response.data.user_id
+        );
+        setAssignedUser(userId);
+      } catch (error) {
+        console.error("Error fetching assigned user:", error);
+      }
+    };
+
+    fetchAssignedUser();
+  }, [task.id]);
+
   return (
     <div style={style} ref={setNodeRef} className="task">
       <div className="drag-handle" {...listeners} {...attributes}>
@@ -104,6 +133,8 @@ export const Task = ({
         </button>
         <button
           className="assign-task"
+          onMouseEnter={() => setHoverOverUser(true)}
+          onMouseLeave={() => setHoverOverUser(false)}
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -112,6 +143,11 @@ export const Task = ({
         >
           <FaUser size="15">Assign</FaUser>
         </button>
+        {assignedUser && hoverOverUser && (
+          <div className="assigned-user-tooltip">
+            <p>Assigned to: {assignedUser.email}</p>
+          </div>
+        )}
       </footer>
 
       <Modal
