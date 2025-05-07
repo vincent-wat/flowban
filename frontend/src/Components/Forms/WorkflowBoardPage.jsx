@@ -18,9 +18,14 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { FaSearch } from "react-icons/fa";
 
-const socket = io("https://localhost:3000", {
+const SOCKET_URL =
+  process.env.REACT_APP_SOCKET_URL || "http://localhost:3000";
+
+const socket = io(SOCKET_URL, {
   transports: ["websocket", "polling"],
+  withCredentials: true,
 });
+
 
 const WorkflowBoard = () => {
   const { templateId } = useParams();
