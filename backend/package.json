@@ -4,7 +4,7 @@
   "main": "server.js",
   "scripts": {
     "test": "test",
-    "start": "nodemon",
+    "start": "node index.js",
     "migrate": "npx sequelize-cli db:migrate",
     "migrate:undo": "npx sequelize-cli db:migrate:undo",
     "migrate:undo_all": "npx sequelize-cli db:migrate:undo:all",

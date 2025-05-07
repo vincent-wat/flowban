@@ -12,7 +12,7 @@ const isAdmin = async (req, res, next) => {
     const [results] = await sequelize.query(`
       SELECT ur.* 
       FROM user_roles ur
-      WHERE ur.user_id = :userId AND ur.role_id = 2
+      WHERE ur.user_id = :userId AND (ur.role_id = 2 OR ur.role_id = 3)
     `, {
       replacements: { userId }
     });

@@ -40,7 +40,7 @@ const createOrganization = async (req, res) => {
       await sequelize.query(
         `
         INSERT INTO user_roles (user_id, role_id, assigned_at, created_at, updated_at) 
-        VALUES (:userId, 2, NOW(), NOW(), NOW())
+        VALUES (:userId, 3, NOW(), NOW(), NOW())
       `,
         {
           replacements: { userId },
@@ -133,6 +133,17 @@ const acceptOrganizationInvite = async (req, res) => {
     user.organization_id = organization_id;
     await user.save();
 
+    await sequelize.query(
+      `
+      INSERT INTO user_roles (user_id, role_id, assigned_at, created_at, updated_at) 
+      VALUES (:userId, 1, NOW(), NOW(), NOW())
+    `,
+      {
+        replacements: { userId: user.id },
+        type: sequelize.QueryTypes.INSERT
+      }
+    );
+
     // Generate a new JWT token that includes the organization_id
     const jwtToken = jwt.sign(
       {
@@ -154,38 +165,44 @@ const acceptOrganizationInvite = async (req, res) => {
   }
 };
 
-const displayAllUsersInOrganization = async (req, res) => {
+async function displayAllUsersInOrganization(req, res) {
   try {
-    // Get organization_id from the authenticated user
-    const organization_id = req.user.organization_id;
-
-    if (!organization_id) {
-      return res
-        .status(401)
-        .json({ error: "You don't belong to any organization" });
+    const organizationId = req.user.organization_id;
+    
+    if (!organizationId) {
+      return res.status(400).json({ error: "User is not part of an organization" });
     }
 
-    // Get all users in the organization
+    // Use findAll with a subquery to get the role
     const users = await User.findAll({
-      where: { organization_id },
-      attributes: ["id", "first_name", "last_name", "email"], // Only return safe fields
+      where: { organization_id: organizationId },
+      attributes: [
+        'id', 
+        'first_name', 
+        'last_name', 
+        'email',
+        [
+          sequelize.literal(`(
+            SELECT COALESCE(r.name, 'Member')
+            FROM user_roles ur
+            LEFT JOIN roles r ON ur.role_id = r.id
+            WHERE ur.user_id = "User".id
+            LIMIT 1
+          )`),
+          'role'
+        ]
+      ],
+      order: [['created_at', 'DESC']],
+      raw: true // Return plain objects instead of model instances
     });
-
-    if (!users || users.length === 0) {
-      return res
-        .status(404)
-        .json({ error: "No users found in this organization" });
-    }
-
-    res.status(200).json({
-      message: "Users in the organization",
-      users: users,
-    });
-  } catch (err) {
-    console.error("Error fetching users:", err);
-    return res.status(500).json({ error: "Server error" });
+    
+    // Send the array of users to the frontend
+    return res.status(200).json({ users });
+  } catch (error) {
+    console.error("Error fetching organization users:", error);
+    return res.status(500).json({ error: "Failed to fetch users", details: error.message });
   }
-};
+}
 
 const getOrganizationById = async (req, res) => {
   try {

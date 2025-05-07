@@ -18,6 +18,13 @@ module.exports = {
         created_at: new Date(),
         updated_at: new Date(),
       },
+      {
+        id: 3,
+        name: "owner",
+        description: "Owner role",
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
     ]);
   },
 
