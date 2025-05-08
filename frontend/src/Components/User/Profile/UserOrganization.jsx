@@ -28,11 +28,15 @@ function UserOrganization() {
       
       console.log("Refreshing token to get latest organization data...");
       
-      const response = await api.post("/api/users/register", {
-        headers: {
-          Authorization: `Bearer ${token}`
+      const response = await api.post(
+        "/api/users/refresh-token", // Use the refresh token endpoint
+        {}, // Empty request body or add any required data
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
         }
-      });
+      );
       
       if (response.data && response.data.jwtToken) {
         console.log("Token refreshed successfully");
