@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import './LoginPage.css';
 import { FaUser, FaEye, FaEyeSlash } from 'react-icons/fa';
+import api from '../../../axios';
 import axios from '../../../axios';
 import useAuth from '../../../hooks/useAuth';
 import googleButton from '../../Assets/google_signin_buttons/web/1x/btn_google_signin_dark_pressed_web.png';
@@ -123,34 +124,31 @@ const LoginPage = () => {
     }
   };
 
-const handleGoogleAuth = async () => {
-  try {
-    // Get the invite token from session storage
-    const pendingInviteToken = sessionStorage.getItem('pendingInviteToken');
-    
-    // Store a flag indicating we're coming from an org invite
-    if (pendingInviteToken) {
-      sessionStorage.setItem('googleAuthFromInvite', 'true');
+  const handleGoogleAuth = async () => {
+    try {
+      // grab any pending invite token
+      const pendingInviteToken = sessionStorage.getItem('pendingInviteToken');
+      if (pendingInviteToken) {
+        sessionStorage.setItem('googleAuthFromInvite', 'true');
+      }
+  
+      // build the query string
+      const redirectParam = pendingInviteToken ? '?redirect=org-invite' : '';
+  
+      // fire off the POST via axios
+      const response = await api.post(`/api/request${redirectParam}`);
+  
+      // mark that we're waiting on Google
+      localStorage.setItem('googleAuthPending', 'true');
+  
+      // redirect browser to Google
+      window.location.href = response.data.url;
+    } catch (err) {
+      console.error('Error during Google auth request:', err);
+      alert('Failed to authenticate with Google. Please try again later.');
     }
-    
-    // Make the request with the redirect parameter if we have a pending invite
-    const redirectParam = pendingInviteToken ? 'org-invite' : '';
-    const response = await fetch(`https://localhost:3000/api/request?redirect=${redirectParam}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-    });
-    
-    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-    
-    const data = await response.json();
-    localStorage.setItem('googleAuthPending', 'true');
-    window.location.href = data.url;
-  } catch (err) {
-    console.error(err);
-    alert('Failed to authenticate with Google. Please try again later.');
-  }
-};
+  };
+  
 
   return (
     <div className="wrapper">

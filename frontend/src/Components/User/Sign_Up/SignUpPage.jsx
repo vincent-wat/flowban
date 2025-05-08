@@ -68,41 +68,30 @@ const SignUpPage = () => {
   // Handle Google authentication
   async function handleGoogleAuth() {
     try {
-      // Check if there's a pending invite token
-      const pendingInviteToken = sessionStorage.getItem('pendingInviteToken');
-      
-      // If we're coming from an invite, mark it
+      // see if we're in an invite flow
+      const pendingInviteToken = sessionStorage.getItem("pendingInviteToken");
       if (pendingInviteToken) {
-        sessionStorage.setItem('googleAuthFromInvite', 'true');
+        sessionStorage.setItem("googleAuthFromInvite", "true");
       }
-      
-      // Include redirect parameter if needed
-      const redirectParam = pendingInviteToken ? 'org-invite' : '';
-      const response = await fetch(`${baseURL}/api/request?redirect=${redirectParam}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        credentials: "include"
-      });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-      
-      const data = await response.json();
+      const redirectParam = pendingInviteToken ? "?redirect=org-invite" : "";
+  
+      // hit your backend via axios
+      const response = await api.post(`/api/request${redirectParam}`);
+      const data = response.data;
+  
       console.log("Auth URL received:", data);
-      
-      // Store the state or any identifier in localStorage if needed for verification
+  
+      // mark that we’re waiting on Google
       localStorage.setItem("googleAuthPending", "true");
-      
-      // Navigate to Google Auth
+  
+      // send the user off to Google
       window.location.href = data.url;
     } catch (error) {
       console.error("Error during auth request:", error);
       alert("Failed to authenticate with Google. Please try again later.");
     }
   }
+  
 
   // Handle token detection and organization invitations
   useEffect(() => {
