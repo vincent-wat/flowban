@@ -204,7 +204,7 @@ const SignUpPage = () => {
 
     try {
       const response = await axios.get(
-        `/api/validate-domain?${formData.email}`
+        `/api/users/validate-domain?${formData.email}`
       );
       if (!response.data.valid) {
         setError("Invalid email domain");
