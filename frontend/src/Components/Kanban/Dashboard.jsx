@@ -124,7 +124,7 @@ export const Dashboard = () => {
         name: newBoardName,
         user_id: user_id,
       };
-      const response = await axios.post(`/api/userBoards/boards`, board);
+      const response = await axios.post(`/api/boards`, board);
 
       // const response = await fetch("https://localhost:3000/api/boards", {
       //   method: "POST",
