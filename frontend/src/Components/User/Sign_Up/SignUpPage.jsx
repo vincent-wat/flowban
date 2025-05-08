@@ -3,8 +3,10 @@ import { useNavigate, useLocation } from "react-router-dom";
 import "./SignUpPage.css";
 import { RiLockPasswordFill } from "react-icons/ri";
 import axios from "../../../axios";
+import { baseURL } from "../../../axios";
 import useAuth from "../../../hooks/useAuth";
 import googleButton from "../../Assets/google_signin_buttons/web/1x/btn_google_signin_dark_pressed_web.png";
+import api from "../../../axios";
 
 const SignUpPage = () => {
   useAuth();
@@ -76,7 +78,7 @@ const SignUpPage = () => {
       // Include redirect parameter if needed
       const redirectParam = pendingInviteToken ? "org-invite" : "";
       const response = await fetch(
-        `https://localhost:3000/api/request?redirect=${redirectParam}`,
+        `${baseURL}/api/request?redirect=${redirectParam}`,
         {
           method: "POST",
           headers: {
@@ -222,7 +224,7 @@ const SignUpPage = () => {
     }
 
     try {
-      const response = await axios.post("/api/users/register", {
+      const response = await api.post("/api/users/register", {
         email: formData.email,
         password: formData.password,
         phone_number: formData.phoneNumber,

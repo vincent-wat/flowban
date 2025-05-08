@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
 import "./WorkflowBoardPage.css";
+import api from "../../../axios"; 
 import {
   DndContext,
   closestCenter,
@@ -18,9 +19,14 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { FaSearch } from "react-icons/fa";
 
-const socket = io("https://localhost:3000", {
+const SOCKET_URL =
+  process.env.REACT_APP_SOCKET_URL || "http://localhost:3000";
+
+const socket = io(SOCKET_URL, {
   transports: ["websocket", "polling"],
+  withCredentials: true,
 });
+
 
 const WorkflowBoard = () => {
   const { templateId } = useParams();
@@ -92,10 +98,11 @@ const WorkflowBoard = () => {
   const fetchWorkflowData = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(
-        `https://localhost:3000/api/workflowStages/template/${templateId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const res = await api.get(`/api/workflowStages/template/${templateId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
       const data = await res.json();
       setStages(Array.isArray(data) ? data : []);
     } catch {
@@ -108,8 +115,10 @@ const WorkflowBoard = () => {
   const fetchAllUsers = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`https://localhost:3000/api/users`, {
-        headers: { Authorization: `Bearer ${token}` },
+      const res = await api.get("/api/users", {
+        headers: {
+          Authorization: `Bearer ${token}` 
+        }
       });
       const data = await res.json();
       setUsers(Array.isArray(data) ? data : []);
@@ -121,10 +130,11 @@ const WorkflowBoard = () => {
   const fetchFormInstances = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(
-        `https://localhost:3000/api/formInstance/templates/${templateId}/instances`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const res = await api.get(`/api/formInstance/templates/${templateId}/instances`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
       const data = await res.json();
       setFormInstances(Array.isArray(data) ? data : []);
     } catch {
@@ -136,10 +146,11 @@ const WorkflowBoard = () => {
     setLoadingArchived(true);
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(
-        `https://localhost:3000/api/archivedForms/templates/${templateId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const res = await api.get(`/api/archivedForms/templates/${templateId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
       const data = await res.json();
       setArchivedForms(Array.isArray(data) ? data : []);
     } catch {
@@ -153,13 +164,12 @@ const WorkflowBoard = () => {
     setLoadingForms((p) => ({ ...p, [formId]: true }));
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(
-        `https://localhost:3000/api/formInstance/instances/approve/${formId}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      const res = await api.put(`/api/formInstance/instances/approve/${formId}`, null, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
         }
-      );
+      });
       if (!res.ok) throw new Error();
       await fetchFormInstances();
     } catch {
@@ -174,10 +184,11 @@ const WorkflowBoard = () => {
     setLoadingForms((p) => ({ ...p, [formId]: true }));
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(
-        `https://localhost:3000/api/formInstance/instances/${formId}`,
-        { method: "DELETE", headers: { Authorization: `Bearer ${token}` } }
-      );
+      const res = await api.delete(`/api/formInstance/instances/${formId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
       if (!res.ok) throw new Error();
       await fetchFormInstances();
     } catch {
@@ -207,14 +218,16 @@ const WorkflowBoard = () => {
     setLoadingForms((p) => ({ ...p, [selectedFormId]: true }));
     try {
       const token = localStorage.getItem("token");
-      await fetch(
-        `https://localhost:3000/api/formInstance/instances/deny/${selectedFormId}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-          body: JSON.stringify({ denial_reason: denialReason }),
+  
+      await api.put(`/api/formInstance/instances/deny/${selectedFormId}`, {
+        denial_reason: denialReason
+      }, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
         }
-      );
+      });
+  
       await fetchFormInstances();
       closeModal();
     } catch {
@@ -226,18 +239,22 @@ const WorkflowBoard = () => {
 
   const addSuggestedAssignment = async () => {
     if (!selectedStageId || !selectedUserId || !selectedFormId) return;
+  
     try {
       const token = localStorage.getItem("token");
-      await fetch("https://localhost:3000/api/formAssignment/suggest", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({
-          form_instance_id: selectedFormId,
-          stage_id: Number(selectedStageId),
-          assigned_user_id: Number(selectedUserId),
-          role: "approver",
-        }),
+  
+      await api.post("/api/formAssignment/suggest", {
+        form_instance_id: selectedFormId,
+        stage_id: Number(selectedStageId),
+        assigned_user_id: Number(selectedUserId),
+        role: "approver",
+      }, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
       });
+  
       await fetchFormInstances();
       setSelectedStageId("");
       setSelectedUserId("");
@@ -251,17 +268,21 @@ const WorkflowBoard = () => {
       alert("Provide name & order.");
       return;
     }
+  
     try {
       const token = localStorage.getItem("token");
-      await fetch("https://localhost:3000/api/workflowStages", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({
-          template_id: Number(templateId),
-          stage_name: newStageName,
-          stage_order: Number(newStageOrder),
-        }),
+  
+      await api.post("/api/workflowStages", {
+        template_id: Number(templateId),
+        stage_name: newStageName,
+        stage_order: Number(newStageOrder),
+      }, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
       });
+  
       await fetchWorkflowData();
       setShowStageModal(false);
       setNewStageName("");

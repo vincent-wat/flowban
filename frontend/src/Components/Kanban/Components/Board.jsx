@@ -10,9 +10,14 @@ import { io } from "socket.io-client";
 import { error } from "pdf-lib";
 
 // Initialize Socket.IO
-const socket = io("https://localhost:3000", {
+const SOCKET_URL =
+  process.env.REACT_APP_SOCKET_URL || "http://localhost:3000";
+
+const socket = io(SOCKET_URL, {
   transports: ["websocket", "polling"],
+  withCredentials: true,
 });
+
 
 export default function Board({ board_id, user_id, user_role }) {
   console.log("Board ID: " + board_id);
