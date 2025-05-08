@@ -103,7 +103,7 @@ const LoginPage = () => {
     setError("");
     setSubmitted(false);
     try {
-      const response = await axios.get("/api/users/login", {
+      const response = await axios.post("/api/users/login", {
         email: formData.email,
         password: formData.password,
       });
