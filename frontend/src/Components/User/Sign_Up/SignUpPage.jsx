@@ -67,6 +67,7 @@ const SignUpPage = () => {
   // Handle Google authentication
   async function handleGoogleAuth() {
     try {
+      // Check if there's a pending invite token
       // If we're coming from an invite, mark it
       // see if we're in an invite flow
       const pendingInviteToken = sessionStorage.getItem("pendingInviteToken");

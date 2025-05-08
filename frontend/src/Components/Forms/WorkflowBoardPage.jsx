@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
 import "./WorkflowBoardPage.css";
 import api from "../../axios"; 
-import { baseURL } from "../axios"; 
+import { baseURL } from "../../axios"; 
 import {
   DndContext,
   closestCenter,
@@ -477,7 +477,7 @@ const WorkflowBoard = () => {
                         </p>
                         <button
                           className="view-pdf-button"
-                          onClick={() => window.open(normalizedUrl, "_blank")}
+                          onClick={() => window.open(baseURL, "_blank")}
                         >
                           View PDF
                         </button>
