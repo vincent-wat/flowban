@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { PDFDocument } from "pdf-lib";
 import PdfViewer from "./PdfViewer";
 import "./pdfViewer.css";
-import api from "../../../axios"; 
+import api from "../../axios"; 
 
 const ViewFormPage = () => {
   const { templateId } = useParams();
