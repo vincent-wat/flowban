@@ -477,7 +477,7 @@ const WorkflowBoard = () => {
                         </p>
                         <button
                           className="view-pdf-button"
-                          onClick={() => window.open(normalizedUrl, "_blank")}
+                          onClick={() => window.open(baseURL, "_blank")}
                         >
                           View PDF
                         </button>
