@@ -4,6 +4,7 @@ import './UserOrganization.css';
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 import { isUserAdmin } from '../../../utils/authHelpers';
+import api from "../../../axios";
 
 function UserOrganization() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -27,7 +28,7 @@ function UserOrganization() {
       
       console.log("Refreshing token to get latest organization data...");
       
-      const response = await axios.post('https://localhost:3000/api/users/refresh-token', {}, {
+      const response = await api.post("/api/users/register", {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -51,7 +52,7 @@ function UserOrganization() {
       if (!token) return;
   
       // Direct API call to get roles
-      const response = await axios.get('https://localhost:3000/api/users/roles', {
+      const response = await api.get('/api/users/roles', {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -99,7 +100,7 @@ function UserOrganization() {
       }
       
       // Call API to update user's role
-      await axios.post('https://localhost:3000/api/users/role', 
+      await api.post("/api/users/role", 
         { 
           userId, 
           roleId: newRoleId 
@@ -182,7 +183,7 @@ function UserOrganization() {
         throw new Error('No authentication token found');
       }
       
-      const response = await axios.get('https://localhost:3000/api/organizations/users', {
+      const response = await api.get('/api/organizations/users', {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -208,8 +209,8 @@ function UserOrganization() {
       const decoded = jwtDecode(token);
       if (decoded && decoded.organization_id) {
         // Fetch organization details using organization_id
-        const response = await axios.get(
-          `https://localhost:3000/api/organizations/${decoded.organization_id}`, // Note: using singular "organization"
+        const response = await api.get(
+          `/api/organizations/${decoded.organization_id}`, // Note: using singular "organization"
           {
             headers: {
               Authorization: `Bearer ${token}`
@@ -238,7 +239,7 @@ function UserOrganization() {
         throw new Error('No authentication token found');
       }
       
-      const response = await axios.post('https://localhost:3000/api/organizations/invite', 
+      const response = await api.post('/api/organizations/invite', 
         { email: inviteEmail },
         {
           headers: {
@@ -276,7 +277,7 @@ function UserOrganization() {
       const decoded = jwtDecode(token);
       const userId = decoded.id;
       
-      const response = await axios.post('https://localhost:3000/api/organizations/create', 
+      const response = await api.post('/api/organizations/create', 
         { 
           name: newOrgName,
           userId: userId 
