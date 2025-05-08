@@ -11,7 +11,7 @@ import { useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import "./Dashboard.css";
 import axios from "../../axios";
-import { baseUrl } from "../../../axios";
+import { baseURL } from "../../axios";
 
 export const Dashboard = () => {
   const [boards, setBoards] = useState([]);
@@ -296,7 +296,7 @@ export const Dashboard = () => {
                       // formData.append("created_by", user_id); // Use this when user_id is available
                       formData.append("file", pdfFile);
                       const templateRes = await fetch(
-                        `${baseUrl}/api/forms/templates`,
+                        `${baseURL}/api/forms/templates`,
                         {
                           method: "POST",
                           body: formData,
@@ -318,7 +318,7 @@ export const Dashboard = () => {
                       }
 
                       const boardRes = await fetch(
-                        `${baseUrl}/api/workflowBoards`,
+                        `${baseURL}/api/workflowBoards`,
                         {
                           method: "POST",
                           headers: {
