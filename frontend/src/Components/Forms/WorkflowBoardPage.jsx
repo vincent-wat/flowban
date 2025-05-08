@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
 import "./WorkflowBoardPage.css";
-import api from "../../../axios"; 
+import api from "../../axios"; 
 import {
   DndContext,
   closestCenter,

@@ -71,6 +71,8 @@ const SignUpPage = () => {
       const pendingInviteToken = sessionStorage.getItem("pendingInviteToken");
 
       // If we're coming from an invite, mark it
+      // see if we're in an invite flow
+      const pendingInviteToken = sessionStorage.getItem("pendingInviteToken");
       if (pendingInviteToken) {
         sessionStorage.setItem("googleAuthFromInvite", "true");
       }
@@ -96,9 +98,13 @@ const SignUpPage = () => {
       console.log("Auth URL received:", data);
 
       // Store the state or any identifier in localStorage if needed for verification
+
+      // mark that we’re waiting on Google
       localStorage.setItem("googleAuthPending", "true");
 
       // Navigate to Google Auth
+
+      // send the user off to Google
       window.location.href = data.url;
     } catch (error) {
       console.error("Error during auth request:", error);

@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from "react";
 import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf"; // Core PDF.js library
 import * as pdfjsViewer from "pdfjs-dist/legacy/web/pdf_viewer"; // PDF.js viewer
 import "pdfjs-dist/legacy/web/pdf_viewer.css"; // PDF.js viewer styles
-import api from "../../../axios"; 
+import api from "../../axios"; 
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = "https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js";
 

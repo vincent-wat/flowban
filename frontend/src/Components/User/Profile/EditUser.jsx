@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from './Sidebar';
 import './EditUser.css';
-import axios from 'axios'; 
+import api from '../../../axios';  
 
 function Profile() {
   const [profile, setProfile] = useState({
@@ -19,14 +19,10 @@ function Profile() {
     const fetchProfile = async () => {
       try {
         const token = localStorage.getItem('token');
-        if (!token) {
-          throw new Error('No token found. Please log in.');
-        }
+        if (!token) throw new Error('No token found. Please log in.');
 
-        const response = await axios.get('https://localhost:3000/api/users/me', {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
+        const response = await api.get('/api/users/me', {
+          headers: { Authorization: `Bearer ${token}` }
         });
 
         setProfile(response.data);
@@ -38,20 +34,15 @@ function Profile() {
     fetchProfile();
   }, []);
 
-  const handleChange = (e) => {
+  const handleChange = e => {
     const { name, value } = e.target;
-    setProfile({
-      ...profile,
-      [name]: value,
-    });
+    setProfile(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSave = async () => {
     try {
       const token = localStorage.getItem('token');
-      if (!token) {
-        throw new Error('No token found. Please log in.');
-      }
+      if (!token) throw new Error('No token found. Please log in.');
 
       const payload = {
         email: profile.email,
@@ -59,15 +50,10 @@ function Profile() {
         first_name: profile.first_name,
         last_name: profile.last_name,
       };
+      if (profile.password) payload.password = profile.password;
 
-      if (profile.password) {
-        payload.password = profile.password; 
-      }
-
-      const response = await axios.put('https://localhost:3000/api/users/me', payload, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+      const response = await api.put('/api/users/me', payload, {
+        headers: { Authorization: `Bearer ${token}` }
       });
 
       setProfile(response.data);
@@ -78,18 +64,16 @@ function Profile() {
     }
   };
 
-  const toggleEdit = () => {
-    setIsEditing(!isEditing);
-  };
-
-  const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen);
-  };
+  const toggleEdit = () => setIsEditing(e => !e);
+  const toggleSidebar = () => setIsSidebarOpen(s => !s);
 
   return (
     <div className="profile-page">
       <Sidebar isOpen={isSidebarOpen} />
-      <button onClick={toggleSidebar} className={`sidebar-toggle ${isSidebarOpen ? 'open' : ''}`}>
+      <button
+        onClick={toggleSidebar}
+        className={`sidebar-toggle ${isSidebarOpen ? 'open' : ''}`}
+      >
         {isSidebarOpen ? '❮' : '❯'}
       </button>
 
@@ -98,7 +82,7 @@ function Profile() {
           <h2>Profile</h2>
 
           {isEditing ? (
-            <div>
+            <>
               <label className="profile-label">
                 Email:
                 <input
@@ -152,15 +136,29 @@ function Profile() {
               <button onClick={handleSave} className="profile-button">
                 Save
               </button>
-            </div>
+            </>
           ) : (
-            <div>
-              <p className="profile-value"><strong>Email:</strong> {profile.email}</p>
-              <p className="profile-value"><strong>Phone Number:</strong> {profile.phone_number}</p>
-              <p className="profile-value"><strong>First Name:</strong> {profile.first_name}</p>
-              <p className="profile-value"><strong>Last Name:</strong> {profile.last_name}</p>
-              <button onClick={toggleEdit}className="profile-button"style={{ backgroundColor: 'red', color: 'white' }}>Edit Profile</button>
-            </div>
+            <>
+              <p className="profile-value">
+                <strong>Email:</strong> {profile.email}
+              </p>
+              <p className="profile-value">
+                <strong>Phone Number:</strong> {profile.phone_number}
+              </p>
+              <p className="profile-value">
+                <strong>First Name:</strong> {profile.first_name}
+              </p>
+              <p className="profile-value">
+                <strong>Last Name:</strong> {profile.last_name}
+              </p>
+              <button
+                onClick={toggleEdit}
+                className="profile-button"
+                style={{ backgroundColor: 'red', color: 'white' }}
+              >
+                Edit Profile
+              </button>
+            </>
           )}
         </div>
       </div>
