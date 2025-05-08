@@ -295,13 +295,16 @@ export const Dashboard = () => {
                       formData.append("created_by", user_id); // Placeholder until user_id works
                       // formData.append("created_by", user_id); // Use this when user_id is available
                       formData.append("file", pdfFile);
-                      const templateRes = await fetch(
-                        `${baseURL}/api/forms/templates`,
-                        {
-                          method: "POST",
-                          body: formData,
-                        }
-                      );
+                      const token = localStorage.getItem("token");
+
+                      const templateRes = await fetch(`${baseURL}/api/forms/templates`, {
+                        method: "POST",
+                        headers: {
+                          Authorization: `Bearer ${token}`,
+                        },
+                        body: formData,
+                      });
+
 
                       if (!templateRes.ok) {
                         throw new Error(
