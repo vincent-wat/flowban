@@ -3,11 +3,14 @@ import { useParams, useNavigate } from "react-router-dom";
 import { PDFDocument } from "pdf-lib";
 import PdfViewer from "./PdfViewer";
 import "./pdfViewer.css";
+import api from "../../axios"; 
 
 const ViewFormPage = () => {
   const { templateId } = useParams();
   
-  const pdfUrl = `https://localhost:3000/api/forms/templates/pdf/${templateId}`;
+  const baseURL =
+  process.env.REACT_APP_API_BASE_URL || "http://localhost:3000";
+  const pdfUrl = `${baseURL}/api/forms/templates/pdf/${templateId}`;
   const navigate = useNavigate();
   
 
@@ -54,12 +57,11 @@ const ViewFormPage = () => {
       formData.append("template_id", templateId);
   
       console.log("[handleSubmit] Submitting form data to backend...");
-      const response = await fetch("https://localhost:3000/api/formInstance/instances", {
-        method: "POST",
+      const response = await api.post("/api/formInstance/instances", formData, {
         headers: {
           Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data" 
         },
-        body: formData,
       });
   
       if (response.ok) {
