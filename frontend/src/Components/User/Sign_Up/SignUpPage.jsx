@@ -195,22 +195,21 @@ const SignUpPage = () => {
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Perform validation checks for the email
+  
     if (!formData.email) {
       setError("Email is required");
       return;
     }
-
+  
     try {
-      const response = await axios.get(
-        `/api/validate-domain?${formData.email}`
-      );
+      const response = await api.get("/api/validate-domain", {
+        params: { email: formData.email }
+      });
       if (!response.data.valid) {
         setError("Invalid email domain");
         return;
       }
-    } catch (error) {
+    } catch {
       setError("Invalid email domain");
       return;
     }
