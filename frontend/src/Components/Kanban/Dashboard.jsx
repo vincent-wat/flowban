@@ -10,6 +10,8 @@ import {
 import { useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import "./Dashboard.css";
+import axios from "../../axios";
+import { baseUrl } from "../../../axios";
 
 export const Dashboard = () => {
   const [boards, setBoards] = useState([]);
@@ -53,9 +55,7 @@ export const Dashboard = () => {
   // Fetch boards from the API.
   const fetchBoards = async () => {
     try {
-      const response = await fetch(
-        `https://localhost:3000/api/userBoards/boards/all/${user_id}`
-      );
+      const response = await axios.get(`/api/userBoards/boards/all/${user_id}`);
       if (!response.ok)
         throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
@@ -69,15 +69,19 @@ export const Dashboard = () => {
   const fetchTemplates = async () => {
     try {
       const token = localStorage.getItem("token");
-
-      const response = await fetch(
-        "https://localhost:3000/api/forms/templates",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await axios.get(`/api/forms/templates/${user_id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      // const response = await fetch(
+      //   "https://localhost:3000/api/forms/templates",
+      //   {
+      //     headers: {
+      //       Authorization: `Bearer ${token}`,
+      //     },
+      //   }
+      // );
 
       if (!response.ok)
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -116,11 +120,17 @@ export const Dashboard = () => {
       const decodedToken = jwtDecode(token);
       const user_id = decodedToken.id;
 
-      const response = await fetch("https://localhost:3000/api/boards", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: newBoardName, user_id }),
-      });
+      const board = {
+        name: newBoardName,
+        user_id: user_id,
+      };
+      const response = await axios.post(`/api/userBoards/boards`, board);
+
+      // const response = await fetch("https://localhost:3000/api/boards", {
+      //   method: "POST",
+      //   headers: { "Content-Type": "application/json" },
+      //   body: JSON.stringify({ name: newBoardName, user_id }),
+      // });
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -285,9 +295,8 @@ export const Dashboard = () => {
                       formData.append("created_by", user_id); // Placeholder until user_id works
                       // formData.append("created_by", user_id); // Use this when user_id is available
                       formData.append("file", pdfFile);
-
                       const templateRes = await fetch(
-                        "https://localhost:3000/api/forms/templates",
+                        `${baseUrl}/api/forms/templates`,
                         {
                           method: "POST",
                           body: formData,
@@ -309,7 +318,7 @@ export const Dashboard = () => {
                       }
 
                       const boardRes = await fetch(
-                        "https://localhost:3000/api/workflowBoards",
+                        `${baseUrl}/api/workflowBoards`,
                         {
                           method: "POST",
                           headers: {

@@ -22,7 +22,7 @@ const SignUpPage = () => {
 
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
-  
+
   // Password regex for validation
   const passwordRegex = /^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,}$/;
 
@@ -31,34 +31,34 @@ const SignUpPage = () => {
     try {
       console.log("Accepting invitation with token:", inviteToken);
       setSubmitted(true);
-      
+
       const response = await axios.post(
-        '/api/organizations/invite-accept',
+        "/api/organizations/invite-accept",
         { token: inviteToken },
-        { 
-          headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${authToken}`
-          } 
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${authToken}`,
+          },
         }
       );
-      
+
       if (response.data && response.data.jwtToken) {
         // Update the token with organization info
-        localStorage.setItem('token', response.data.jwtToken);
-        console.log('Organization invitation accepted, token updated');
+        localStorage.setItem("token", response.data.jwtToken);
+        console.log("Organization invitation accepted, token updated");
       }
-      
+
       // Clear the pending invite token
-      sessionStorage.removeItem('pendingInviteToken');
-      sessionStorage.removeItem('googleAuthFromInvite');
-      
+      sessionStorage.removeItem("pendingInviteToken");
+      sessionStorage.removeItem("googleAuthFromInvite");
+
       // Navigate to dashboard
-      navigate('/dashboard', { replace: true });
+      navigate("/dashboard", { replace: true });
     } catch (err) {
-      console.error('Error accepting invitation after signup:', err);
+      console.error("Error accepting invitation after signup:", err);
       // Navigate to dashboard anyway
-      navigate('/dashboard', { replace: true });
+      navigate("/dashboard", { replace: true });
     }
   };
 
@@ -66,33 +66,36 @@ const SignUpPage = () => {
   async function handleGoogleAuth() {
     try {
       // Check if there's a pending invite token
-      const pendingInviteToken = sessionStorage.getItem('pendingInviteToken');
-      
+      const pendingInviteToken = sessionStorage.getItem("pendingInviteToken");
+
       // If we're coming from an invite, mark it
       if (pendingInviteToken) {
-        sessionStorage.setItem('googleAuthFromInvite', 'true');
+        sessionStorage.setItem("googleAuthFromInvite", "true");
       }
-      
+
       // Include redirect parameter if needed
-      const redirectParam = pendingInviteToken ? 'org-invite' : '';
-      const response = await fetch(`https://localhost:3000/api/request?redirect=${redirectParam}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        credentials: "include"
-      });
-      
+      const redirectParam = pendingInviteToken ? "org-invite" : "";
+      const response = await fetch(
+        `https://localhost:3000/api/request?redirect=${redirectParam}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+        }
+      );
+
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
-      
+
       const data = await response.json();
       console.log("Auth URL received:", data);
-      
+
       // Store the state or any identifier in localStorage if needed for verification
       localStorage.setItem("googleAuthPending", "true");
-      
+
       // Navigate to Google Auth
       window.location.href = data.url;
     } catch (error) {
@@ -104,40 +107,42 @@ const SignUpPage = () => {
   // Handle token detection and organization invitations
   useEffect(() => {
     console.log("useEffect running, checking for token and email");
-    
+
     const urlParams = new URLSearchParams(window.location.search);
     console.log("URL params:", Object.fromEntries(urlParams.entries()));
-    
+
     // Check for email from invitation link
     const emailParam = urlParams.get("email");
     if (emailParam) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        email: emailParam
+        email: emailParam,
       }));
       console.log("Email from invitation set:", emailParam);
     }
-    
+
     // Check for JWT token from Google OAuth
     const token = urlParams.get("jwtToken");
     const redirectParam = urlParams.get("redirect");
-    
+
     if (token) {
       console.log("Found JWT token in URL:", token);
-      
+
       // Store the token in localStorage
       localStorage.setItem("token", token);
       console.log("Token stored in localStorage");
-      
+
       // Clear the googleAuthPending flag if it exists
       localStorage.removeItem("googleAuthPending");
-      
+
       // Check if there's a pending invitation and redirect param is 'org-invite'
-      const pendingInviteToken = sessionStorage.getItem('pendingInviteToken');
-      const fromInvite = sessionStorage.getItem('googleAuthFromInvite');
-      
-      if ((pendingInviteToken && redirectParam === 'org-invite') || 
-          (pendingInviteToken && fromInvite === 'true')) {
+      const pendingInviteToken = sessionStorage.getItem("pendingInviteToken");
+      const fromInvite = sessionStorage.getItem("googleAuthFromInvite");
+
+      if (
+        (pendingInviteToken && redirectParam === "org-invite") ||
+        (pendingInviteToken && fromInvite === "true")
+      ) {
         console.log("Detected pending invitation after Google auth");
         // Accept the invitation after Google signup
         acceptInvitation(pendingInviteToken, token);
@@ -164,7 +169,10 @@ const SignUpPage = () => {
         setError(
           "Password must be at least 8 characters long and include at least one number and one special character."
         );
-      } else if (fieldName === "confirmPassword" && value !== formData.password) {
+      } else if (
+        fieldName === "confirmPassword" &&
+        value !== formData.password
+      ) {
         setError("Passwords do not match");
       } else if (
         fieldName === "password" &&
@@ -189,7 +197,9 @@ const SignUpPage = () => {
     }
 
     try {
-      const response = await axios.get(`/api/validate-domain?email=${formData.email}`);
+      const response = await axios.get(
+        `/api/validate-domain/${formData.email}`
+      );
       if (!response.data.valid) {
         setError("Invalid email domain");
         return;
@@ -198,17 +208,19 @@ const SignUpPage = () => {
       setError("Invalid email domain");
       return;
     }
-    
+
     if (!passwordRegex.test(formData.password)) {
-      setError("Password must be at least 8 characters long and include at least one number and one special character.");
+      setError(
+        "Password must be at least 8 characters long and include at least one number and one special character."
+      );
       return;
     }
-  
+
     if (formData.password !== formData.confirmPassword) {
       setError("Passwords do not match");
       return;
     }
-  
+
     try {
       const response = await axios.post("/api/users/register", {
         email: formData.email,
@@ -216,17 +228,17 @@ const SignUpPage = () => {
         phone_number: formData.phoneNumber,
         first_name: formData.firstName,
         last_name: formData.lastName,
-        role_id: 1, 
+        role_id: 1,
       });
-  
+
       const authToken = response.data.jwtToken;
       localStorage.setItem("token", authToken);
       console.log("Registration successful!");
-      
+
       setSubmitted(true);
-      
+
       // Check if there's a pending invitation
-      const pendingInviteToken = sessionStorage.getItem('pendingInviteToken');
+      const pendingInviteToken = sessionStorage.getItem("pendingInviteToken");
       if (pendingInviteToken) {
         console.log("Found pending invitation token, accepting invitation");
         // Accept the invitation with the new auth token
@@ -234,13 +246,12 @@ const SignUpPage = () => {
       } else {
         navigate("/dashboard");
       }
-  
     } catch (e) {
       console.error("Error:", e.response?.data?.message || e.message);
-      setError(e.response?.data?.message || "Server error");  
+      setError(e.response?.data?.message || "Server error");
     }
   };
-  
+
   return (
     <div className="wrapper">
       <form onSubmit={handleSubmit}>
@@ -325,7 +336,11 @@ const SignUpPage = () => {
       </p>
       <h3>
         <button type="button" onClick={handleGoogleAuth}>
-          <img src={googleButton} alt="Sign in with Google" style={{ width: "200px", height: "50px" }} />
+          <img
+            src={googleButton}
+            alt="Sign in with Google"
+            style={{ width: "200px", height: "50px" }}
+          />
         </button>
       </h3>
     </div>
